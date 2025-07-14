@@ -57,17 +57,6 @@ def modulo_ventas():
     if st.button("⬅ Volver al menú"):
         st.session_state.module = None
 
-def modulo_abastecimiento():
-    st.title("📦 Módulo de Abastecimiento")
-    st.write("Aquí irá el contenido del módulo de abastecimiento.")
-    if st.button("⬅ Volver al menú"):
-        st.session_state.module = None
-
-def modulo_inventario():
-    st.title("📊 Módulo de Inventario")
-    st.write("Aquí irá el contenido del módulo de inventario.")
-    if st.button("⬅ Volver al menú"):
-        st.session_state.module = None
 
 
 if not st.session_state.logged_in:
@@ -75,10 +64,5 @@ if not st.session_state.logged_in:
 else:
     if st.session_state.module == "ventas":
         modulo_ventas()
-    elif st.session_state.module == "abastecimiento":
-        modulo_abastecimiento()
-    elif st.session_state.module == "inventario":
-        modulo_inventario()
-    else:
-        menu_principal()
+
 
