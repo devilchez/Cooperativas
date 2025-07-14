@@ -14,8 +14,9 @@ def verificar_usuario(id_empleado, contrasena):
         query = """
             SELECT Nombre, Nivel_usuario 
             FROM Empleado 
-            WHERE BINARY TRIM(Id_empleado) = %s AND BINARY TRIM(Contrasena) = %s
+            WHERE Id_empleado = %s AND Contrasena = %s
         """
+         
         id_empleado_limpio = id_empleado.strip()
         contrasena_limpio = contrasena.strip()
         cursor.execute(query, (id_empleado_limpio, contrasena_limpio))
