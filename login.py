@@ -2,8 +2,7 @@ from config.conexion import obtener_conexion
 
 def verificar_usuario(id_empleado, contrasena):
     """
-    Verifica si el ID_empleado y la Contraseña coinciden con un registro en la tabla Empleado.
-    Retorna el Nombre si las credenciales son correctas, de lo contrario None.
+    Verifica credenciales contra la tabla Empleado
     """
     con = obtener_conexion()
     if not con:
@@ -13,7 +12,7 @@ def verificar_usuario(id_empleado, contrasena):
     try:
         cursor = con.cursor()
         query = """
-            SELECT Nombre 
+            SELECT Nombre, Nivel_usuario 
             FROM Empleado 
             WHERE BINARY TRIM(Id_empleado) = %s AND BINARY TRIM(Contrasena) = %s
         """
@@ -21,6 +20,13 @@ def verificar_usuario(id_empleado, contrasena):
         contrasena_limpio = contrasena.strip()
         cursor.execute(query, (id_empleado_limpio, contrasena_limpio))
         result = cursor.fetchone()
-        return result[0] if result else None  # Devuelve Nombre o None
+        if result:
+            nombre, nivel_usuario = result
+            print(f"✅ Login exitoso: {nombre} ({nivel_usuario})")
+            return nombre, nivel_usuario
+        else:
+            print(f"❌ Credenciales incorrectas para ID: {id_empleado_limpio}")
+            return None
     finally:
         con.close()
+
