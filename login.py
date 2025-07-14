@@ -1,9 +1,6 @@
 from config.conexion import obtener_conexion
 
 def verificar_usuario(id_empleado, contrasena):
-    """
-    Verifica credenciales contra la tabla Empleado
-    """
     con = obtener_conexion()
     if not con:
         print("❌ No se pudo conectar a la base de datos.")
@@ -14,12 +11,12 @@ def verificar_usuario(id_empleado, contrasena):
         query = """
             SELECT Nombre, Nivel_usuario 
             FROM Empleado 
-            WHERE Id_empleado = %s AND Contrasena = %s
+            WHERE LOWER(TRIM(Id_empleado)) = LOWER(%s)
+              AND LOWER(TRIM(Contrasena)) = LOWER(%s)
         """
-         
         id_empleado_limpio = id_empleado.strip()
         contrasena_limpio = contrasena.strip()
-        cursor.execute(query, (id_empleado_limpio, contrasena_limpio))
+        cursor.execute(query, (id_empleado_limpio.lower(), contrasena_limpio.lower()))
         result = cursor.fetchone()
         if result:
             nombre, nivel_usuario = result
