@@ -16,15 +16,23 @@ def verificar_usuario(id_empleado, contrasena):
         """
         id_empleado_limpio = id_empleado.strip()
         contrasena_limpio = contrasena.strip()
+
+        print(f"🟡 DEBUG: id_empleado='{id_empleado_limpio}', contrasena='{contrasena_limpio}'")
+
         cursor.execute(query, (id_empleado_limpio.lower(), contrasena_limpio.lower()))
         result = cursor.fetchone()
+
+        print(f"🟢 DEBUG: Resultado SQL = {result}")
+
         if result:
             nombre, nivel_usuario = result
             print(f"✅ Login exitoso: {nombre} ({nivel_usuario})")
             return nombre, nivel_usuario
         else:
-            print(f"❌ Credenciales incorrectas para ID: {id_empleado_limpio}")
+            print("❌ No se encontró ningún registro coincidente en la DB.")
             return None
+    except Exception as e:
+        print(f"❌ Error en verificar_usuario: {e}")
+        return None
     finally:
         con.close()
-
