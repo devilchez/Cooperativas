@@ -1,8 +1,7 @@
 import streamlit as st
 from login import verificar_credenciales  
-from ventas import modulo_ventas          
-
-
+from modulos.ventas import modulo_ventas
+       
 for key in ['logged_in', 'usuario', 'nombre_usuario', 'module']:
     if key not in st.session_state:
         st.session_state[key] = None
