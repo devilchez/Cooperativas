@@ -1,8 +1,6 @@
 import streamlit as st
-from login import verificar_credenciales  # Debe estar en login.py
-from ventas import modulo_ventas          # Módulo de ventas real
-# from abastecimiento import modulo_abastecimiento  # Si ya lo tienes
-# from inventario import modulo_inventario          # Si ya lo tienes
+from login import verificar_credenciales  
+from ventas import modulo_ventas          
 
 
 for key in ['logged_in', 'usuario', 'nombre_usuario', 'module']:
