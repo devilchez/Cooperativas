@@ -9,21 +9,24 @@ for key in ['logged_in', 'usuario', 'nombre_usuario', 'module']:
 
 def login():
     st.title("🔐 Ingreso al Sistema")
-    st.write("Por favor ingresa tus credenciales para acceder al sistema.")
+    st.write("Ingresa tu ID de empleado y contraseña.")
 
-    id_usuario = st.text_input("ID de Usuario", placeholder="Ejemplo: EMP001", key="usuario_input")
+    id_usuario = st.text_input("ID de Usuario", placeholder="Ejemplo: MAR01", key="usuario_input")
     contrasena = st.text_input("Contraseña", type="password", key="contrasena_input")
 
     if st.button("Iniciar sesión"):
-        nombre = verificar_usuario(id_usuario, contrasena)
-        if nombre:
+        resultado = verificar_usuario(id_usuario, contrasena)
+        if resultado:
+            nombre, nivel_usuario = resultado
             st.session_state.logged_in = True
             st.session_state.usuario = id_usuario.strip()
             st.session_state.nombre_usuario = nombre
-            st.success(f"✅ Bienvenido, {nombre}")
+            st.session_state.nivel_usuario = nivel_usuario
+            st.success(f"✅ Bienvenida {nombre} ({nivel_usuario})")
             st.rerun()
         else:
             st.error("❌ ID o contraseña incorrectos")
+
 
 def menu_principal():
     st.title("🏠 Menú Principal")
