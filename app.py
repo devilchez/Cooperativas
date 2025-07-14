@@ -1,7 +1,6 @@
 import streamlit as st
 from login import verificar_usuario
 from modulos.ventas import modulo_ventas
-from modulos.abastecimiento import mostrar_abastecimiento
 
 # Inicializar sesión si no existe
 for key in ['logged_in', 'usuario', 'nombre_usuario', 'module']:
