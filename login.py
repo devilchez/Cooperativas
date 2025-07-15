@@ -10,7 +10,12 @@ def verificar_usuario(id_empleado, contrasena):
     try:
         cursor = con.cursor()
         query = "SELECT Nombre FROM Empleado WHERE Id_empleado = %s AND contrasena = %s"
+        print(f"Intentando login con ID_empleado={id_empleado} y contraseña={contrasena}")
+
         cursor.execute(query, (id_empleado, contrasena))
+        resultado = cursor.fetchone()
+        print(f"Resultado consulta: {resultado}")
+
         resultado = cursor.fetchone()
         if resultado:
             return resultado[0]  # Retorna el nombre del empleado, o cualquier dato que quieras
