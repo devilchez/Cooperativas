@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'modulos'))
 
 import streamlit as st
-from login import login  # solo importa login, no necesitas verificar_usuario acá
+from login import login, verificar_usuario
 from modulos.ventas import modulo_ventas
 
 def menu_principal():
