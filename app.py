@@ -33,14 +33,7 @@ def menu_principal():
 def cargar_modulo():
     if st.session_state.module == "ventas":
         modulo_ventas()
-    elif st.session_state.module == "abastecimiento":
-        mostrar_abastecimiento()
     else:
         menu_principal()
 
-# Ejecución principal
-if not st.session_state.logged_in:
-    login()
-else:
-    cargar_modulo()
 
