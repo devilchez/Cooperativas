@@ -5,7 +5,7 @@ import streamlit as st
 def obtener_conexion():
     try:
         conexion = mysql.connector.connect(
-            host='bub3mpe7frqgcgokkhwexm-mysql.services.clever-cloud.com',
+            host='b3mpe7frqgcgokkhwexm-mysql.services.clever-cloud.com',
             user='uaxfwo75yaciiqsf',
             password='DTzflvjMCo4FjFfuuvME',
             database='b3mpe7frqgcgokkhwexm',
