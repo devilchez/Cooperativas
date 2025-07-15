@@ -24,21 +24,8 @@ def login():
     if st.button("Iniciar sesión"):
         if verificar_usuario(usuario.strip(), contrasena.strip()):
             st.session_state["logueado"] = True
+            st.session_state["usuario"] = usuario.strip()
             st.success("✔️ Acceso concedido")
             st.experimental_rerun()
         else:
             st.error("❌ ID Empleado o contraseña incorrectos")
-
-def main_app():
-    st.title("🏠 Menú Principal")
-    st.write("¡Has iniciado sesión correctamente!")
-    # Aquí puedes poner el resto de tu app protegida
-
-def app():
-    if "logueado" not in st.session_state or not st.session_state["logueado"]:
-        login()
-    else:
-        main_app()
-
-if __name__ == "__main__":
-    app()
