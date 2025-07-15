@@ -18,7 +18,7 @@ def modulo_ventas():
 
     if producto_seleccionado:
         cod_barra, precio_venta = producto_dict[producto_seleccionado]
-        st.write(f"💲 **Precio unitario:** ${precio_venta:.2f}")
+        st.write(f"💲 **Precio unitario sugerido:** ${precio_venta:.2f}")
         cantidad = st.number_input("Cantidad vendida", min_value=1, step=1)
 
         id_empleado = st.session_state.get("usuario")
@@ -33,10 +33,10 @@ def modulo_ventas():
                 conn.commit()
                 id_venta = cursor.lastrowid  # Obtener ID generado
 
-                # Insertar en ProductoxVenta con el precio sugerido fijo
+                # Insertar en ProductoxVenta con la fecha actual
                 cursor.execute("""
-                    INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_unitario)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_unitario, Fecha)
+                    VALUES (%s, %s, %s, %s, NOW())
                 """, (id_venta, cod_barra, cantidad, precio_venta))
                 conn.commit()
 
@@ -52,3 +52,4 @@ def modulo_ventas():
 
     if st.button("⬅ Volver al menú"):
         st.session_state.module = None
+
