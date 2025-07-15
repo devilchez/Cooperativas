@@ -1,13 +1,16 @@
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), 'modulos'))
+
 import streamlit as st
 from login import verificar_usuario
 from modulos.ventas import modulo_ventas
 
-# Inicializar sesión si no existe
-for key in ['logged_in', 'usuario', 'nombre_usuario', 'module']:
-    if key not in st.session_state:
-        st.session_state[key] = None
-
-
+if "Id-empleado" not in st.session_state or "tipo_usuario" not in st.session_state:
+    login()
+else:
+    tipo = st.session_state["tipo_usuario"]
+    
 def menu_principal():
     st.title("🏠 Menú Principal")
     st.subheader(f"Bienvenido, {st.session_state.nombre_usuario} (Usuario: {st.session_state.usuario})")
