@@ -25,7 +25,7 @@ def login():
     if st.button("Iniciar sesión"):
         tipo = verificar_usuario(Id_empleado, contrasena)
         if tipo:
-            st.session_state["usuario"] = Id_empleado  # <- corregido
+            st.session_state["Id_empleado"] = Id_empleado 
             st.session_state["Nivel_usuario"] = tipo
             st.success(f"Bienvenido ({tipo})")
             st.rerun()
