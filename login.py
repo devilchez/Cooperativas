@@ -17,18 +17,18 @@ def verificar_usuario(Id_empleado, contrasena):
     finally:
         con.close()
 
-
 def login():
     st.title("🔐 Ingreso al Sistema")
     Id_empleado = st.text_input("ID Empleado", key="usuario_input")
     contrasena = st.text_input("Contraseña", type="password", key="contrasena_input")
 
     if st.button("Iniciar sesión"):
-        tipo = verificar_usuario(usuario, contrasena)
+        tipo = verificar_usuario(Id_empleado, contrasena)
         if tipo:
-            st.session_state["usuario"] = usuario
+            st.session_state["usuario"] = Id_empleado  # <- corregido
             st.session_state["Nivel_usuario"] = tipo
             st.success(f"Bienvenido ({tipo})")
             st.rerun()
         else:
-            st.error("Credenciales incorrectas")
+            st.error("❌ Credenciales incorrectas")
+
