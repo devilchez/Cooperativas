@@ -20,7 +20,6 @@ def modulo_ventas():
         cod_barra, precio_venta = producto_dict[producto_seleccionado]
         st.write(f"💲 **Precio unitario sugerido:** ${precio_venta:.2f}")
         cantidad = st.number_input("Cantidad vendida", min_value=1, step=1)
-        
 
         id_empleado = st.session_state.get("usuario")
 
@@ -34,11 +33,11 @@ def modulo_ventas():
                 conn.commit()
                 id_venta = cursor.lastrowid  # Obtener ID generado
 
-                # Insertar en ProductoxVenta
+                # Insertar en ProductoxVenta con el precio sugerido fijo
                 cursor.execute("""
                     INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_unitario)
                     VALUES (%s, %s, %s, %s)
-                """, (id_venta, cod_barra, cantidad, precio_unitario))
+                """, (id_venta, cod_barra, cantidad, precio_venta))
                 conn.commit()
 
                 st.success(f"✅ Venta registrada correctamente. ID Venta: {id_venta}")
@@ -53,4 +52,3 @@ def modulo_ventas():
 
     if st.button("⬅ Volver al menú"):
         st.session_state.module = None
-
