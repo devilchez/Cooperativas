@@ -6,10 +6,10 @@ import streamlit as st
 from login import verificar_usuario
 from modulos.ventas import modulo_ventas
 
-if "Id-empleado" not in st.session_state or "tipo_usuario" not in st.session_state:
+if "usuario" not in st.session_state or "Nivel_usuario" not in st.session_state:
     login()
 else:
-    tipo = st.session_state["tipo_usuario"]
+    tipo = st.session_state["Nivel_usuario"]
     
 def menu_principal():
     st.title("🏠 Menú Principal")
