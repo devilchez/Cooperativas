@@ -11,7 +11,8 @@ if "usuario" not in st.session_state or "Nivel_usuario" not in st.session_state:
     login()
 else:
     tipo = st.session_state["Nivel_usuario"]
-    
+
+
 def menu_principal():
     st.title("🏠 Menú Principal")
     st.subheader(f"Bienvenido, {st.session_state.nombre_usuario} (Usuario: {st.session_state.usuario})")
