@@ -2,7 +2,7 @@ import streamlit as st
 from modulos.ventas import modulo_ventas
 from config.conexion import obtener_conexion
 
-def verificar_usuario(Id_empleado, contrasena):
+def verificar_usuario(usuario, contrasena):
     con = obtener_conexion()
     if not con:
         print("❌ No se pudo conectar a la base de datos.")
@@ -19,13 +19,12 @@ def verificar_usuario(Id_empleado, contrasena):
 
 def login():
     st.title("🔐 Ingreso al Sistema")
-    Id_empleado = st.text_input("ID Empleado", key="usuario_input")
+    usuario = st.text_input("ID Empleado", key="usuario_input")
     contrasena = st.text_input("Contraseña", type="password", key="contrasena_input")
 
     if st.button("Iniciar sesión"):
-        tipo = verificar_usuario(Id_empleado, contrasena)
+        tipo = verificar_usuario(usuario, contrasena)
         if tipo:
-            st.session_state["Id_empleado"] = Id_empleado 
             st.session_state["Nivel_usuario"] = tipo
             st.success(f"Bienvenido ({tipo})")
             st.rerun()
