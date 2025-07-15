@@ -7,10 +7,13 @@ from login import verificar_usuario
 from login import login
 from modulos.ventas import modulo_ventas
 
+# Si no hay sesión iniciada, mostrar login
 if "usuario" not in st.session_state or "Nivel_usuario" not in st.session_state:
     login()
 else:
+    # Si ya hay sesión iniciada, cargar la lógica principal
     tipo = st.session_state["Nivel_usuario"]
+    cargar_modulo()  # ✅ Esta línea es la clave que faltaba
 
 
 def menu_principal():
@@ -21,21 +24,27 @@ def menu_principal():
     with col1:
         if st.button("🛒 Ventas"):
             st.session_state.module = "ventas"
+            st.rerun()  # 🔁 Asegura que se muestre inmediatamente
     with col2:
         if st.button("📦 Abastecimiento"):
             st.session_state.module = "abastecimiento"
+            st.rerun()
 
     st.markdown("---")
     if st.button("🔓 Cerrar sesión"):
-        for key in ['logged_in', 'usuario', 'nombre_usuario', 'module']:
-            st.session_state[key] = None
+        for key in ['logged_in', 'usuario', 'nombre_usuario', 'module', 'Nivel_usuario']:
+            if key in st.session_state:
+                del st.session_state[key]
         st.success("✅ Sesión cerrada correctamente.")
         st.rerun()
 
 def cargar_modulo():
-    if st.session_state.module == "ventas":
-        modulo_ventas()
+    if "module" in st.session_state:
+        if st.session_state.module == "ventas":
+            modulo_ventas()
+        elif st.session_state.module == "abastecimiento":
+            st.write("🔧 Módulo de abastecimiento en construcción...")
+        else:
+            menu_principal()
     else:
         menu_principal()
-
-
