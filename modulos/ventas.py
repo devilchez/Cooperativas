@@ -18,7 +18,7 @@ def modulo_ventas():
 
     if producto_seleccionado:
         cod_barra, precio_venta = producto_dict[producto_seleccionado]
-        st.write(f"💲 **Precio unitario sugerido:** ${precio_venta:.2f}")
+        st.write(f"💲 **Precio unitario:** ${precio_venta:.2f}")
         cantidad = st.number_input("Cantidad vendida", min_value=1, step=1)
 
         id_empleado = st.session_state.get("usuario")
