@@ -22,10 +22,16 @@ def login():
     contrasena = st.text_input("Contraseña", type="password")
 
     if st.button("Iniciar sesión"):
-        if verificar_usuario(usuario.strip(), contrasena.strip()):
+        st.write(f"Usuario recibido: '{usuario}'")
+        st.write(f"Contraseña recibida: '{contrasena}'")
+        existe = verificar_usuario(usuario.strip(), contrasena.strip())
+        st.write(f"¿Existe en BD?: {existe}")
+        
+        if existe:
             st.session_state["logueado"] = True
             st.session_state["usuario"] = usuario.strip()
             st.success("✔️ Acceso concedido")
-            st.rerun()
+            st.experimental_rerun()
         else:
             st.error("❌ ID Empleado o contraseña incorrectos")
+
