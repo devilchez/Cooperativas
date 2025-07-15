@@ -5,34 +5,40 @@ def verificar_usuario(id_empleado, contrasena):
     con = obtener_conexion()
     if not con:
         st.error("❌ No se pudo conectar a la base de datos.")
-        return None
+        return False
 
     try:
         cursor = con.cursor()
-        st.write(f"Intentando login con ID_empleado='{id_empleado}' y contraseña='{contrasena}'")
-        query = "SELECT Nombre FROM Empleado WHERE Id_empleado = %s AND contrasena = %s"
+        query = "SELECT 1 FROM Empleado WHERE Id_empleado = %s AND contrasena = %s LIMIT 1"
         cursor.execute(query, (id_empleado, contrasena))
         resultado = cursor.fetchone()
-        st.write(f"Resultado consulta: {resultado}")
-        if resultado:
-            return resultado[0]
-        else:
-            return None
+        return resultado is not None
     finally:
         con.close()
 
 def login():
     st.title("🔐 Ingreso al Sistema")
-    usuario = st.text_input("ID Empleado", key="usuario_input")
-    contrasena = st.text_input("Contraseña", type="password", key="contrasena_input")
+    usuario = st.text_input("ID Empleado")
+    contrasena = st.text_input("Contraseña", type="password")
 
     if st.button("Iniciar sesión"):
-        nombre_usuario = verificar_usuario(usuario, contrasena)
-        if nombre_usuario:
-            st.session_state["Nivel_usuario"] = nombre_usuario
-            st.success(f"Bienvenido, {nombre_usuario}")
-            st.rerun()  # Reinicia la app para que cargue el siguiente módulo si es necesario
+        if verificar_usuario(usuario.strip(), contrasena.strip()):
+            st.session_state["logueado"] = True
+            st.success("✔️ Acceso concedido")
+            st.experimental_rerun()
         else:
             st.error("❌ ID Empleado o contraseña incorrectos")
 
+def main_app():
+    st.title("🏠 Menú Principal")
+    st.write("¡Has iniciado sesión correctamente!")
+    # Aquí puedes poner el resto de tu app protegida
 
+def app():
+    if "logueado" not in st.session_state or not st.session_state["logueado"]:
+        login()
+    else:
+        main_app()
+
+if __name__ == "__main__":
+    app()
