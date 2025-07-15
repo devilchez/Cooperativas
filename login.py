@@ -4,21 +4,18 @@ from config.conexion import obtener_conexion
 def verificar_usuario(id_empleado, contrasena):
     con = obtener_conexion()
     if not con:
-        print("❌ No se pudo conectar a la base de datos.")
+        st.error("❌ No se pudo conectar a la base de datos.")
         return None
 
     try:
         cursor = con.cursor()
+        st.write(f"Intentando login con ID_empleado='{id_empleado}' y contraseña='{contrasena}'")
         query = "SELECT Nombre FROM Empleado WHERE Id_empleado = %s AND contrasena = %s"
-        print(f"Intentando login con ID_empleado={id_empleado} y contraseña={contrasena}")
-
         cursor.execute(query, (id_empleado, contrasena))
         resultado = cursor.fetchone()
-        print(f"Resultado consulta: {resultado}")
-
-        resultado = cursor.fetchone()
+        st.write(f"Resultado consulta: {resultado}")
         if resultado:
-            return resultado[0]  # Retorna el nombre del empleado, o cualquier dato que quieras
+            return resultado[0]
         else:
             return None
     finally:
