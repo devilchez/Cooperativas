@@ -24,7 +24,7 @@ def menu_principal():
     with col1:
         if st.button("🛒 Ventas"):
             st.session_state.module = "ventas"
-            st.rerun()  # 🔁 Asegura que se muestre inmediatamente
+            st.rerun()  
     with col2:
         if st.button("📦 Abastecimiento"):
             st.session_state.module = "abastecimiento"
