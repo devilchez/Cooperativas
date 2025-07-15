@@ -26,6 +26,6 @@ def login():
             st.session_state["logueado"] = True
             st.session_state["usuario"] = usuario.strip()
             st.success("✔️ Acceso concedido")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("❌ ID Empleado o contraseña incorrectos")
