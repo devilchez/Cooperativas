@@ -8,12 +8,12 @@ from login import login
 from modulos.ventas import modulo_ventas
 
 # Si no hay sesión iniciada, mostrar login
-if "usuario" not in st.session_state or "Nivel_usuario" not in st.session_state:
+if "Id_empleado" not in st.session_state or "Nivel_usuario" not in st.session_state:
     login()
 else:
-    # Si ya hay sesión iniciada, cargar la lógica principal
+
     tipo = st.session_state["Nivel_usuario"]
-    cargar_modulo()  # ✅ Esta línea es la clave que faltaba
+    cargar_modulo()  
 
 
 def menu_principal():
