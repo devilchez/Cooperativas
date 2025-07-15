@@ -1,5 +1,6 @@
 import mysql.connector
 from mysql.connector import Error
+import streamlit as st
 
 def obtener_conexion():
     try:
@@ -11,11 +12,11 @@ def obtener_conexion():
             port=3306
         )
         if conexion.is_connected():
-            print("✅ Conexión establecida")
+            st.write("✅ Conexión establecida")
             return conexion
         else:
-            print("❌ Conexión fallida (is_connected = False)")
+            st.error("❌ Conexión fallida (is_connected = False)")
             return None
     except mysql.connector.Error as e:
-        print(f"❌ Error al conectar: {e}")
+        st.error(f"❌ Error al conectar: {e}")
         return None
