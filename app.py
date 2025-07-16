@@ -40,7 +40,7 @@ def cargar_modulo():
         if st.session_state.module == "Ventas":
             modulo_ventas()
         elif st.session_state.module == "Abastecimiento":
-            st.write("🔧 Módulo de abastecimiento en construcción...")
+            modulo_compras()
         elif st.session_state.module == "Inventario":
             st.write("🔧 Módulo de inventario en construcción...")
         else:
