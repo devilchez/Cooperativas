@@ -16,6 +16,7 @@ def menu_principal():
         if st.button("🛒 Ventas"):
             st.session_state.module = "Ventas"
             st.rerun()
+            
     with col2:
         if st.button("📥 Abastecimiento"):
             st.session_state.module = "Abastecimiento"
@@ -36,10 +37,12 @@ def menu_principal():
 
 def cargar_modulo():
     if "module" in st.session_state:
-        if st.session_state.module == "ventas":
+        if st.session_state.module == "Ventas":
             modulo_ventas()
-        elif st.session_state.module == "abastecimiento":
+        elif st.session_state.module == "Abastecimiento":
             st.write("🔧 Módulo de abastecimiento en construcción...")
+        elif st.session_state.module == "Inventario":
+            st.write("🔧 Módulo de inventario en construcción...")
         else:
             menu_principal()
     else:
