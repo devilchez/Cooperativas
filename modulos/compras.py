@@ -2,7 +2,7 @@ from config.conexion import obtener_conexion
 import streamlit as st
 
 def modulo_compras():
-    st.title("📦 Registro de Abastecimiento")
+    st.title("📦 Registro de Compras")
 
     if "carrito_compras" not in st.session_state:
         st.session_state.carrito_compras = []
@@ -23,8 +23,7 @@ def modulo_compras():
 
     if producto_seleccionado:
         cod_barra, precio_sugerido = producto_dict[producto_seleccionado]
-        st.write(f"💲 **Precio sugerido:** ${precio_sugerido:.2f}")
-        cantidad = st.number_input("Cantidad a comprar", min_value=1, step=1)
+        cantidad = st.number_input("Cantidad comprada", min_value=1, step=1)
         precio_compra = st.number_input("Precio de compra unitario", min_value=0.01, step=0.01, format="%.2f")
 
         if st.button("➕ Agregar al abastecimiento"):
