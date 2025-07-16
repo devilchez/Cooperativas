@@ -14,11 +14,16 @@ def menu_principal():
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🛒 Ventas"):
-            st.session_state.module = "ventas"
+            st.session_state.module = "Ventas"
             st.rerun()
     with col2:
-        if st.button("📦 Abastecimiento"):
-            st.session_state.module = "abastecimiento"
+        if st.button("📥 Abastecimiento"):
+            st.session_state.module = "Abastecimiento"
+            st.rerun()
+
+    with col3:
+        if st.button("📦 Inventario"):
+            st.session_state.module = "Inventario"
             st.rerun()
 
     st.markdown("---")
