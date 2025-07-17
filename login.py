@@ -21,11 +21,11 @@ def verificar_usuario(id_empleado, contrasena):
 def login():
     st.title("🔐 Ingreso al Sistema")
     
-    # Campos para ingresar el ID de empleado y la contraseña
-    usuario = st.text_input("ID Empleado")
-    contrasena = st.text_input("Contraseña", type="password")
+    # Campos para ingresar el ID de empleado y la contraseña, asegurando que tengan claves únicas
+    usuario = st.text_input("ID Empleado", key="usuario_input")  # Añadí un key único
+    contrasena = st.text_input("Contraseña", type="password", key="contrasena_input")  # Añadí un key único
 
-    if st.button("Iniciar sesión"):
+    if st.button("Iniciar sesión", key="login_button"):  # Añadí un key único
         st.write(f"Usuario recibido: '{usuario}'")
         st.write(f"Contraseña recibida: '{contrasena}'")
         
