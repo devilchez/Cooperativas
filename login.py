@@ -21,7 +21,7 @@ def login():
     st.title("🔐 Ingreso al Sistema")
     
 
-    usuario = st.text_input("ID Empleado", key="usuario_input")  # Añadí un key único
+    usuario = st.text_input("ID Empleado", key="usuario_input")  
     contrasena = st.text_input("Contraseña", type="password", key="contrasena_input") 
 
     if st.button("Iniciar sesión", key="login_button"): 
