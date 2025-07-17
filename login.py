@@ -39,11 +39,3 @@ def login():
         else:
             st.error("❌ ID Empleado o contraseña incorrectos")
 
-if "logueado" in st.session_state and st.session_state["logueado"]:
-    st.write(f"Bienvenido, {st.session_state.get('nombre_empleado', 'Empleado')}!")
-    if st.button("Cerrar sesión"):
-        cerrar_sesion()  
-
-else:
-
-    login()
