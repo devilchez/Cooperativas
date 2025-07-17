@@ -32,7 +32,7 @@ def menu_principal():
 
     st.markdown("---")
     if st.button("🔓 Cerrar sesión"):
-        # Limpiar las claves de sesión relacionadas con el usuario
+       
         for key in ['logueado', 'usuario', 'module', 'nombre_empleado']: 
             if key in st.session_state:
                 del st.session_state[key]
