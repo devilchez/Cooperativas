@@ -6,12 +6,11 @@ def modulo_compras():
     st.title("🛒 Registro de Compra")
 
     # Verificar si el usuario ha iniciado sesión
-    id_empleado = st.session_state.get("id_empleado")  # Usar .get() en lugar de [] para evitar KeyError
+    id_empleado = st.session_state.get("id_empleado")  
     if not id_empleado:
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
 
-    # Obtener productos existentes desde la BD (tabla Producto con P mayúscula)
     conn = obtener_conexion()
     cursor = conn.cursor()
     cursor.execute("SELECT cod_barra, nombre FROM Producto")  # Asegúrate de que el nombre sea correcto
@@ -22,11 +21,10 @@ def modulo_compras():
 
     st.subheader("Registrar producto en la compra")
 
-    # Inicializar las secciones para agregar productos
     if "productos_seleccionados" not in st.session_state:
         st.session_state["productos_seleccionados"] = []
 
-    # Formulario para seleccionar o ingresar un nuevo producto
+
     tipo_producto = st.radio("Tipo de producto:", ["Existente", "Nuevo"], horizontal=True)
 
     producto = {}
@@ -51,21 +49,19 @@ def modulo_compras():
         else:
             st.error("Por favor, completa todos los campos antes de agregar el producto.")
 
-    # Mostrar los productos seleccionados hasta el momento
     if st.session_state["productos_seleccionados"]:
         st.subheader("Productos seleccionados para la compra:")
         for idx, p in enumerate(st.session_state["productos_seleccionados"]):
             st.write(f"{idx + 1}. {p['nombre']} (Código de barra: {p['cod_barra']}) - Cantidad: {p['cantidad']} - Precio: ${p['precio_compra']:.2f}")
 
-    # Botón para registrar la compra
     if st.button("✅ Registrar compra"):
         if st.session_state["productos_seleccionados"]:
             try:
-                # Conexión a la base de datos
+
                 conn = obtener_conexion()
                 cursor = conn.cursor()
 
-                # Insertar en tabla compra
+
                 fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                 cursor.execute("INSERT INTO compra (fecha, id_empleado) VALUES (%s, %s)", (fecha_actual, id_empleado))
@@ -90,7 +86,6 @@ def modulo_compras():
                 conn.commit()
                 st.success(f"Compra registrada correctamente con ID {id_compra}.")
 
-                # Limpiar la lista de productos seleccionados
                 st.session_state["productos_seleccionados"] = []
 
             except Exception as e:
@@ -102,7 +97,6 @@ def modulo_compras():
         else:
             st.error("⚠️ No has añadido productos. Por favor, agrega productos antes de registrar la compra.")
 
-    # Botón para regresar al menú principal
     if st.button("⬅ Volver al menú principal"):
-        st.session_state.module = None  # Asignar el módulo principal (o inicial)
-        st.rerun()  # Recargar la página para volver al menú principal
+        st.session_state.module = None  
+        st.rerun()  
