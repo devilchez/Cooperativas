@@ -93,16 +93,15 @@ def modulo_compras():
 
         for idx, p in enumerate(st.session_state["productos_seleccionados"]):
             col1, col2 = st.columns([8, 2])
-           with col1:
-                with col1:
-                    st.markdown(
-                        f"{idx + 1}. {p['nombre']} "
-                        f"(Código: {p['cod_barra']}) - "
-                        f"Cantidad: {p['cantidad']} - "
-                        f"💰 Compra: ${p['precio_compra']:.2f} - "
-                        f"🛒 Venta: ${p['precio_venta']:.2f} - "
-                        f"💡 Sugerido: ${p['precio_sugerido']:.2f}"
-                    )
+            with col1:
+                st.markdown(
+                    f"{idx + 1}. {p['nombre']} "
+                    f"(Código: {p['cod_barra']}) - "
+                    f"Cantidad: {p['cantidad']} - "
+                    f"💰 Compra: ${p['precio_compra']:.2f} - "
+                    f"🛒 Venta: ${p['precio_venta']:.2f} - "
+                    f"💡 Sugerido: ${p['precio_sugerido']:.2f}"
+                )
 
             with col2:
                 if st.button("✏️ Editar", key=f"editar_{idx}"):
