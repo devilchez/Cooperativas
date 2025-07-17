@@ -10,10 +10,10 @@ def verificar_usuario(id_empleado, contrasena):
 
     try:
         cursor = con.cursor()
-        query = "SELECT 1 FROM Empleado WHERE Id_empleado = %s AND contrasena = %s LIMIT 1"
+        query = "SELECT nombre FROM Empleado WHERE Id_empleado = %s AND contrasena = %s LIMIT 1"
         cursor.execute(query, (id_empleado, contrasena))
         resultado = cursor.fetchone()
-        return resultado is not None
+        return resultado
     finally:
         con.close()
 
@@ -30,31 +30,21 @@ def login():
         st.write(f"Contraseña recibida: '{contrasena}'")
         
         # Verificar si el usuario existe en la base de datos
-        existe = verificar_usuario(usuario.strip(), contrasena.strip())
-        st.write(f"¿Existe en BD?: {existe}")
-        
-        # Si el usuario es válido, almacenar el id_empleado en la sesión
-        if existe:
+        resultado = verificar_usuario(usuario.strip(), contrasena.strip())
+        if resultado:
             st.session_state["logueado"] = True
-            st.session_state["id_empleado"] = usuario.strip()  # Almacenar el id_empleado en la sesión
-            st.success("✔️ Acceso concedido")
+            st.session_state["id_empleado"] = usuario.strip()  # Almacenar el ID de empleado
+            st.session_state["nombre_empleado"] = resultado[0]  # Almacenar el nombre del empleado
+            st.success(f"✔️ Acceso concedido")
             st.rerun()  # Recargar la app para aplicar los cambios
         else:
             st.error("❌ ID Empleado o contraseña incorrectos")
 
-# Función para cerrar sesión (opcional)
-def cerrar_sesion():
-    if "id_empleado" in st.session_state:
-        del st.session_state["id_empleado"]  # Eliminar el id_empleado de la sesión
-        st.session_state["logueado"] = False  # Marcar que no está logueado
-        st.success("Has cerrado sesión.")
-        st.experimental_rerun()  # Recargar la app para aplicar los cambios
-
-# Si el usuario está logueado, mostrar un mensaje de bienvenida y opción para cerrar sesión
+# Si el usuario está logueado, mostrar un mensaje de bienvenida
 if "logueado" in st.session_state and st.session_state["logueado"]:
-    st.write(f"Bienvenido, empleado {st.session_state.get('id_empleado', 'No identificado')}!")
+    st.write(f"Bienvenido, {st.session_state.get('nombre_empleado', 'Empleado')}!")
     if st.button("Cerrar sesión"):
-        cerrar_sesion()
+        cerrar_sesion()  # Si tienes la función para cerrar sesión
 
 else:
     # Si no está logueado, mostrar el formulario de inicio de sesión
