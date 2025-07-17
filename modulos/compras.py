@@ -1,122 +1,100 @@
-from config.conexion import obtener_conexion
 import streamlit as st
+from datetime import datetime
+from config.conexion import obtener_conexion
 
 def modulo_compras():
-    st.title("🛒 Registro de Compra")
+    st.title("🛒 Registro de Compras")
 
-    if "carrito_compras" not in st.session_state:
-        st.session_state.carrito_compras = []
+    # Datos generales de la compra
+    fecha = datetime.now().strftime("%Y-%m-%d")
+    id_empleado = st.text_input("ID del empleado que realiza la compra")
 
-    with st.expander("➕ Registrar nuevo producto"):
-        with st.form("form_nuevo_producto"):
-            cod_nuevo = st.text_input("Código de barras nuevo")
-            nombre_nuevo = st.text_input("Nombre del producto")
-            precio_venta_nuevo = st.number_input("Precio de venta", min_value=0.01, format="%.2f")
-            precio_sugerido_nuevo = st.number_input("Precio sugerido (opcional)", min_value=0.01, format="%.2f")
+    st.markdown("### Productos en la compra")
+    productos = []
 
-            submitted = st.form_submit_button("Guardar producto")
-            if submitted:
-                try:
-                    conn = obtener_conexion()
-                    cursor = conn.cursor()
-                    cursor.execute("""
-                        INSERT INTO Producto (Cod_barra, Nombre, Precio_venta, Precio_sugerido)
-                        VALUES (%s, %s, %s, %s)
-                    """, (cod_nuevo, nombre_nuevo, precio_venta_nuevo, precio_sugerido_nuevo))
-                    conn.commit()
-                    st.success(f"✅ Producto '{nombre_nuevo}' registrado correctamente.")
-                except Exception as e:
-                    conn.rollback()
-                    st.error(f"❌ Error al registrar producto: {e}")
-                finally:
-                    cursor.close()
-                    conn.close()
+    if 'productos_compra' not in st.session_state:
+        st.session_state['productos_compra'] = []
 
-    conn = obtener_conexion()
-    cursor = conn.cursor()
-    cursor.execute("SELECT Cod_barra, Nombre, Precio_sugerido FROM Producto")
-    productos = cursor.fetchall()
-    cursor.close()
-    conn.close()
+    with st.form("formulario_compra"):
+        st.write("#### Añadir producto")
 
-    if not productos:
-        st.warning("⚠️ No hay productos disponibles.")
-        return
+        tipo_producto = st.radio("Tipo de producto", ["Existente", "Nuevo"], horizontal=True)
 
-    producto_dict = {nombre: (cod, float(precio)) for cod, nombre, precio in productos}
-    producto_seleccionado = st.selectbox("Selecciona un producto existente", list(producto_dict.keys()))
-    cod_ingresado = st.text_input("Ingresa el código de barras del producto seleccionado")
+        cod_barra = st.text_input("Código de barras", key="cod_barra")
 
-    if producto_seleccionado:
-        cod_barra_db, precio_sugerido = producto_dict[producto_seleccionado]
+        if tipo_producto == "Nuevo":
+            nombre = st.text_input("Nombre del nuevo producto", key="nombre")
+            precio_venta = st.number_input("Precio de venta", min_value=0.0, step=0.01, key="precio_venta")
+        else:
+            nombre = None
+            precio_venta = None
 
-        if cod_ingresado:
-            if cod_ingresado != cod_barra_db:
-                st.warning("⚠️ El código de barras ingresado no coincide con el producto seleccionado.")
+        cantidad = st.number_input("Cantidad comprada", min_value=1, step=1, key="cantidad")
+        precio_compra = st.number_input("Precio de compra por unidad", min_value=0.0, step=0.01, key="precio_compra")
+
+        agregar = st.form_submit_button("➕ Añadir producto a la compra")
+
+        if agregar:
+            if not cod_barra or (tipo_producto == "Nuevo" and (not nombre or precio_venta is None)):
+                st.warning("Por favor completa todos los campos.")
             else:
-                st.write(f"💲 **Precio sugerido:** ${precio_sugerido:.2f}")
-                cantidad = st.number_input("Cantidad a comprar", min_value=1, step=1)
-                precio_compra = st.number_input("Precio de compra unitario", min_value=0.01, step=0.01, format="%.2f")
+                producto = {
+                    "cod_barra": cod_barra,
+                    "tipo": tipo_producto,
+                    "nombre": nombre,
+                    "precio_venta": precio_venta,
+                    "cantidad": cantidad,
+                    "precio_compra": precio_compra
+                }
+                st.session_state['productos_compra'].append(producto)
+                st.success("✅ Producto añadido a la compra")
 
-                if st.button("➕ Agregar a la compra"):
-                    item = {
-                        "cod_barra": cod_ingresado,
-                        "nombre": producto_seleccionado,
-                        "cantidad": cantidad,
-                        "precio": precio_compra
-                    }
-                    st.session_state.carrito_compras.append(item)
-                    st.success(f"✅ {producto_seleccionado} agregado a la compra.")
+    # Mostrar los productos añadidos
+    if st.session_state['productos_compra']:
+        st.write("### 🧾 Productos añadidos")
+        for i, p in enumerate(st.session_state['productos_compra']):
+            st.write(f"{i+1}. Código: {p['cod_barra']}, Tipo: {p['tipo']}, Cantidad: {p['cantidad']}, Precio compra: ${p['precio_compra']}")
 
-
-    if st.session_state.carrito_compras:
-        st.subheader("🧾 Productos en la compra")
-        total = 0
-        for i, item in enumerate(st.session_state.carrito_compras, start=1):
-            subtotal = item["cantidad"] * item["precio"]
-            total += subtotal
-            st.write(f"{i}. {item['nombre']} - Cantidad: {item['cantidad']} - Precio: ${item['precio']:.2f} - Subtotal: ${subtotal:.2f}")
-        st.write(f"**💰 Total estimado: ${total:.2f}**")
-
-        if st.button("📥 Registrar compra"):
+    # Guardar la compra
+    if st.button("💾 Registrar Compra"):
+        if not id_empleado or not st.session_state['productos_compra']:
+            st.warning("Faltan datos del empleado o productos.")
+        else:
             try:
-                conn = obtener_conexion()
-                cursor = conn.cursor()
-                id_empleado = st.session_state.get("usuario")
+                con = obtener_conexion()
+                cursor = con.cursor()
 
-                
-                cursor.execute("""
-                    INSERT INTO Compra (Fecha, Id_empleado)
-                    VALUES (NOW(), %s)
-                """, (id_empleado,))
-                conn.commit()
+                # Insertar en tabla compra
+                cursor.execute("INSERT INTO compra (fecha, id_empleado) VALUES (%s, %s)", (fecha, id_empleado))
                 id_compra = cursor.lastrowid
 
-                for item in st.session_state.carrito_compras:
-                    cursor.execute("""
-                        INSERT INTO ProductoxCompra (Id_compra, Cod_barra, Cantidad_comprada, Precio_compra)
-                        VALUES (%s, %s, %s, %s)
-                    """, (
-                        id_compra,
-                        item["cod_barra"],
-                        item["cantidad"],
-                        item["precio"]
-                    ))
-                conn.commit()
+                for p in st.session_state['productos_compra']:
+                    # Si es nuevo, insertamos en producto
+                    if p["tipo"] == "Nuevo":
+                        cursor.execute("INSERT INTO producto (cod_barra, nombre, precio_venta) VALUES (%s, %s, %s)",
+                                       (p["cod_barra"], p["nombre"], p["precio_venta"]))
 
-                st.success(f"✅ Compra registrada correctamente. ID Compra: {id_compra}")
-                st.session_state.carrito_compras = []
+                    # Insertar en productoxcompra
+                    cursor.execute("""INSERT INTO productoxcompra (id_compra, cod_barra, cantidad_comprada, precio_compra)
+                                      VALUES (%s, %s, %s, %s)""",
+                                   (id_compra, p["cod_barra"], p["cantidad"], p["precio_compra"]))
+
+                con.commit()
+                st.success(f"✅ Compra registrada correctamente con ID {id_compra}")
+                st.session_state['productos_compra'] = []
 
             except Exception as e:
-                conn.rollback()
-                st.error(f"❌ Error al registrar compra: {e}")
+                st.error(f"❌ Error al registrar la compra: {e}")
+                try:
+                    con.rollback()
+                except:
+                    pass
             finally:
-                cursor.close()
-                conn.close()
-
-    if st.button("🗑 Vaciar lista de productos"):
-        st.session_state.carrito_compras = []
-        st.info("🧹 Lista de productos vaciada.")
-
-    if st.button("⬅ Volver al menú"):
-        st.session_state.module = None
+                try:
+                    cursor.close()
+                except:
+                    pass
+                try:
+                    con.close()
+                except:
+                    pass
