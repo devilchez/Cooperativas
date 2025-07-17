@@ -2,13 +2,17 @@ name: Despertar Cooperativas
 
 on:
   schedule:
-    - cron: '0 12 * * *'  # Todos los días a las 12:00 UTC (6:00 a.m. El Salvador)
+    - cron: '0 12 * * *'  # 6:00 a.m. El Salvador
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Streamlit App
+      - name: Ping Streamlit App (varios intentos)
         run: |
-          curl -s name: https://cooperativas-z6yjwfpfvchhrz7clfcwwd.streamlit.app/ > /dev/null 
+          for i in {1..5}; do
+            echo "Intento $i"
+            curl -s https://cooperativas-z6yjwfpfvchhrz7clfcwwd.streamlit.app/ > /dev/null
+            sleep 10
+          done
