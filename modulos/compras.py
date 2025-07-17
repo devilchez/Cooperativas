@@ -78,7 +78,7 @@ def modulo_compras():
 
                     # Insertar en productoxcompra
                     cursor.execute("""
-                        INSERT INTO productoxcompra (id_compra, cod_barra, cantidad_comprada, precio_compra)
+                        INSERT INTO ProductoxCompra (id_compra, cod_barra, cantidad_comprada, precio_compra)
                         VALUES (%s, %s, %s, %s)
                     """, (id_compra, producto["cod_barra"], producto["cantidad"], producto["precio_compra"]))
 
