@@ -44,10 +44,9 @@ def modulo_compras():
     else:
         producto["precio_sugerido"] = None
 
-    # Campo adicional para que el usuario ingrese el precio de venta
     producto["precio_venta"] = st.number_input("Precio de venta", min_value=0.01, step=0.01)
 
-    # Agregar producto
+
     if st.button("➕ Agregar producto"):
         campos = ["cod_barra", "nombre", "cantidad", "precio_compra", "precio_venta"]
         if all(producto.get(c) for c in campos):
@@ -60,7 +59,7 @@ def modulo_compras():
     if st.session_state["productos_seleccionados"]:
         st.subheader("Productos seleccionados para la compra:")
         for idx, p in enumerate(st.session_state["productos_seleccionados"]):
-            st.write(f"{idx + 1}. {p['nombre']} (Código de barra: {p['cod_barra']}) - Cantidad: {p['cantidad']} - Precio compra: ${p['precio_compra']:.2f} - Precio sugerido: ${p['precio_sugerido']:.2f} - Precio venta: ${p['precio_venta']:.2f}")
+            st.write(f"{idx + 1}. {p['nombre']} (Código de barra: {p['cod_barra']}) - Cantidad: {p['cantidad']} - Precio compra: ${p['precio_compra']:.2f} - Precio venta: ${p['precio_venta']:.2f}")
 
     if st.button("✅ Registrar compra"):
         if st.session_state["productos_seleccionados"]:
