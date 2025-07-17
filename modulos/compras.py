@@ -1,100 +1,100 @@
 import streamlit as st
-from datetime import datetime
+import mysql.connector
 from config.conexion import obtener_conexion
+from datetime import datetime
 
 def modulo_compras():
-    st.title("🛒 Registro de Compras")
+    st.title("🛒 Registro de Compra")
 
-    # Datos generales de la compra
-    fecha = datetime.now().strftime("%Y-%m-%d")
-    id_empleado = st.text_input("ID del empleado que realiza la compra")
+    if "productos" not in st.session_state:
+        st.session_state.productos = []
 
-    st.markdown("### Productos en la compra")
-    productos = []
+    # Obtener productos existentes desde la BD
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("SELECT cod_barra, nombre FROM producto")
+    productos_db = cursor.fetchall()
+    productos_dict = {nombre: cod for cod, nombre in productos_db}
+    nombres_productos = list(productos_dict.keys())
+    conn.close()
 
-    if 'productos_compra' not in st.session_state:
-        st.session_state['productos_compra'] = []
+    st.subheader("Agregar producto a la compra")
 
-    with st.form("formulario_compra"):
-        st.write("#### Añadir producto")
+    tipo_producto = st.radio("Tipo de producto:", ["Existente", "Nuevo"], horizontal=True)
 
-        tipo_producto = st.radio("Tipo de producto", ["Existente", "Nuevo"], horizontal=True)
+    producto = {}
+    if tipo_producto == "Existente":
+        nombre_sel = st.selectbox("Buscar producto existente", nombres_productos)
+        cod_barra = productos_dict[nombre_sel]
+        producto["cod_barra"] = cod_barra
+        producto["nombre"] = nombre_sel
+    else:
+        producto["cod_barra"] = st.text_input("Código de barras")
+        producto["nombre"] = st.text_input("Nombre del producto")
 
-        cod_barra = st.text_input("Código de barras", key="cod_barra")
+    producto["cantidad"] = st.number_input("Cantidad comprada", min_value=1, step=1)
+    producto["precio_compra"] = st.number_input("Precio de compra por unidad", min_value=0.01, step=0.01)
 
-        if tipo_producto == "Nuevo":
-            nombre = st.text_input("Nombre del nuevo producto", key="nombre")
-            precio_venta = st.number_input("Precio de venta", min_value=0.0, step=0.01, key="precio_venta")
+    if st.button("➕ Añadir producto"):
+        if all([producto.get("cod_barra"), producto.get("nombre"), producto.get("cantidad"), producto.get("precio_compra")]):
+            st.session_state.productos.append(producto.copy())
+            st.success(f'Producto "{producto["nombre"]}" añadido a la compra.')
         else:
-            nombre = None
-            precio_venta = None
+            st.error("Completa todos los campos antes de añadir.")
 
-        cantidad = st.number_input("Cantidad comprada", min_value=1, step=1, key="cantidad")
-        precio_compra = st.number_input("Precio de compra por unidad", min_value=0.0, step=0.01, key="precio_compra")
+    # Mostrar productos añadidos
+    if st.session_state.productos:
+        st.subheader("Productos en esta compra:")
+        for i, p in enumerate(st.session_state.productos):
+            st.write(f'{i+1}. {p["nombre"]} | Cod: {p["cod_barra"]} | Cantidad: {p["cantidad"]} | Precio: ${p["precio_compra"]:.2f}')
 
-        agregar = st.form_submit_button("➕ Añadir producto a la compra")
+    # Botón para registrar la compra completa
+    if st.button("✅ Registrar compra"):
+        if not st.session_state.productos:
+            st.error("No has añadido productos.")
+            return
 
-        if agregar:
-            if not cod_barra or (tipo_producto == "Nuevo" and (not nombre or precio_venta is None)):
-                st.warning("Por favor completa todos los campos.")
-            else:
-                producto = {
-                    "cod_barra": cod_barra,
-                    "tipo": tipo_producto,
-                    "nombre": nombre,
-                    "precio_venta": precio_venta,
-                    "cantidad": cantidad,
-                    "precio_compra": precio_compra
-                }
-                st.session_state['productos_compra'].append(producto)
-                st.success("✅ Producto añadido a la compra")
+        try:
+            conn = obtener_conexion()
+            cursor = conn.cursor()
 
-    # Mostrar los productos añadidos
-    if st.session_state['productos_compra']:
-        st.write("### 🧾 Productos añadidos")
-        for i, p in enumerate(st.session_state['productos_compra']):
-            st.write(f"{i+1}. Código: {p['cod_barra']}, Tipo: {p['tipo']}, Cantidad: {p['cantidad']}, Precio compra: ${p['precio_compra']}")
+            # Insertar en tabla compra
+            fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            id_empleado = st.session_state.get("id_empleado")
 
-    # Guardar la compra
-    if st.button("💾 Registrar Compra"):
-        if not id_empleado or not st.session_state['productos_compra']:
-            st.warning("Faltan datos del empleado o productos.")
-        else:
-            try:
-                con = obtener_conexion()
-                cursor = con.cursor()
+            if not id_empleado:
+                st.error("No se ha detectado el ID del empleado. Inicia sesión.")
+                return
 
-                # Insertar en tabla compra
-                cursor.execute("INSERT INTO compra (fecha, id_empleado) VALUES (%s, %s)", (fecha, id_empleado))
-                id_compra = cursor.lastrowid
+            cursor.execute("INSERT INTO compra (fecha, id_empleado) VALUES (%s, %s)", (fecha_actual, id_empleado))
+            id_compra = cursor.lastrowid
 
-                for p in st.session_state['productos_compra']:
-                    # Si es nuevo, insertamos en producto
-                    if p["tipo"] == "Nuevo":
-                        cursor.execute("INSERT INTO producto (cod_barra, nombre, precio_venta) VALUES (%s, %s, %s)",
-                                       (p["cod_barra"], p["nombre"], p["precio_venta"]))
+            for p in st.session_state.productos:
+                cod_barra = p["cod_barra"]
+                nombre = p["nombre"]
+                cantidad = p["cantidad"]
+                precio = p["precio_compra"]
 
-                    # Insertar en productoxcompra
-                    cursor.execute("""INSERT INTO productoxcompra (id_compra, cod_barra, cantidad_comprada, precio_compra)
-                                      VALUES (%s, %s, %s, %s)""",
-                                   (id_compra, p["cod_barra"], p["cantidad"], p["precio_compra"]))
+                # Verificar si el producto ya existe
+                cursor.execute("SELECT COUNT(*) FROM producto WHERE cod_barra = %s", (cod_barra,))
+                existe = cursor.fetchone()[0]
 
-                con.commit()
-                st.success(f"✅ Compra registrada correctamente con ID {id_compra}")
-                st.session_state['productos_compra'] = []
+                if not existe:
+                    # Insertar nuevo producto
+                    cursor.execute("INSERT INTO producto (cod_barra, nombre, precio_venta) VALUES (%s, %s, NULL)", (cod_barra, nombre))
 
-            except Exception as e:
-                st.error(f"❌ Error al registrar la compra: {e}")
-                try:
-                    con.rollback()
-                except:
-                    pass
-            finally:
-                try:
-                    cursor.close()
-                except:
-                    pass
-                try:
-                    con.close()
-                except:
-                    pass
+                # Insertar en productoxcompra
+                cursor.execute("""
+                    INSERT INTO productoxcompra (id_compra, cod_barra, cantidad_comprada, precio_compra)
+                    VALUES (%s, %s, %s, %s)
+                """, (id_compra, cod_barra, cantidad, precio))
+
+            conn.commit()
+            st.success(f"Compra registrada correctamente con ID {id_compra}.")
+            st.session_state.productos.clear()
+
+        except mysql.connector.Error as e:
+            st.error(f"❌ Error al registrar la compra: {e}")
+        finally:
+            cursor.close()
+            conn.close()
