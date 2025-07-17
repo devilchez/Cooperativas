@@ -9,9 +9,12 @@ from modulos.compras import modulo_compras
 
 def menu_principal():
     st.title("🏠 Menú Principal")
-    usuario = st.session_state.get("usuario", "Usuario")
-    st.subheader(f"Bienvenido, {usuario}")
 
+    # Aquí usamos el nombre del empleado en lugar del "usuario"
+    nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  # Cambiado para usar 'nombre_empleado'
+    st.subheader(f"Bienvenido, {nombre_empleado}")  # Mostrar el nombre del empleado
+
+    # Opciones del menú
     col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("🛒 Ventas"):
@@ -30,7 +33,8 @@ def menu_principal():
 
     st.markdown("---")
     if st.button("🔓 Cerrar sesión"):
-        for key in ['logueado', 'usuario', 'module']:
+        # Limpiar las claves de sesión relacionadas con el usuario
+        for key in ['logueado', 'usuario', 'module', 'nombre_empleado']:  # También eliminar 'nombre_empleado'
             if key in st.session_state:
                 del st.session_state[key]
         st.success("✅ Sesión cerrada correctamente.")
@@ -50,10 +54,11 @@ def cargar_modulo():
         menu_principal()
 
 def app():
+    # Verifica si el usuario está logueado
     if "logueado" not in st.session_state or not st.session_state["logueado"]:
-        login()
+        login()  # Si no está logueado, mostrar login
     else:
-        cargar_modulo()
+        cargar_modulo()  # Si está logueado, cargar el módulo correspondiente
 
 if __name__ == "__main__":
     app()
