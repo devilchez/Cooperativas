@@ -8,12 +8,11 @@ def modulo_compras():
     if "productos" not in st.session_state:
         st.session_state.productos = []
 
-    # Obtener productos existentes desde la BD (tabla Producto con P mayúscula)
     conn = obtener_conexion()
     cursor = conn.cursor()
-    cursor.execute("SELECT cod_barra, nombre FROM Producto")  # Asegúrate de que el nombre sea correcto
+    cursor.execute("SELECT Cod_barra, Nombre FROM Producto")
     productos_db = cursor.fetchall()
-    productos_dict = {nombre: cod for cod, nombre in productos_db}
+    productos_dict = {Nombre: cod for cod, Nombre in productos_db}
     nombres_productos = list(productos_dict.keys())
     conn.close()
 
@@ -41,13 +40,11 @@ def modulo_compras():
         else:
             st.error("Completa todos los campos antes de añadir.")
 
-    # Mostrar productos añadidos
     if st.session_state.productos:
         st.subheader("Productos en esta compra:")
         for i, p in enumerate(st.session_state.productos):
             st.write(f'{i+1}. {p["nombre"]} | Cod: {p["cod_barra"]} | Cantidad: {p["cantidad"]} | Precio: ${p["precio_compra"]:.2f}')
 
-    # Botón para registrar la compra completa
     if st.button("✅ Registrar compra"):
         if not st.session_state.productos:
             st.error("No has añadido productos.")
