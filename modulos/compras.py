@@ -103,6 +103,7 @@ def modulo_compras():
                     f"💡 Sugerido: <span style='color:orange;'>${p['precio_sugerido']:.2f}</span>",
                     unsafe_allow_html=True
                 )
+
             with col2:
                 if st.button("✏️ Editar", key=f"editar_{idx}"):
                     st.session_state["editar_indice"] = idx
