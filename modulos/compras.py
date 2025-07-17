@@ -52,16 +52,27 @@ def modulo_compras():
         producto["cod_barra"] = st.text_input("Código de barras", value=default_cod)
         producto["nombre"] = st.text_input("Nombre del producto", value=default_nombre)
 
+    # Validación de cantidad
     producto["cantidad"] = st.number_input("Cantidad comprada", min_value=1, step=1, value=default_cant)
-    producto["precio_compra"] = st.number_input("Precio de compra por unidad", min_value=0.01, step=0.01, value=default_precio_compra)
 
+    # Validación de precio de compra
+    producto["precio_compra"] = st.number_input("Precio de compra por unidad", min_value=0.01, step=0.01, value=max(default_precio_compra, 0.01))
+    
+    if producto["precio_compra"] <= 0:
+        st.error("❌ El precio de compra debe ser mayor que 0.")
+    
+    # Validación de precio sugerido (20% margen bruto)
     if producto["precio_compra"]:
         producto["precio_sugerido"] = round(producto["precio_compra"] / 0.80, 2)
         st.markdown(f"💡 **Precio sugerido (20% margen bruto):** ${producto['precio_sugerido']:.2f}")
     else:
         producto["precio_sugerido"] = None
 
-    producto["precio_venta"] = st.number_input("Precio de venta", min_value=0.01, step=0.01, value=default_precio_venta)
+    # Validación de precio de venta (no puede ser menor que el precio de compra)
+    producto["precio_venta"] = st.number_input("Precio de venta", min_value=0.01, step=0.01, value=max(default_precio_venta, producto["precio_compra"]))
+
+    if producto["precio_venta"] < producto["precio_compra"]:
+        st.error("❌ El precio de venta no puede ser menor que el precio de compra.")
 
     if st.button("➕ Agregar producto"):
         campos = ["cod_barra", "nombre", "cantidad", "precio_compra", "precio_venta"]
@@ -75,7 +86,7 @@ def modulo_compras():
                 st.success(f"Producto '{producto['nombre']}' agregado a la compra.")
             st.rerun()
         else:
-            st.error("Por favor, completa todos los campos antes de agregar el producto.")
+            st.error("❌ Por favor, completa todos los campos antes de agregar el producto.")
 
     if st.session_state["productos_seleccionados"]:
         st.subheader("📋 Productos seleccionados para la compra:")
