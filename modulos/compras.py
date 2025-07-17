@@ -5,7 +5,6 @@ from config.conexion import obtener_conexion
 def modulo_compras():
     st.title("🛒 Registro de Compra")
 
-    # Verificar si el usuario ha iniciado sesión
     id_empleado = st.session_state.get("id_empleado")  
     if not id_empleado:
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
@@ -13,7 +12,7 @@ def modulo_compras():
 
     conn = obtener_conexion()
     cursor = conn.cursor()
-    cursor.execute("SELECT cod_barra, nombre FROM Producto")  # Asegúrate de que el nombre sea correcto
+    cursor.execute("SELECT cod_barra, nombre FROM Producto")  
     productos_db = cursor.fetchall()
     productos_dict = {nombre: cod for cod, nombre in productos_db}
     nombres_productos = list(productos_dict.keys())
@@ -45,7 +44,7 @@ def modulo_compras():
         if all([producto.get("cod_barra"), producto.get("nombre"), producto.get("cantidad"), producto.get("precio_compra")]):
             st.session_state["productos_seleccionados"].append(producto)
             st.success(f"Producto '{producto['nombre']}' agregado a la compra.")
-            st.experimental_rerun()  # Recargar la página para mostrar la lista actualizada
+            st.rerun() 
         else:
             st.error("Por favor, completa todos los campos antes de agregar el producto.")
 
