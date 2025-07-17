@@ -63,7 +63,7 @@ def modulo_compras():
 
                 fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                cursor.execute("INSERT INTO compra (fecha, id_empleado) VALUES (%s, %s)", (fecha_actual, id_empleado))
+                cursor.execute("INSERT INTO Compra (Fecha, Id_empleado) VALUES (%s, %s)", (fecha_actual, id_empleado))
                 id_compra = cursor.lastrowid
 
                 # Insertar productos en productoxcompra
