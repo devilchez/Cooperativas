@@ -6,12 +6,10 @@ def modulo_compras():
     st.title("🛒 Registro de Compra")
 
     # Verificar si el usuario ha iniciado sesión
-    if "id_empleado" not in st.session_state:
+    id_empleado = st.session_state.get("id_empleado")  # Usar .get() en lugar de [] para evitar KeyError
+    if not id_empleado:
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
-
-    # Obtener el id_empleado desde la sesión
-    id_empleado = st.session_state["id_empleado"]
 
     # Obtener productos existentes desde la BD (tabla Producto con P mayúscula)
     conn = obtener_conexion()
