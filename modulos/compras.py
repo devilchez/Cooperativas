@@ -94,8 +94,8 @@ def modulo_compras():
                     f"{idx + 1}. {p['nombre']} "
                     f"(Código: {p['cod_barra']}) - "
                     f"Cantidad: {p['cantidad']} - "
-                    f"💰 Compra: ${p['precio_compra']:.2f} - "
-                    f"🛒 Venta: ${p['precio_venta']:.2f}"
+                    f"💰 Compra: $${p['precio_compra']:.2f} - "
+                    f"🛒 Venta: $${p['precio_venta']:.2f} "
                 )
             with col2:
                 if st.button("✏️ Editar", key=f"editar_{idx}"):
