@@ -23,9 +23,13 @@ def modulo_compras():
     if "productos_seleccionados" not in st.session_state:
         st.session_state["productos_seleccionados"] = []
 
+    if "editando_producto_idx" not in st.session_state:
+        st.session_state["editando_producto_idx"] = None
+
     tipo_producto = st.radio("Tipo de producto:", ["Existente", "Nuevo"], horizontal=True)
 
     producto = {}
+
     if tipo_producto == "Existente":
         nombre_sel = st.selectbox("Buscar producto existente", nombres_productos)
         cod_barra = productos_dict[nombre_sel]
@@ -35,8 +39,8 @@ def modulo_compras():
         producto["cod_barra"] = st.text_input("Código de barras")
         producto["nombre"] = st.text_input("Nombre del producto")
 
-    producto["cantidad"] = st.number_input("Cantidad comprada", min_value=1, step=1)
-    producto["precio_compra"] = st.number_input("Precio de compra por unidad", min_value=0.01, step=0.01)
+    producto["cantidad"] = st.number_input("Cantidad comprada", min_value=1, step=1, key="cantidad_input")
+    producto["precio_compra"] = st.number_input("Precio de compra por unidad", min_value=0.01, step=0.01, key="precio_compra_input")
 
     if producto["precio_compra"]:
         producto["precio_sugerido"] = round(producto["precio_compra"] / 0.80, 2)
@@ -44,30 +48,52 @@ def modulo_compras():
     else:
         producto["precio_sugerido"] = None
 
-    producto["precio_venta"] = st.number_input("Precio de venta", min_value=0.01, step=0.01)
+    producto["precio_venta"] = st.number_input("Precio de venta", min_value=0.01, step=0.01, key="precio_venta_input")
 
-
-    if st.button("➕ Agregar producto"):
-        campos = ["cod_barra", "nombre", "cantidad", "precio_compra", "precio_venta"]
-        if all(producto.get(c) for c in campos):
-            st.session_state["productos_seleccionados"].append(producto)
-            st.success(f"Producto '{producto['nombre']}' agregado a la compra.")
+    if st.session_state["editando_producto_idx"] is not None:
+        if st.button("💾 Guardar cambios"):
+            idx = st.session_state["editando_producto_idx"]
+            st.session_state["productos_seleccionados"][idx] = producto
+            st.session_state["editando_producto_idx"] = None
+            st.success(f"Producto editado correctamente.")
             st.rerun()
-        else:
-            st.error("Por favor, completa todos los campos antes de agregar el producto.")
+    else:
+        if st.button("➕ Agregar producto"):
+            campos = ["cod_barra", "nombre", "cantidad", "precio_compra", "precio_venta"]
+            if all(producto.get(c) for c in campos):
+                st.session_state["productos_seleccionados"].append(producto)
+                st.success(f"Producto '{producto['nombre']}' agregado a la compra.")
+                st.rerun()
+            else:
+                st.error("Por favor, completa todos los campos antes de agregar el producto.")
 
     if st.session_state["productos_seleccionados"]:
         st.subheader("Productos seleccionados para la compra:")
         for idx, p in enumerate(st.session_state["productos_seleccionados"]):
-            st.markdown(
-                f"{idx + 1}. <strong>{p['nombre']}</strong> "
-                f"(Código de barra: <code>{p['cod_barra']}</code>) - "
-                f"Cantidad: {p['cantidad']} - "
-                f"💰 Precio compra: <span style='color:green;'>${p['precio_compra']:.2f}</span> - "
-                f"🛒 Precio venta: <span style='color:blue;'>${p['precio_venta']:.2f}</span>",
-                unsafe_allow_html=True
-            )
-
+            cols = st.columns([6, 1, 1])
+            with cols[0]:
+                st.markdown(
+                    f"{idx + 1}. <strong>{p['nombre']}</strong> "
+                    f"(Código de barra: <code>{p['cod_barra']}</code>) - "
+                    f"Cantidad: {p['cantidad']} - "
+                    f"💰 Precio compra: <span style='color:green;'>${p['precio_compra']:.2f}</span> - "
+                    f"🛒 Precio venta: <span style='color:blue;'>${p['precio_venta']:.2f}</span>",
+                    unsafe_allow_html=True
+                )
+            with cols[1]:
+                if st.button("✏️", key=f"editar_{idx}"):
+                    st.session_state["editando_producto_idx"] = idx
+                    p_edit = p
+                    
+                    st.session_state["cantidad_input"] = p_edit["cantidad"]
+                    st.session_state["precio_compra_input"] = p_edit["precio_compra"]
+                    st.session_state["precio_venta_input"] = p_edit["precio_venta"]
+                    st.rerun()
+            with cols[2]:
+                if st.button("❌", key=f"eliminar_{idx}"):
+                    st.session_state["productos_seleccionados"].pop(idx)
+                    st.success("Producto eliminado de la lista.")
+                    st.rerun()
 
     if st.button("✅ Registrar compra"):
         if st.session_state["productos_seleccionados"]:
@@ -84,7 +110,6 @@ def modulo_compras():
                     existe = cursor.fetchone()[0]
 
                     if not existe:
-                        # Insertar nuevo producto con precio_venta y precio_sugerido
                         cursor.execute("""
                             INSERT INTO Producto (cod_barra, nombre, precio_sugerido, precio_venta)
                             VALUES (%s, %s, %s, %s)
