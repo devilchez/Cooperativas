@@ -4,7 +4,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'modulos'))
 
 import streamlit as st
 from login import login, verificar_usuario
-from modulos.ventas import modulo_ventas
 from modulos.compras import modulo_compras
 
 def menu_principal():
@@ -42,7 +41,7 @@ def menu_principal():
 def cargar_modulo():
     if "module" in st.session_state:
         if st.session_state.module == "Ventas":
-            modulo_ventas()
+            st.write("🔧 Módulo de Ventas en construcción...")
         elif st.session_state.module == "Compras":
             modulo_compras()
         elif st.session_state.module == "Inventario":
