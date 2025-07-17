@@ -38,7 +38,6 @@ def modulo_compras():
     producto["cantidad"] = st.number_input("Cantidad comprada", min_value=1, step=1)
     producto["precio_compra"] = st.number_input("Precio de compra por unidad", min_value=0.01, step=0.01)
 
-    # Calcular precio sugerido si ya hay precio de compra
     if producto["precio_compra"]:
         producto["precio_sugerido"] = round(producto["precio_compra"] / 0.80, 2)
         st.markdown(f"💡 **Precio sugerido (20% margen bruto):** ${producto['precio_sugerido']:.2f}")
@@ -84,7 +83,6 @@ def modulo_compras():
                             VALUES (%s, %s, %s, %s)
                         """, (producto["cod_barra"], producto["nombre"], producto["precio_sugerido"], producto["precio_venta"]))
 
-                    # Insertar detalle de compra
                     cursor.execute("""
                         INSERT INTO ProductoxCompra (id_compra, cod_barra, cantidad_comprada, precio_compra)
                         VALUES (%s, %s, %s, %s)
