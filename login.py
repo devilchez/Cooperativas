@@ -52,7 +52,7 @@ def cerrar_sesion():
 
 # Si el usuario está logueado, mostrar un mensaje de bienvenida y opción para cerrar sesión
 if "logueado" in st.session_state and st.session_state["logueado"]:
-    st.write(f"Bienvenido, empleado {st.session_state['id_empleado']}!")
+    st.write(f"Bienvenido, empleado {st.session_state.get('id_empleado', 'No identificado')}!")
     if st.button("Cerrar sesión"):
         cerrar_sesion()
 
