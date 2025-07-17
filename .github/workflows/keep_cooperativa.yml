@@ -1,0 +1,14 @@
+name: Despertar Cooperativas
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # Todos los días a las 12:00 UTC (6:00 a.m. El Salvador)
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Streamlit App
+        run: |
+          curl -s name: https://cooperativas-z6yjwfpfvchhrz7clfcwwd.streamlit.app/ > /dev/null 
