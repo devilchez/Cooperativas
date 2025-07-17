@@ -59,7 +59,7 @@ def modulo_compras():
     if st.session_state["productos_seleccionados"]:
         st.subheader("Productos seleccionados para la compra:")
         for idx, p in enumerate(st.session_state["productos_seleccionados"]):
-            st.write(f"{idx + 1}. {p['nombre']} (Código de barra: {p['cod_barra']}) - Cantidad: {p['cantidad']} - Precio compra: ${p['precio_compra']:.2f} - Precio venta: ${p['precio_venta']:.2f}")
+            st.write(f"{idx + 1}. {p['nombre']} (Código de barra: {p['cod_barra']}) - Cantidad: {p['cantidad']} - Precio compra: $${p['precio_compra']:.2f} - Precio venta: $${p['precio_venta']:.2f}")
 
     if st.button("✅ Registrar compra"):
         if st.session_state["productos_seleccionados"]:
