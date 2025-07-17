@@ -1,7 +1,6 @@
 import streamlit as st
-import mysql.connector
-from config.conexion import obtener_conexion
 from datetime import datetime
+from config.conexion import obtener_conexion
 
 def modulo_compras():
     st.title("🛒 Registro de Compra")
@@ -9,10 +8,10 @@ def modulo_compras():
     if "productos" not in st.session_state:
         st.session_state.productos = []
 
-    # Obtener productos existentes desde la BD
+    # Obtener productos existentes desde la BD (tabla Producto con P mayúscula)
     conn = obtener_conexion()
     cursor = conn.cursor()
-    cursor.execute("SELECT cod_barra, nombre FROM producto")
+    cursor.execute("SELECT cod_barra, nombre FROM Producto")  # Asegúrate de que el nombre sea correcto
     productos_db = cursor.fetchall()
     productos_dict = {nombre: cod for cod, nombre in productos_db}
     nombres_productos = list(productos_dict.keys())
@@ -76,12 +75,12 @@ def modulo_compras():
                 precio = p["precio_compra"]
 
                 # Verificar si el producto ya existe
-                cursor.execute("SELECT COUNT(*) FROM producto WHERE cod_barra = %s", (cod_barra,))
+                cursor.execute("SELECT COUNT(*) FROM Producto WHERE cod_barra = %s", (cod_barra,))
                 existe = cursor.fetchone()[0]
 
                 if not existe:
                     # Insertar nuevo producto
-                    cursor.execute("INSERT INTO producto (cod_barra, nombre, precio_venta) VALUES (%s, %s, NULL)", (cod_barra, nombre))
+                    cursor.execute("INSERT INTO Producto (cod_barra, nombre, precio_venta) VALUES (%s, %s, NULL)", (cod_barra, nombre))
 
                 # Insertar en productoxcompra
                 cursor.execute("""
