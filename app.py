@@ -10,7 +10,7 @@ from modulos.compras import modulo_compras
 def menu_principal():
     st.title("🏠 Menú Principal")
 
-    # Aquí usamos el nombre del empleado en lugar del "usuario"
+
     nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  
     st.subheader(f"Bienvenido, {nombre_empleado}") 
 
