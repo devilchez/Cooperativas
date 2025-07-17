@@ -105,4 +105,4 @@ def modulo_compras():
     # Botón para regresar al menú principal
     if st.button("⬅ Volver al menú principal"):
         st.session_state.module = None  # Asignar el módulo principal (o inicial)
-        st.experimental_rerun()  # Recargar la página para volver al menú principal
+        st.rerun()  # Recargar la página para volver al menú principal
