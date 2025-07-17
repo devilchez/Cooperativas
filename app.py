@@ -12,7 +12,7 @@ def menu_principal():
 
 
     nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  
-    st.subheader(f"Dirígete al botón de tu preferencia, {nombre_empleado}") 
+    st.subheader(f"Selecciona un botón, {nombre_empleado}") 
 
     col1, col2, col3 = st.columns(3)
     with col1:
