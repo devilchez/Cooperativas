@@ -93,16 +93,17 @@ def modulo_compras():
 
         for idx, p in enumerate(st.session_state["productos_seleccionados"]):
             col1, col2 = st.columns([8, 2])
-            with col1:
-                st.markdown(
-                    f"{idx + 1}. <strong>{p['nombre']}</strong> "
-                    f"(Código: <code>{p['cod_barra']}</code>) - "
-                    f"Cantidad: {p['cantidad']} - "
-                    f"💰 Compra: <span style='color:green;'>${p['precio_compra']:.2f}</span> - "
-                    f"🛒 Venta: <span style='color:blue;'>${p['precio_venta']:.2f}</span> - "
-                    f"💡 Sugerido: <span style='color:orange;'>${p['precio_sugerido']:.2f}</span>",
-                    unsafe_allow_html=True
-                )
+           with col1:
+                with col1:
+                    st.markdown(
+                        f"{idx + 1}. {p['nombre']} "
+                        f"(Código: {p['cod_barra']}) - "
+                        f"Cantidad: {p['cantidad']} - "
+                        f"💰 Compra: ${p['precio_compra']:.2f} - "
+                        f"🛒 Venta: ${p['precio_venta']:.2f} - "
+                        f"💡 Sugerido: ${p['precio_sugerido']:.2f}"
+                    )
+
             with col2:
                 if st.button("✏️ Editar", key=f"editar_{idx}"):
                     st.session_state["editar_indice"] = idx
