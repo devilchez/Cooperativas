@@ -46,18 +46,7 @@ def modulo_producto():
                 conn.close()
 
     
-    try:
-        conn = obtener_conexion()
-        cursor = conn.cursor()
-        cursor.execute("SELECT Cod_barra, Nombre FROM Producto ORDER BY Nombre")
-        productos = cursor.fetchall()
-        conn.close()
-
-        for Cod_barra, Nombre in productos:
-            st.markdown(f"• **{Nombre}** (Código: `{Cod_barra}`)")
-    except Exception as e:
-        st.error(f"❌ Error al cargar productos: {e}")
-
+    
     st.markdown("---")
     if st.button("⬅ Volver al menú principal"):
         st.session_state.module = None
