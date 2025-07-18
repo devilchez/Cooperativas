@@ -38,9 +38,11 @@ def dashboard():
         ventas_productos = df_ventas.merge(df_productos, on="Cod_barra", how="left")
         ventas_completas = ventas_productos.merge(df_clientes, on="Id_cliente", how="left")
 
+    
         producto_mas_vendido = ventas_completas["Nombre_x"].value_counts().idxmax()
         st.metric("📦 Producto más vendido", producto_mas_vendido)
 
+        # Cliente que más compra
         cliente_top = ventas_completas["Nombre_y"].value_counts().idxmax()
         st.metric("👤 Cliente que más compra", cliente_top)
 
@@ -51,6 +53,7 @@ def dashboard():
             .reset_index(name="Cantidad")
             .sort_values(by="Cantidad", ascending=False)
         )
+
         fig = px.bar(
             ventas_por_producto,
             x="Nombre_x",
@@ -60,6 +63,7 @@ def dashboard():
         )
         st.plotly_chart(fig, use_container_width=True)
 
+    
         st.subheader("📋 Detalle de Ventas")
         st.dataframe(ventas_completas)
 
@@ -69,6 +73,7 @@ def dashboard():
     finally:
         conn.close()
 
+    st.markdown("---")
     if st.button("⬅ Volver al menú principal"):
         st.session_state.module = None
         st.rerun()
