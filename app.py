@@ -13,7 +13,7 @@ def menu_principal():
     nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  
     st.subheader(f"Selecciona un botón, {nombre_empleado}") 
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         if st.button("🛒 Ventas"):
             st.session_state.module = "Ventas"
@@ -28,6 +28,7 @@ def menu_principal():
         if st.button("📦 Inventario"):
             st.session_state.module = "Inventario"
             st.rerun()
+            
     with col4:
         if st.button("📦 Registrar producto"):
             st.session_state.module = "Producto"
