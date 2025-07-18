@@ -4,13 +4,13 @@ from config.conexion import obtener_conexion
 def modulo_productos():
     st.title("📦 Registro de productos")
 
-    # Verifica sesión iniciada
+ 
     id_empleado = st.session_state.get("id_empleado")
     if not id_empleado:
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
 
-    # Inputs
+
     st.subheader("➕ Agregar nuevo producto")
 
     cod_barra = st.text_input("Código de barras")
@@ -48,7 +48,7 @@ def modulo_productos():
     st.markdown("---")
     st.subheader("📋 Productos registrados")
 
-    # Mostrar productos existentes
+    
     try:
         conn = obtener_conexion()
         cursor = conn.cursor()
