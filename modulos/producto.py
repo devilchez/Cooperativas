@@ -36,7 +36,7 @@ def modulo_producto():
                         VALUES (%s, %s)
                     """, (Cod_barra, Nombre))
                     conn.commit()
-                    st.success(f"✅ Producto '{nombre}' registrado correctamente.")
+                    st.success(f"✅ Producto '{Nombre}' registrado correctamente.")
 
             except Exception as e:
                 st.error(f"❌ Error al guardar el producto: {e}")
@@ -52,11 +52,11 @@ def modulo_producto():
     try:
         conn = obtener_conexion()
         cursor = conn.cursor()
-        cursor.execute("SELECT Cod_barra, nombre FROM Producto ORDER BY Nombre")
+        cursor.execute("SELECT Cod_barra, Nombre FROM Producto ORDER BY Nombre")
         productos = cursor.fetchall()
         conn.close()
 
         for Cod_barra, Nombre in productos:
-            st.markdown(f"• **{nombre}** (Código: `{Cod_barra}`)")
+            st.markdown(f"• **{Nombre}** (Código: `{Cod_barra}`)")
     except Exception as e:
         st.error(f"❌ Error al cargar productos: {e}")
