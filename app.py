@@ -6,6 +6,7 @@ import streamlit as st
 from login import login, verificar_usuario
 from modulos.compras import modulo_compras
 from modulos.producto import modulo_producto
+from modulos.editar_producto import modulo_editar_producto
 
 def menu_principal():
     st.title("🏠 Menú Principal")
@@ -14,7 +15,7 @@ def menu_principal():
     nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  
     st.subheader(f"Selecciona un botón, {nombre_empleado}") 
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         if st.button("🛒 Ventas"):
             st.session_state.module = "Ventas"
@@ -35,6 +36,11 @@ def menu_principal():
             st.session_state.module = "Producto"
             st.rerun()
 
+    with col5: 
+        if st.button("✏️ Editar producto"):
+        st.session_state.module = "Editar"
+        st.rerun()
+
     st.markdown("---")
     if st.button("🔓 Cerrar sesión"):
        
@@ -54,6 +60,8 @@ def cargar_modulo():
             st.write("🔧 Módulo de inventario en construcción...")
         elif st.session_state.module == "Producto":
             modulo_producto()
+        elif st.session_state.module == "Editar":
+    modulo_editar_producto()
         else:
             menu_principal()
     else:
