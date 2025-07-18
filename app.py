@@ -1,5 +1,3 @@
-# appy.py
-
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'modulos'))
@@ -10,7 +8,7 @@ from login import login, verificar_usuario
 from modulos.compras import modulo_compras
 from modulos.producto import modulo_producto
 from modulos.editar_producto import modulo_editar_producto
-from modulos.dashboard import dashboard  # <- nombre del archivo y función actualizados
+from modulos.dashboard import dashboard  
 
 def menu_principal():
     st.title("🏠 Menú Principal")
@@ -65,7 +63,7 @@ def cargar_modulo():
         elif st.session_state.module == "Editar":
             modulo_editar_producto()
         elif st.session_state.module == "Dashboard":
-            dashboard()  # <- nombre actualizado
+            dashboard()  
         else:
             menu_principal()
     else:
