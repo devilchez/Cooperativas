@@ -1,7 +1,7 @@
 import streamlit as st
 from config.conexion import obtener_conexion
 
-def modulo_productos():
+def modulo_producto():
     st.title("📦 Registro de productos")
 
  
