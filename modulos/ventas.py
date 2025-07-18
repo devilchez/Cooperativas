@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime
 from config.conexion import obtener_conexion
+import pandas as pd
 
 def modulo_ventas():
     st.title("🧾 Registro de Venta")
@@ -14,51 +15,47 @@ def modulo_ventas():
         st.session_state["productos_vendidos"] = []
     if "editar_venta" not in st.session_state:
         st.session_state["editar_venta"] = None
+    if "producto_seleccionado" not in st.session_state:
+        st.session_state["producto_seleccionado"] = None
 
+    # Cargar productos desde base de datos
     conn = obtener_conexion()
     cursor = conn.cursor()
     cursor.execute("SELECT cod_barra, nombre, precio_venta FROM Producto")
     productos = cursor.fetchall()
-    productos_dict = {nombre: {"cod": cod, "precio": precio} for cod, nombre, precio in productos}
-    nombres_productos = list(productos_dict.keys())
     conn.close()
 
-    st.subheader("Agregar producto a la venta")
+    if not productos:
+        st.warning("⚠️ No hay productos registrados.")
+        return
 
-    producto = {}
+    df_productos = pd.DataFrame(productos, columns=["Código", "Nombre", "Precio Unitario"])
+    df_productos["Seleccionar"] = False
 
-    if st.session_state["editar_venta"] is not None:
-        prod_editar = st.session_state["productos_vendidos"][st.session_state["editar_venta"]]
-        default_nombre = prod_editar["nombre"]
-        default_cant = prod_editar["cantidad"]
-        default_precio = prod_editar["precio_unitario"]
-    else:
-        default_nombre = ""
-        default_cant = 1
-        default_precio = 0.0
+    st.subheader("📦 Seleccionar producto para la venta")
+    edited_df = st.data_editor(df_productos, use_container_width=True, key="tabla_productos", hide_index=True)
 
-    nombre_sel = st.selectbox("Seleccionar producto", nombres_productos, 
-                              index=nombres_productos.index(default_nombre) if default_nombre in nombres_productos else 0)
-    cod_barra = productos_dict[nombre_sel]["cod"]
-    precio_unitario = productos_dict[nombre_sel]["precio"]
+    seleccionados = edited_df[edited_df["Seleccionar"] == True]
+    if not seleccionados.empty:
+        seleccionado = seleccionados.iloc[0]
+        producto = {
+            "cod_barra": seleccionado["Código"],
+            "nombre": seleccionado["Nombre"],
+            "precio_unitario": float(seleccionado["Precio Unitario"])
+        }
 
-    producto["nombre"] = nombre_sel
-    producto["cod_barra"] = cod_barra
-    producto["cantidad"] = st.number_input("Cantidad", min_value=1, step=1, value=default_cant)
-    producto["precio_unitario"] = precio_unitario
+        producto["cantidad"] = st.number_input("Cantidad", min_value=1, step=1, value=1)
+        st.markdown(f"💲 Precio unitario: **${producto['precio_unitario']:.2f}**")
+        st.markdown(f"📦 Subtotal: **${producto['cantidad'] * producto['precio_unitario']:.2f}**")
 
-    st.markdown(f"💲 Precio unitario: **${precio_unitario:.2f}**")
-    st.markdown(f"📦 Subtotal: **${producto['cantidad'] * precio_unitario:.2f}**")
-
-    if st.button("➕ Agregar a la venta"):
-        if st.session_state["editar_venta"] is not None:
-            st.session_state["productos_vendidos"][st.session_state["editar_venta"]] = producto
-            st.session_state["editar_venta"] = None
-        else:
+        if st.button("➕ Agregar a la venta"):
             st.session_state["productos_vendidos"].append(producto)
-        st.success("Producto agregado.")
-        st.rerun()
+            st.success(f"Producto '{producto['nombre']}' agregado.")
+            st.rerun()
+    else:
+        st.info("Selecciona un producto marcando la casilla.")
 
+    # Mostrar productos agregados a la venta
     if st.session_state["productos_vendidos"]:
         st.subheader("🧾 Productos en esta venta:")
 
@@ -68,7 +65,12 @@ def modulo_ventas():
             total += subtotal
             col1, col2 = st.columns([8, 2])
             with col1:
-                st.markdown(f"{idx + 1}. {p['nombre']} - Cantidad: {p['cantidad']} - Precio: ${p['precio_unitario']} - Subtotal: ${subtotal:.2f}")
+                st.markdown(
+                    f"{idx + 1}. {p['nombre']} - "
+                    f"Cantidad: {p['cantidad']} - "
+                    f"Precio: ${p['precio_unitario']} - "
+                    f"Subtotal: ${subtotal:.2f}"
+                )
             with col2:
                 if st.button("✏️ Editar", key=f"editar_{idx}"):
                     st.session_state["editar_venta"] = idx
@@ -79,7 +81,7 @@ def modulo_ventas():
 
         st.markdown(f"### 💰 Total: ${total:.2f}")
 
-        id_cliente = st.text_input("ID del Cliente")
+        id_cliente = st.text_input("🧍 ID del Cliente")
 
         if st.button("✅ Registrar venta"):
             if not id_cliente:
@@ -89,8 +91,10 @@ def modulo_ventas():
                     conn = obtener_conexion()
                     cursor = conn.cursor()
                     fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    cursor.execute("INSERT INTO Venta (Fecha, Id_empleado, Id_cliente) VALUES (%s, %s, %s)", 
-                                   (fecha_actual, id_empleado, id_cliente))
+                    cursor.execute(
+                        "INSERT INTO Venta (Fecha, Id_empleado, Id_cliente) VALUES (%s, %s, %s)",
+                        (fecha_actual, id_empleado, id_cliente)
+                    )
                     id_venta = cursor.lastrowid
 
                     for p in st.session_state["productos_vendidos"]:
@@ -100,7 +104,7 @@ def modulo_ventas():
                         """, (id_venta, p["cod_barra"], p["cantidad"], p["precio_unitario"]))
 
                     conn.commit()
-                    st.success(f"✅ Venta registrada con ID {id_venta}")
+                    st.success(f"✅ Venta registrada correctamente con ID {id_venta}.")
                     st.session_state["productos_vendidos"] = []
 
                 except Exception as e:
@@ -112,4 +116,3 @@ def modulo_ventas():
     if st.button("⬅ Volver al menú principal"):
         st.session_state.module = None
         st.rerun()
-
