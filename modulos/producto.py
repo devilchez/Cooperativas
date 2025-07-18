@@ -60,7 +60,3 @@ def modulo_producto():
             st.markdown(f"• **{Nombre}** (Código: `{Cod_barra}`)")
     except Exception as e:
         st.error(f"❌ Error al cargar productos: {e}")
-
- if st.button("⬅ Volver al menú principal"):
-        st.session_state.module = None  
-        st.rerun()
