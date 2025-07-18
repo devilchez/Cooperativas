@@ -6,6 +6,7 @@ import streamlit as st
 from login import login, verificar_usuario
 
 from modulos.compras import modulo_compras
+from modulos.ventas import modulo_ventas  
 from modulos.producto import modulo_producto
 from modulos.editar_producto import modulo_editar_producto
 from modulos.dashboard import dashboard  
@@ -53,7 +54,7 @@ def menu_principal():
 def cargar_modulo():
     if "module" in st.session_state:
         if st.session_state.module == "Ventas":
-            st.write("🔧 Módulo de Ventas en construcción...")
+            modulo_ventas()  
         elif st.session_state.module == "Compras":
             modulo_compras()
         elif st.session_state.module == "Inventario":
@@ -77,3 +78,4 @@ def app():
 
 if __name__ == "__main__":
     app()
+
