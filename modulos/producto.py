@@ -45,9 +45,6 @@ def modulo_producto():
                 cursor.close()
                 conn.close()
 
-    st.markdown("---")
-    st.subheader("📋 Productos registrados")
-
     
     try:
         conn = obtener_conexion()
