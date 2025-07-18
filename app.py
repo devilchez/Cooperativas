@@ -28,6 +28,10 @@ def menu_principal():
         if st.button("📦 Inventario"):
             st.session_state.module = "Inventario"
             st.rerun()
+    with col4:
+        if st.button("📦 Registrar producto"):
+            st.session_state.module = "Producto"
+            st.rerun()
 
     st.markdown("---")
     if st.button("🔓 Cerrar sesión"):
