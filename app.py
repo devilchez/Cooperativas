@@ -5,12 +5,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'modulos'))
 import streamlit as st
 from login import login, verificar_usuario
 
-
 from modulos.compras import modulo_compras
 from modulos.producto import modulo_producto
 from modulos.editar_producto import modulo_editar_producto
-from modulos.dashboard import dashboard
-from modulos.ventas import modulo_ventas  
+from modulos.dashboard import dashboard  
 
 def menu_principal():
     st.title("🏠 Menú Principal")
@@ -55,7 +53,7 @@ def menu_principal():
 def cargar_modulo():
     if "module" in st.session_state:
         if st.session_state.module == "Ventas":
-            modulo_ventas()  # ✅ Carga ventas
+            st.write("🔧 Módulo de Ventas en construcción...")
         elif st.session_state.module == "Compras":
             modulo_compras()
         elif st.session_state.module == "Inventario":
@@ -65,7 +63,7 @@ def cargar_modulo():
         elif st.session_state.module == "Editar":
             modulo_editar_producto()
         elif st.session_state.module == "Dashboard":
-            dashboard()
+            dashboard()  
         else:
             menu_principal()
     else:
@@ -73,10 +71,9 @@ def cargar_modulo():
 
 def app():
     if "logueado" not in st.session_state or not st.session_state["logueado"]:
-        login()
+        login() 
     else:
-        cargar_modulo()
+        cargar_modulo()  
 
 if __name__ == "__main__":
     app()
-
