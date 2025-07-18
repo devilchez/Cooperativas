@@ -51,6 +51,8 @@ def cargar_modulo():
             modulo_compras()
         elif st.session_state.module == "Inventario":
             st.write("🔧 Módulo de inventario en construcción...")
+        elif st.session_state.module == "Producto":
+            modulo_producto ()
         else:
             menu_principal()
     else:
