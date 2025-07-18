@@ -4,40 +4,38 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'modulos'))
 
 import streamlit as st
 from login import login, verificar_usuario
-
 from modulos.compras import modulo_compras
 from modulos.producto import modulo_producto
 from modulos.editar_producto import modulo_editar_producto
-from modulos.dashboard import dashboard  
+from modulos.dashboard import dashboard  # ← nuevo módulo importado
 
 def menu_principal():
     st.title("🏠 Menú Principal")
-
     nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  
     st.subheader(f"Selecciona un botón, {nombre_empleado}") 
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     with col1:
-        if st.button("🛒 Ventas"):
-            st.session_state.module = "Ventas"
-            st.rerun()
-            
-    with col2:
-        if st.button("📥 Compras"):
-            st.session_state.module = "Compras"
-            st.rerun()
-
-    with col3:
         if st.button("📊 Dashboard"):
             st.session_state.module = "Dashboard"
             st.rerun()
-            
+    with col2:
+        if st.button("🛒 Ventas"):
+            st.session_state.module = "Ventas"
+            st.rerun()
+    with col3:
+        if st.button("📥 Compras"):
+            st.session_state.module = "Compras"
+            st.rerun()
     with col4:
+        if st.button("📦 Inventario"):
+            st.session_state.module = "Inventario"
+            st.rerun()
+    with col5:
         if st.button("📦 Registrar producto"):
             st.session_state.module = "Producto"
             st.rerun()
-
-    with col5: 
+    with col6: 
         if st.button("✏️ Editar producto"):
             st.session_state.module = "Editar"
             st.rerun()
@@ -52,7 +50,9 @@ def menu_principal():
 
 def cargar_modulo():
     if "module" in st.session_state:
-        if st.session_state.module == "Ventas":
+        if st.session_state.module == "Dashboard":
+            dashboard()
+        elif st.session_state.module == "Ventas":
             st.write("🔧 Módulo de Ventas en construcción...")
         elif st.session_state.module == "Compras":
             modulo_compras()
@@ -62,8 +62,6 @@ def cargar_modulo():
             modulo_producto()
         elif st.session_state.module == "Editar":
             modulo_editar_producto()
-        elif st.session_state.module == "Dashboard":
-            dashboard()  
         else:
             menu_principal()
     else:
@@ -71,9 +69,9 @@ def cargar_modulo():
 
 def app():
     if "logueado" not in st.session_state or not st.session_state["logueado"]:
-        login() 
+        login()
     else:
-        cargar_modulo()  
+        cargar_modulo()
 
 if __name__ == "__main__":
     app()
