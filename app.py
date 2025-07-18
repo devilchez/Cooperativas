@@ -4,13 +4,14 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'modulos'))
 
 import streamlit as st
 from login import login, verificar_usuario
+
 from modulos.compras import modulo_compras
 from modulos.producto import modulo_producto
 from modulos.editar_producto import modulo_editar_producto
+from modulos.dashboard import dashboard  
 
 def menu_principal():
     st.title("🏠 Menú Principal")
-
 
     nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  
     st.subheader(f"Selecciona un botón, {nombre_empleado}") 
@@ -27,8 +28,8 @@ def menu_principal():
             st.rerun()
 
     with col3:
-        if st.button("📦 Inventario"):
-            st.session_state.module = "Inventario"
+        if st.button("📊 Dashboard"):
+            st.session_state.module = "Dashboard"
             st.rerun()
             
     with col4:
@@ -43,7 +44,6 @@ def menu_principal():
 
     st.markdown("---")
     if st.button("🔓 Cerrar sesión"):
-       
         for key in ['logueado', 'usuario', 'module', 'nombre_empleado']: 
             if key in st.session_state:
                 del st.session_state[key]
@@ -62,13 +62,14 @@ def cargar_modulo():
             modulo_producto()
         elif st.session_state.module == "Editar":
             modulo_editar_producto()
+        elif st.session_state.module == "Dashboard":
+            dashboard()  
         else:
             menu_principal()
     else:
         menu_principal()
 
 def app():
-
     if "logueado" not in st.session_state or not st.session_state["logueado"]:
         login() 
     else:
