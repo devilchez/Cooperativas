@@ -38,8 +38,8 @@ def menu_principal():
 
     with col5: 
         if st.button("✏️ Editar producto"):
-        st.session_state.module = "Editar"
-        st.rerun()
+            st.session_state.module = "Editar"
+            st.rerun()
 
     st.markdown("---")
     if st.button("🔓 Cerrar sesión"):
