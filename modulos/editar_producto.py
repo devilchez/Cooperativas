@@ -1,7 +1,7 @@
 import streamlit as st
 from config.conexion import obtener_conexion
 
-def modulo_ver_productos():
+def modulo_editar_productos():
     st.title("📋 Productos registrados")
 
     # Entrada para búsqueda por código de barras
