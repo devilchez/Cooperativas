@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'modulos'))
 import streamlit as st
 from login import login, verificar_usuario
 from modulos.compras import modulo_compras
+from modulos.producto import modulo_producto
 
 def menu_principal():
     st.title("🏠 Menú Principal")
