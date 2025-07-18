@@ -13,11 +13,11 @@ def modulo_producto():
 
     st.subheader("➕ Agregar nuevo producto")
 
-    cod_barra = st.text_input("Código de barras")
-    nombre = st.text_input("Nombre del producto")
+    Cod_barra = st.text_input("Código de barras")
+    Nombre = st.text_input("Nombre del producto")
 
     if st.button("Guardar producto"):
-        if not cod_barra.strip() or not nombre.strip():
+        if not Cod_barra.strip() or not Nombre.strip():
             st.warning("⚠️ Por favor, completa todos los campos.")
         else:
             try:
@@ -25,16 +25,16 @@ def modulo_producto():
                 cursor = conn.cursor()
 
                 # Verifica si ya existe ese código de barras
-                cursor.execute("SELECT COUNT(*) FROM Producto WHERE cod_barra = %s", (cod_barra,))
+                cursor.execute("SELECT COUNT(*) FROM Producto WHERE Cod_barra = %s", (Cod_barra,))
                 existe = cursor.fetchone()[0]
 
                 if existe:
                     st.error("❌ Ya existe un producto con ese código de barras.")
                 else:
                     cursor.execute("""
-                        INSERT INTO Producto (cod_barra, nombre)
+                        INSERT INTO Producto (Cod_barra, Nombre)
                         VALUES (%s, %s)
-                    """, (cod_barra, nombre))
+                    """, (Cod_barra, Nombre))
                     conn.commit()
                     st.success(f"✅ Producto '{nombre}' registrado correctamente.")
 
@@ -52,11 +52,11 @@ def modulo_producto():
     try:
         conn = obtener_conexion()
         cursor = conn.cursor()
-        cursor.execute("SELECT cod_barra, nombre FROM Producto ORDER BY nombre")
+        cursor.execute("SELECT Cod_barra, nombre FROM Producto ORDER BY Nombre")
         productos = cursor.fetchall()
         conn.close()
 
-        for cod, nombre in productos:
-            st.markdown(f"• **{nombre}** (Código: `{cod}`)")
+        for Cod_barra, Nombre in productos:
+            st.markdown(f"• **{nombre}** (Código: `{Cod_barra}`)")
     except Exception as e:
         st.error(f"❌ Error al cargar productos: {e}")
