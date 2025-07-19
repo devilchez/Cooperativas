@@ -58,17 +58,6 @@ def modulo_compras():
     
     if producto["precio_compra"] <= 0:
         st.error("❌ El precio de compra debe ser mayor que 0.")
-    
-    if producto["precio_compra"]:
-        producto["precio_sugerido"] = round(producto["precio_compra"] / 0.80, 2)
-        st.markdown(f"💡 **Precio sugerido (20% margen bruto):** ${producto['precio_sugerido']:.2f}")
-    else:
-        producto["precio_sugerido"] = None
-
-    producto["precio_venta"] = st.number_input("Precio de venta", min_value=0.01, step=0.01, value=max(default_precio_venta, producto["precio_compra"]))
-
-    if producto["precio_venta"] < producto["precio_compra"]:
-        st.error("❌ El precio de venta no puede ser menor que el precio de compra.")
 
     if st.button("➕ Agregar producto"):
         campos = ["cod_barra", "nombre", "cantidad", "precio_compra", "precio_venta"]
