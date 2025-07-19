@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime, date
+from datetime import datetime
 from config.conexion import obtener_conexion
 
 def modulo_compras():
@@ -15,6 +15,14 @@ def modulo_compras():
     if "editar_indice" not in st.session_state:
         st.session_state["editar_indice"] = None
 
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("SELECT cod_barra, nombre FROM Producto")  
+    productos_db = cursor.fetchall()
+    productos_dict = {nombre: cod for cod, nombre in productos_db}
+    nombres_productos = list(productos_dict.keys())
+    conn.close()
+
     st.subheader("Registrar producto en la compra")
 
     tipo_producto = st.radio("Tipo de producto:", ["Existente", "Nuevo"], horizontal=True)
@@ -23,41 +31,23 @@ def modulo_compras():
 
     if st.session_state["editar_indice"] is not None:
         producto_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
-        default_cod = producto_edit["cod_barra"]
         default_nombre = producto_edit["nombre"]
+        default_cod = producto_edit["cod_barra"]
         default_cant = producto_edit["cantidad"]
         default_precio_compra = producto_edit["precio_compra"]
-        default_fecha_vencimiento = producto_edit.get("fecha_vencimiento", date.today())
+        default_precio_venta = producto_edit["precio_venta"]
     else:
-        default_cod = ""
         default_nombre = ""
+        default_cod = ""
         default_cant = 1
         default_precio_compra = 0.0
-        default_fecha_vencimiento = date.today()
+        default_precio_venta = 0.0
 
     if tipo_producto == "Existente":
-        cod_barra = st.text_input("Código de barras", value=default_cod)
-        nombre_producto = ""
-
-        if cod_barra:
-            try:
-                conn = obtener_conexion()
-                cursor = conn.cursor()
-                cursor.execute("SELECT nombre FROM Producto WHERE cod_barra = %s", (cod_barra,))
-                resultado = cursor.fetchone()
-                conn.close()
-
-                if resultado:
-                    nombre_producto = resultado[0]
-                    st.success(f"✅ Producto encontrado: {nombre_producto}")
-                else:
-                    st.warning("⚠️ Producto no encontrado")
-            except Exception as e:
-                st.error(f"❌ Error al buscar producto: {e}")
-
+        nombre_sel = st.selectbox("Buscar producto existente", nombres_productos, index=nombres_productos.index(default_nombre) if default_nombre in nombres_productos else 0)
+        cod_barra = productos_dict[nombre_sel]
         producto["cod_barra"] = cod_barra
-        producto["nombre"] = nombre_producto
-
+        producto["nombre"] = nombre_sel
     else:
         producto["cod_barra"] = st.text_input("Código de barras", value=default_cod)
         producto["nombre"] = st.text_input("Nombre del producto", value=default_nombre)
@@ -65,11 +55,23 @@ def modulo_compras():
     producto["cantidad"] = st.number_input("Cantidad comprada", min_value=1, step=1, value=default_cant)
 
     producto["precio_compra"] = st.number_input("Precio de compra por unidad", min_value=0.01, step=0.01, value=max(default_precio_compra, 0.01))
+    
+    if producto["precio_compra"] <= 0:
+        st.error("❌ El precio de compra debe ser mayor que 0.")
+    
+    if producto["precio_compra"]:
+        producto["precio_sugerido"] = round(producto["precio_compra"] / 0.80, 2)
+        st.markdown(f"💡 **Precio sugerido (20% margen bruto):** ${producto['precio_sugerido']:.2f}")
+    else:
+        producto["precio_sugerido"] = None
 
-    producto["fecha_vencimiento"] = st.date_input("📅 Fecha de vencimiento", value=default_fecha_vencimiento)
+    producto["precio_venta"] = st.number_input("Precio de venta", min_value=0.01, step=0.01, value=max(default_precio_venta, producto["precio_compra"]))
+
+    if producto["precio_venta"] < producto["precio_compra"]:
+        st.error("❌ El precio de venta no puede ser menor que el precio de compra.")
 
     if st.button("➕ Agregar producto"):
-        campos = ["cod_barra", "nombre", "cantidad", "precio_compra", "fecha_vencimiento"]
+        campos = ["cod_barra", "nombre", "cantidad", "precio_compra", "precio_venta"]
         if all(producto.get(c) for c in campos):
             if st.session_state["editar_indice"] is not None:
                 st.session_state["productos_seleccionados"][st.session_state["editar_indice"]] = producto
@@ -92,7 +94,7 @@ def modulo_compras():
                     f"{idx + 1}. {p['nombre']} "
                     f"(Código: {p['cod_barra']}) - "
                     f"Cantidad: {p['cantidad']} - "
-                    f"📅 Vence: {p['fecha_vencimiento']}"
+                    f"🛒 Precio Venta: ${p['precio_venta']:.2f} "
                 )
             with col2:
                 if st.button("✏️ Editar", key=f"editar_{idx}"):
@@ -118,14 +120,14 @@ def modulo_compras():
 
                     if not existe:
                         cursor.execute("""
-                            INSERT INTO Producto (cod_barra, nombre)
-                            VALUES (%s, %s)
-                        """, (producto["cod_barra"], producto["nombre"]))
+                            INSERT INTO Producto (cod_barra, nombre, precio_sugerido, precio_venta)
+                            VALUES (%s, %s, %s, %s)
+                        """, (producto["cod_barra"], producto["nombre"], producto["precio_sugerido"], producto["precio_venta"]))
 
                     cursor.execute("""
-                        INSERT INTO ProductoxCompra (id_compra, cod_barra, cantidad_comprada, precio_compra, fecha_vencimiento)
-                        VALUES (%s, %s, %s, %s, %s)
-                    """, (id_compra, producto["cod_barra"], producto["cantidad"], producto["precio_compra"], producto["fecha_vencimiento"]))
+                        INSERT INTO ProductoxCompra (id_compra, cod_barra, cantidad_comprada, precio_compra)
+                        VALUES (%s, %s, %s, %s)
+                    """, (id_compra, producto["cod_barra"], producto["cantidad"], producto["precio_compra"]))
 
                 conn.commit()
                 st.success(f"✅ Compra registrada correctamente con ID {id_compra}.")
