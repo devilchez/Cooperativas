@@ -35,15 +35,15 @@ def modulo_compras():
 
     producto["cantidad"] = st.number_input(
         "Cantidad comprada",
-        min_value=0.01,
-        step=0.01,
-        value=float(default_cant)
+        min_value=1,
+        step=1,
+        value=int(default_cant)
     )
 
     producto["unidad"] = st.selectbox(
         "Unidad de medida",
-        ["libra", "media libra", "quintal", "arroba"],
-        index=["libra", "media libra", "quintal", "arroba"].index(default_unidad)
+        ["libra", "quintal", "arroba"],
+        index=["libra","quintal", "arroba"].index(default_unidad)
     )
 
     producto["precio_compra"] = st.number_input(
