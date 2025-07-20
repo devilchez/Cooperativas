@@ -23,7 +23,6 @@ def modulo_compras():
     if "editar_indice" not in st.session_state:
         st.session_state["editar_indice"] = None
 
-    st.subheader("➕ Agregar producto a la compra")
 
     producto = {}
 
