@@ -101,18 +101,15 @@ def modulo_compras():
                 if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
                     st.session_state["productos_seleccionados"].pop(i)
                     st.success("🗑️ Producto eliminado.")
-                    st.experimental_rerun()
+                    st.rerun()
 
     # Botón para guardar toda la compra (se necesita ID de compra)
     st.divider()
     st.subheader("📥 Finalizar compra")
 
-    id_compra = st.text_input("ID de la compra (ej: CP001)")
 
     if st.button("✅ Registrar compra en la base de datos"):
-        if not id_compra:
-            st.error("❌ Debes ingresar el ID de la compra.")
-        elif not st.session_state["productos_seleccionados"]:
+        if not st.session_state["productos_seleccionados"]:
             st.error("❌ No hay productos agregados.")
         else:
             try:
