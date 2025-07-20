@@ -61,7 +61,7 @@ def modulo_compras():
             value=max(0.01, default_precio_compra)
         )
 
-        unidades_disponibles = ["libra", "kg", "unidad", "docena"]
+        unidades_disponibles = ["libras", "kilogramos", "unidades", "docena"]
         producto["unidad"] = st.selectbox(
             "Unidad de compra",
             unidades_disponibles,
@@ -119,7 +119,7 @@ def modulo_compras():
                 id_empleado = 1  
 
                 cursor.execute(
-                    "INSERT INTO Compra (Id_compra, Fecha, Id_empleado,) VALUES (%s, %s, %s, %s)",
+                    "INSERT INTO Compra (Id_compra, Fecha, Id_empleado,) VALUES (%s, %s, %s)",
                     (nuevo_id, fecha, id_empleado)
                 )
 
