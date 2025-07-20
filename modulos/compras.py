@@ -23,6 +23,7 @@ def modulo_compras():
     if "editar_indice" not in st.session_state:
         st.session_state["editar_indice"] = None
 
+    st.subheader("➕ Agregar producto a la compra")
 
     producto = {}
 
@@ -49,8 +50,16 @@ def modulo_compras():
     if st.session_state["editar_indice"] is not None:
         producto_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
         default_precio_compra = float(producto_edit["precio_compra"])  # Se obtiene el precio del producto editado
+        default_cant = int(producto_edit["cantidad"])
+        default_unidad = producto_edit["unidad"]
+        # Cargar valores en el formulario de edición
+        producto["cod_barra"] = producto_edit["cod_barra"]
+        producto["nombre"] = producto_edit["nombre"]
+        producto["precio_venta"] = producto_edit["precio_venta"]
     else:
         default_precio_compra = 0.01  # Valor por defecto en caso de nuevo producto
+        default_cant = 1
+        default_unidad = "libra"
 
     # Si se encuentra un producto, permite ingresar datos adicionales
     if producto.get("cod_barra"):
@@ -67,7 +76,7 @@ def modulo_compras():
         producto["unidad"] = st.selectbox(
             "Unidad de compra",
             unidades_disponibles,
-            index=0
+            index=unidades_disponibles.index(default_unidad)
         )
 
         # Cantidad como entero
@@ -76,13 +85,20 @@ def modulo_compras():
             min_value=1,
             max_value=10000,
             step=1,
-            value=1
+            value=default_cant
         )
 
         # Botón para guardar producto
         if st.button("💾 Agregar producto"):
-            st.session_state["productos_seleccionados"].append(producto)
-            st.success("✅ Producto agregado a la compra.")
+            if st.session_state["editar_indice"] is not None:
+                # Actualizar el producto en la lista
+                st.session_state["productos_seleccionados"][st.session_state["editar_indice"]] = producto
+                st.success("✅ Producto editado correctamente.")
+                st.session_state["editar_indice"] = None  # Resetear el índice de edición
+            else:
+                # Agregar nuevo producto
+                st.session_state["productos_seleccionados"].append(producto)
+                st.success("✅ Producto agregado a la compra.")
 
     # Mostrar tabla de productos seleccionados
     if st.session_state["productos_seleccionados"]:
@@ -96,17 +112,23 @@ def modulo_compras():
             with col1:
                 if st.button(f"✏️ Editar #{i+1}", key=f"editar_{i}"):
                     st.session_state["editar_indice"] = i
-                    st.rerun()
+                    st.rerun()  # Recargar para mostrar el producto en los campos de edición
             with col2:
                 if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
                     st.session_state["productos_seleccionados"].pop(i)
                     st.success("🗑️ Producto eliminado.")
                     st.rerun()
 
-    # Botón para guardar toda la compra (se necesita ID de compra)
-    st.divider()
-    st.subheader("📥 Finalizar compra")
+    # Generar automáticamente un ID de compra
+    cursor.execute("SELECT MAX(CAST(SUBSTRING(id_compra, 3) AS UNSIGNED)) FROM productoxcompra")
+    ultimo_id = cursor.fetchone()[0]
 
+    if ultimo_id is None:
+        id_compra = "CP001"  # Primer ID si no existe ningún registro
+    else:
+        id_compra = f"CP{ultimo_id + 1:03d}"
+
+    st.subheader(f"📥 Finalizar compra - ID de compra generado automáticamente: {id_compra}")
 
     if st.button("✅ Registrar compra en la base de datos"):
         if not st.session_state["productos_seleccionados"]:
@@ -124,4 +146,3 @@ def modulo_compras():
                 st.session_state["productos_seleccionados"] = []
             except Exception as e:
                 st.error(f"⚠️ Error al guardar en la base de datos: {e}")
-
