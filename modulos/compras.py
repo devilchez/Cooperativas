@@ -15,14 +15,24 @@ def modulo_compras():
         st.warning("⚠️ No hay productos disponibles.")
         return
 
+    # Inicializar session_state
     if "productos_seleccionados" not in st.session_state:
         st.session_state["productos_seleccionados"] = []
     if "editar_indice" not in st.session_state:
         st.session_state["editar_indice"] = None
+    if "codigo_barras" not in st.session_state:
+        st.session_state["codigo_barras"] = ""
+    if "precio_compra" not in st.session_state:
+        st.session_state["precio_compra"] = 0.01
+    if "cantidad" not in st.session_state:
+        st.session_state["cantidad"] = 1
+    if "unidad" not in st.session_state:
+        st.session_state["unidad"] = "libras"
 
     producto = {}
 
-    codigo_barras = st.text_input("Código de barras del producto")
+    # Usar session_state para el código de barras
+    codigo_barras = st.text_input("Código de barras del producto", key="codigo_barras")
 
     if codigo_barras:
         producto_encontrado = None
@@ -42,30 +52,32 @@ def modulo_compras():
     if producto.get("cod_barra"):
         if st.session_state["editar_indice"] is not None:
             producto_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
-            default_precio_compra = float(producto_edit["precio_compra"])
-            default_cant = int(producto_edit["cantidad"])
-            default_unidad = producto_edit["unidad"]
+            st.session_state["precio_compra"] = float(producto_edit["precio_compra"])
+            st.session_state["cantidad"] = int(producto_edit["cantidad"])
+            st.session_state["unidad"] = producto_edit["unidad"]
 
             producto["cod_barra"] = producto_edit["cod_barra"]
             producto["nombre"] = producto_edit["nombre"]
             producto["precio_venta"] = producto_edit["precio_venta"]
         else:
-            default_precio_compra = 0.01
-            default_cant = 1
-            default_unidad = "libras"
+            st.session_state["precio_compra"] = 0.01
+            st.session_state["cantidad"] = 1
+            st.session_state["unidad"] = "libras"
 
         producto["precio_compra"] = st.number_input(
             "Precio de compra",
             min_value=0.01,
             step=0.01,
-            value=max(0.01, default_precio_compra)
+            value=st.session_state["precio_compra"],
+            key="precio_compra"
         )
 
         unidades_disponibles = ["libras", "kilogramos", "unidades", "docena"]
         producto["unidad"] = st.selectbox(
             "Unidad de compra",
             unidades_disponibles,
-            index=unidades_disponibles.index(default_unidad)
+            index=unidades_disponibles.index(st.session_state["unidad"]),
+            key="unidad"
         )
 
         producto["cantidad"] = st.number_input(
@@ -73,7 +85,8 @@ def modulo_compras():
             min_value=1,
             max_value=10000,
             step=1,
-            value=default_cant
+            value=st.session_state["cantidad"],
+            key="cantidad"
         )
 
         if st.button("💾 Agregar producto"):
@@ -84,8 +97,12 @@ def modulo_compras():
             else:
                 st.session_state["productos_seleccionados"].append(producto)
                 st.success("✅ Producto agregado a la compra.")
+
+            # 🧹 Limpiar todo el formulario
             st.session_state["codigo_barras"] = ""
-            st.session_state["editar_indice"] = None
+            st.session_state["precio_compra"] = 0.01
+            st.session_state["cantidad"] = 1
+            st.session_state["unidad"] = "libras"
             st.rerun()
 
     if st.session_state["productos_seleccionados"]:
@@ -113,7 +130,6 @@ def modulo_compras():
             st.error("❌ No hay productos agregados.")
         else:
             try:
-
                 cursor.execute("SELECT MAX(Id_compra) FROM Compra")
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
@@ -125,7 +141,6 @@ def modulo_compras():
                     "INSERT INTO Compra (Id_compra, Fecha, Id_empleado) VALUES (%s, %s, %s)",
                     (nuevo_id, fecha, id_empleado)
                 )
-
 
                 for prod in st.session_state["productos_seleccionados"]:
                     cursor.execute(
@@ -140,7 +155,6 @@ def modulo_compras():
 
             except Exception as e:
                 st.error(f"⚠️ Error al guardar en la base de datos: {e}")
-
 
     st.divider()
     if st.button("🔙 Volver al menú principal"):
