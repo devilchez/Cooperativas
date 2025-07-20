@@ -110,15 +110,13 @@ def modulo_compras():
             st.error("❌ No hay productos agregados.")
         else:
             try:
-                # Generar nuevo Id_compra
+
                 cursor.execute("SELECT MAX(Id_compra) FROM Compra")
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
 
-                # Insertar en tabla Compra
                 fecha = datetime.now().strftime("%Y-%m-%d")
-                id_empleado = 1  # Ajusta según tu lógica
-                id_proveedor = 1  # Ajusta según tu lógica
+                id_empleado = 1  
 
                 cursor.execute(
                     "INSERT INTO Compra (Id_compra, Fecha, Id_empleado, Id_proveedor) VALUES (%s, %s, %s, %s)",
