@@ -119,8 +119,8 @@ def modulo_compras():
                 id_empleado = 1  
 
                 cursor.execute(
-                    "INSERT INTO Compra (Id_compra, Fecha, Id_empleado, Id_proveedor) VALUES (%s, %s, %s, %s)",
-                    (nuevo_id, fecha, id_empleado, id_proveedor)
+                    "INSERT INTO Compra (Id_compra, Fecha, Id_empleado,) VALUES (%s, %s, %s, %s)",
+                    (nuevo_id, fecha, id_empleado)
                 )
 
 
