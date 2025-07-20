@@ -140,5 +140,5 @@ def modulo_compras():
 
     st.divider()
     if st.button("🔙 Volver al menú principal"):
-        st.session_state["modulo_activo"] = None
+        st.session_state["module"] = None
         st.rerun()
