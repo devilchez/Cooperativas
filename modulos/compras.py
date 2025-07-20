@@ -22,26 +22,43 @@ def modulo_compras():
     if st.session_state["editar_indice"] is not None:
         producto_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
         default_cod = producto_edit["cod_barra"]
-        default_cant = producto_edit["cantidad"]
-        default_precio_compra = producto_edit["precio_compra"]
+        default_cant = float(producto_edit["cantidad"])
+        default_precio_compra = float(producto_edit["precio_compra"])
         default_unidad = producto_edit["unidad"]
     else:
         default_cod = ""
-        default_cant = 1
+        default_cant = 1.0
         default_precio_compra = 0.0
         default_unidad = "libra"
 
     producto["cod_barra"] = st.text_input("Código del producto", value=default_cod)
-    producto["cantidad"] = st.number_input("Cantidad comprada", min_value=0.01, step=0.01, value=default_cant)
-    producto["unidad"] = st.selectbox("Unidad de medida", ["libra", "media libra", "quintal", "arroba"], index=["libra", "media libra", "quintal", "arroba"].index(default_unidad))
-    producto["precio_compra"] = st.number_input("Costo total", min_value=0.01, step=0.01, value=max(default_precio_compra, 0.01))
+
+    producto["cantidad"] = st.number_input(
+        "Cantidad comprada",
+        min_value=0.01,
+        step=0.01,
+        value=float(default_cant)
+    )
+
+    producto["unidad"] = st.selectbox(
+        "Unidad de medida",
+        ["libra", "media libra", "quintal", "arroba"],
+        index=["libra", "media libra", "quintal", "arroba"].index(default_unidad)
+    )
+
+    producto["precio_compra"] = st.number_input(
+        "Costo total",
+        min_value=0.01,
+        step=0.01,
+        value=float(max(default_precio_compra, 0.01))
+    )
 
     if st.button("➕ Agregar producto"):
         campos = ["cod_barra", "cantidad", "precio_compra", "unidad"]
         if all(producto.get(c) for c in campos):
             if st.session_state["editar_indice"] is not None:
                 st.session_state["productos_seleccionados"][st.session_state["editar_indice"]] = producto
-                st.success(f"Producto actualizado.")
+                st.success("Producto actualizado.")
                 st.session_state["editar_indice"] = None
             else:
                 st.session_state["productos_seleccionados"].append(producto)
@@ -80,7 +97,6 @@ def modulo_compras():
                 id_compra = cursor.lastrowid
 
                 for producto in st.session_state["productos_seleccionados"]:
-                    # Verificar si el producto existe
                     cursor.execute("SELECT COUNT(*) FROM Producto WHERE cod_barra = %s", (producto["cod_barra"],))
                     existe = cursor.fetchone()[0]
 
