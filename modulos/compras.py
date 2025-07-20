@@ -20,8 +20,6 @@ def modulo_compras():
     # Inicializar variables en session_state
     if "productos_seleccionados" not in st.session_state:
         st.session_state["productos_seleccionados"] = []
-    if "editar_indice" not in st.session_state:
-        st.session_state["editar_indice"] = None
 
     st.subheader("➕ Agregar producto a la compra")
 
@@ -46,21 +44,6 @@ def modulo_compras():
         else:
             st.warning("⚠️ Producto no encontrado. Verifique el código de barras.")
 
-    # Definir valores predeterminados para el precio de compra si no se está editando un producto
-    if st.session_state["editar_indice"] is not None:
-        producto_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
-        default_precio_compra = float(producto_edit["precio_compra"])  # Se obtiene el precio del producto editado
-        default_cant = int(producto_edit["cantidad"])
-        default_unidad = producto_edit["unidad"]
-        # Cargar valores en el formulario de edición
-        producto["cod_barra"] = producto_edit["cod_barra"]
-        producto["nombre"] = producto_edit["nombre"]
-        producto["precio_venta"] = producto_edit["precio_venta"]
-    else:
-        default_precio_compra = 0.01  # Valor por defecto en caso de nuevo producto
-        default_cant = 1
-        default_unidad = "libra"
-
     # Si se encuentra un producto, permite ingresar datos adicionales
     if producto.get("cod_barra"):
         # Ingresar precio de compra (ajustado a no ser menor a 0.01)
@@ -68,7 +51,7 @@ def modulo_compras():
             "Precio de compra",
             min_value=0.01,
             step=0.01,
-            value=max(0.01, default_precio_compra)  # Asegura que el valor no sea menor que 0.01
+            value=0.01  # Asegura que el valor no sea menor que 0.01
         )
 
         # Unidad de compra (irá a columna 'unidad' en la tabla productoxcompra)
@@ -76,7 +59,7 @@ def modulo_compras():
         producto["unidad"] = st.selectbox(
             "Unidad de compra",
             unidades_disponibles,
-            index=unidades_disponibles.index(default_unidad)
+            index=0
         )
 
         # Cantidad como entero
@@ -85,20 +68,13 @@ def modulo_compras():
             min_value=1,
             max_value=10000,
             step=1,
-            value=default_cant
+            value=1
         )
 
         # Botón para guardar producto
         if st.button("💾 Agregar producto"):
-            if st.session_state["editar_indice"] is not None:
-                # Actualizar el producto en la lista
-                st.session_state["productos_seleccionados"][st.session_state["editar_indice"]] = producto
-                st.success("✅ Producto editado correctamente.")
-                st.session_state["editar_indice"] = None  # Resetear el índice de edición
-            else:
-                # Agregar nuevo producto
-                st.session_state["productos_seleccionados"].append(producto)
-                st.success("✅ Producto agregado a la compra.")
+            st.session_state["productos_seleccionados"].append(producto)
+            st.success("✅ Producto agregado a la compra.")
 
     # Mostrar tabla de productos seleccionados
     if st.session_state["productos_seleccionados"]:
@@ -120,13 +96,10 @@ def modulo_compras():
                     st.rerun()
 
     # Generar automáticamente un ID de compra
-    cursor.execute("SELECT MAX(CAST(SUBSTRING(id_compra, 3) AS UNSIGNED)) FROM productoxcompra")
-    ultimo_id = cursor.fetchone()[0]
-
-    if ultimo_id is None:
-        id_compra = "CP001"  # Primer ID si no existe ningún registro
-    else:
-        id_compra = f"CP{ultimo_id + 1:03d}"
+    # Asumimos que no hay un "último ID" en la base de datos, por lo que generamos el ID automáticamente
+    # Usamos un formato CP001, CP002, etc.
+    if len(st.session_state["productos_seleccionados"]) > 0:
+        id_compra = f"CP{len(st.session_state['productos_seleccionados']):03d}"
 
     st.subheader(f"📥 Finalizar compra - ID de compra generado automáticamente: {id_compra}")
 
