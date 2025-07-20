@@ -53,7 +53,7 @@ def modulo_compras():
             "Precio de compra",
             min_value=0.01,
             step=0.01,
-            value=0.0
+            value=max(0.01, default_precio_compra)
         )
 
         # Unidad de compra (irá a columna 'unidad' en la tabla productoxcompra)
