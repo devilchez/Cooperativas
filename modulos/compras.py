@@ -116,7 +116,7 @@ def modulo_compras():
             try:
                 for prod in st.session_state["productos_seleccionados"]:
                     cursor.execute(
-                        "INSERT INTO ProductoxCompra (cod_barra, cantidad, precio_compra, unidad) VALUES (%s, %s, %s, %s)",
+                        "INSERT INTO ProductoxCompra (cod_barra, cantidad_comprada, precio_compra, unidad) VALUES (%s, %s, %s, %s)",
                         (prod["cod_barra"], prod["cantidad"], prod["precio_compra"], prod["unidad"])
                     )
                 conn.commit()
