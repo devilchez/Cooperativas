@@ -84,6 +84,8 @@ def modulo_compras():
             else:
                 st.session_state["productos_seleccionados"].append(producto)
                 st.success("✅ Producto agregado a la compra.")
+            st.session_state["codigo_barras"] = ""
+            st.session_state["editar_indice"] = None
             st.rerun()
 
     if st.session_state["productos_seleccionados"]:
