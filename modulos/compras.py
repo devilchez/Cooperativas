@@ -133,6 +133,7 @@ def modulo_compras():
                 conn.commit()
                 st.success(f"📦 Compra registrada exitosamente con ID {nuevo_id}.")
                 st.session_state["productos_seleccionados"] = []
+                st.rerun()
 
             except Exception as e:
                 st.error(f"⚠️ Error al guardar en la base de datos: {e}")
