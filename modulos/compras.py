@@ -52,7 +52,7 @@ def modulo_compras():
         else:
             default_precio_compra = 0.01
             default_cant = 1
-            default_unidad = "libra"
+            default_unidad = "libras"
 
         producto["precio_compra"] = st.number_input(
             "Precio de compra",
