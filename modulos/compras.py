@@ -5,9 +5,11 @@ from config.conexion import obtener_conexion
 def modulo_compras():
     st.title("🧾 Módulo de Compras")
 
+    # Conectar a la base de datos
     conn = obtener_conexion()
     cursor = conn.cursor()
 
+    # Obtener productos disponibles
     cursor.execute("SELECT Cod_barra, Nombre, Precio_venta FROM Producto")
     productos = cursor.fetchall()
 
@@ -15,6 +17,7 @@ def modulo_compras():
         st.warning("⚠️ No hay productos disponibles.")
         return
 
+    # Inicializar variables en session_state
     if "productos_seleccionados" not in st.session_state:
         st.session_state["productos_seleccionados"] = []
     if "editar_indice" not in st.session_state:
@@ -24,6 +27,7 @@ def modulo_compras():
 
     producto = {}
 
+    # Valores por defecto si se edita
     if st.session_state["editar_indice"] is not None:
         producto_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
         default_cod = producto_edit["cod_barra"]
@@ -36,6 +40,7 @@ def modulo_compras():
         default_precio_compra = 0.0
         default_unidad = "libra"
 
+    # Lista desplegable de productos
     codigos = [f"{cod} - {nombre}" for cod, nombre, _ in productos]
     seleccion = st.selectbox(
         "Seleccionar producto",
@@ -48,14 +53,15 @@ def modulo_compras():
     producto["nombre"] = producto_seleccionado[1]
     producto["precio_venta"] = producto_seleccionado[2]
 
+    # Ingresar precio de compra (ajustado a no ser menor a 0.01)
     producto["precio_compra"] = st.number_input(
         "Precio de compra",
         min_value=0.01,
         step=0.01,
-        value=default_precio_compra
+        value=max(default_precio_compra, 0.01)  # Asegura que el valor no sea menor que 0.01
     )
 
-
+    # Unidad de compra (irá a columna 'unidad' en la tabla productoxcompra)
     unidades_disponibles = ["libra", "kg", "unidad", "docena"]
     producto["unidad"] = st.selectbox(
         "Unidad de compra",
@@ -63,6 +69,7 @@ def modulo_compras():
         index=unidades_disponibles.index(default_unidad)
     )
 
+    # Cantidad como entero
     producto["cantidad"] = st.number_input(
         "Cantidad comprada",
         min_value=1,
@@ -70,7 +77,8 @@ def modulo_compras():
         step=1,
         value=default_cant
     )
-        
+
+    # Botón para guardar producto
     if st.button("💾 Guardar producto"):
         if st.session_state["editar_indice"] is not None:
             st.session_state["productos_seleccionados"][st.session_state["editar_indice"]] = producto
@@ -80,7 +88,7 @@ def modulo_compras():
             st.session_state["productos_seleccionados"].append(producto)
             st.success("✅ Producto agregado a la compra.")
 
-
+    # Mostrar tabla de productos seleccionados
     if st.session_state["productos_seleccionados"]:
         st.subheader("📦 Productos en la compra actual")
 
@@ -99,7 +107,7 @@ def modulo_compras():
                     st.success("🗑️ Producto eliminado.")
                     st.experimental_rerun()
 
-
+    # Botón para guardar toda la compra (se necesita ID de compra)
     st.divider()
     st.subheader("📥 Finalizar compra")
 
