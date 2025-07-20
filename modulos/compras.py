@@ -46,6 +46,13 @@ def modulo_compras():
         else:
             st.warning("⚠️ Producto no encontrado. Verifique el código de barras.")
 
+    # Definir valores predeterminados para el precio de compra si no se está editando un producto
+    if st.session_state["editar_indice"] is not None:
+        producto_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
+        default_precio_compra = float(producto_edit["precio_compra"])  # Se obtiene el precio del producto editado
+    else:
+        default_precio_compra = 0.01  # Valor por defecto en caso de nuevo producto
+
     # Si se encuentra un producto, permite ingresar datos adicionales
     if producto.get("cod_barra"):
         # Ingresar precio de compra (ajustado a no ser menor a 0.01)
@@ -53,7 +60,7 @@ def modulo_compras():
             "Precio de compra",
             min_value=0.01,
             step=0.01,
-            value=max(0.01, default_precio_compra)
+            value=max(0.01, default_precio_compra)  # Asegura que el valor no sea menor que 0.01
         )
 
         # Unidad de compra (irá a columna 'unidad' en la tabla productoxcompra)
@@ -121,3 +128,4 @@ def modulo_compras():
                 st.session_state["productos_seleccionados"] = []
             except Exception as e:
                 st.error(f"⚠️ Error al guardar en la base de datos: {e}")
+
