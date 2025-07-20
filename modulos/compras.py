@@ -85,6 +85,8 @@ def modulo_compras():
                 st.session_state["productos_seleccionados"].append(producto)
                 st.success("✅ Producto agregado a la compra.")
 
+            st.rerun()
+
     if st.session_state["productos_seleccionados"]:
         st.subheader("📦 Productos en la compra actual")
 
