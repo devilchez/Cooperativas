@@ -25,7 +25,6 @@ def modulo_compras():
     codigo_barras = st.text_input("Código de barras del producto")
 
     if codigo_barras:
-
         producto_encontrado = None
         for prod in productos:
             if prod[0] == codigo_barras:
@@ -41,10 +40,9 @@ def modulo_compras():
             st.warning("⚠️ Producto no encontrado. Verifique el código de barras.")
 
     if producto.get("cod_barra"):
-       
         if st.session_state["editar_indice"] is not None:
             producto_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
-            default_precio_compra = float(producto_edit["precio_compra"])  # Se obtiene el precio del producto editado
+            default_precio_compra = float(producto_edit["precio_compra"])
             default_cant = int(producto_edit["cantidad"])
             default_unidad = producto_edit["unidad"]
 
@@ -52,7 +50,7 @@ def modulo_compras():
             producto["nombre"] = producto_edit["nombre"]
             producto["precio_venta"] = producto_edit["precio_venta"]
         else:
-            default_precio_compra = 0.01  
+            default_precio_compra = 0.01
             default_cant = 1
             default_unidad = "libra"
 
@@ -60,7 +58,7 @@ def modulo_compras():
             "Precio de compra",
             min_value=0.01,
             step=0.01,
-            value=max(0.01, default_precio_compra) 
+            value=max(0.01, default_precio_compra)
         )
 
         unidades_disponibles = ["libra", "kg", "unidad", "docena"]
@@ -80,12 +78,10 @@ def modulo_compras():
 
         if st.button("💾 Agregar producto"):
             if st.session_state["editar_indice"] is not None:
-
                 st.session_state["productos_seleccionados"][st.session_state["editar_indice"]] = producto
                 st.success("✅ Producto editado correctamente.")
-                st.session_state["editar_indice"] = None  # Resetear el índice de edición
+                st.session_state["editar_indice"] = None
             else:
-
                 st.session_state["productos_seleccionados"].append(producto)
                 st.success("✅ Producto agregado a la compra.")
 
@@ -100,7 +96,7 @@ def modulo_compras():
             with col1:
                 if st.button(f"✏️ Editar #{i+1}", key=f"editar_{i}"):
                     st.session_state["editar_indice"] = i
-                    st.rerun()  
+                    st.rerun()
             with col2:
                 if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
                     st.session_state["productos_seleccionados"].pop(i)
@@ -114,13 +110,37 @@ def modulo_compras():
             st.error("❌ No hay productos agregados.")
         else:
             try:
+                # Generar nuevo Id_compra
+                cursor.execute("SELECT MAX(Id_compra) FROM Compra")
+                ultimo_id = cursor.fetchone()[0]
+                nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
+
+                # Insertar en tabla Compra
+                fecha = datetime.now().strftime("%Y-%m-%d")
+                id_empleado = 1  # Ajusta según tu lógica
+                id_proveedor = 1  # Ajusta según tu lógica
+
+                cursor.execute(
+                    "INSERT INTO Compra (Id_compra, Fecha, Id_empleado, Id_proveedor) VALUES (%s, %s, %s, %s)",
+                    (nuevo_id, fecha, id_empleado, id_proveedor)
+                )
+
+
                 for prod in st.session_state["productos_seleccionados"]:
                     cursor.execute(
-                        "INSERT INTO ProductoxCompra (cod_barra, cantidad_comprada, precio_compra, unidad) VALUES (%s, %s, %s, %s)",
-                        (prod["cod_barra"], prod["cantidad"], prod["precio_compra"], prod["unidad"])
+                        "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad) VALUES (%s, %s, %s, %s, %s)",
+                        (nuevo_id, prod["cod_barra"], prod["cantidad"], prod["precio_compra"], prod["unidad"])
                     )
+
                 conn.commit()
-                st.success("📦 Compra registrada exitosamente.")
+                st.success(f"📦 Compra registrada exitosamente con ID {nuevo_id}.")
                 st.session_state["productos_seleccionados"] = []
+
             except Exception as e:
                 st.error(f"⚠️ Error al guardar en la base de datos: {e}")
+
+
+    st.divider()
+    if st.button("🔙 Volver al menú principal"):
+        st.session_state["modulo_activo"] = None
+        st.rerun()
