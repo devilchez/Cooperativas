@@ -15,60 +15,37 @@ def modulo_compras():
     if "editar_indice" not in st.session_state:
         st.session_state["editar_indice"] = None
 
-    conn = obtener_conexion()
-    cursor = conn.cursor()
-    cursor.execute("SELECT cod_barra, nombre FROM Producto")  
-    productos_db = cursor.fetchall()
-    productos_dict = {nombre: cod for cod, nombre in productos_db}
-    nombres_productos = list(productos_dict.keys())
-    conn.close()
-
     st.subheader("Registrar producto en la compra")
-
-    tipo_producto = st.radio("Tipo de producto:", ["Existente", "Nuevo"], horizontal=True)
 
     producto = {}
 
     if st.session_state["editar_indice"] is not None:
         producto_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
-        default_nombre = producto_edit["nombre"]
         default_cod = producto_edit["cod_barra"]
         default_cant = producto_edit["cantidad"]
         default_precio_compra = producto_edit["precio_compra"]
-        default_precio_venta = producto_edit["precio_venta"]
+        default_unidad = producto_edit["unidad"]
     else:
-        default_nombre = ""
         default_cod = ""
         default_cant = 1
         default_precio_compra = 0.0
-        default_precio_venta = 0.0
+        default_unidad = "libra"
 
-    if tipo_producto == "Existente":
-        nombre_sel = st.selectbox("Buscar producto existente", nombres_productos, index=nombres_productos.index(default_nombre) if default_nombre in nombres_productos else 0)
-        cod_barra = productos_dict[nombre_sel]
-        producto["cod_barra"] = cod_barra
-        producto["nombre"] = nombre_sel
-    else:
-        producto["cod_barra"] = st.text_input("Código de barras", value=default_cod)
-        producto["nombre"] = st.text_input("Nombre del producto", value=default_nombre)
-
-    producto["cantidad"] = st.number_input("Cantidad comprada", min_value=1, step=1, value=default_cant)
-
-    producto["precio_compra"] = st.number_input("Precio de compra por unidad", min_value=0.01, step=0.01, value=max(default_precio_compra, 0.01))
-    
-    if producto["precio_compra"] <= 0:
-        st.error("❌ El precio de compra debe ser mayor que 0.")
+    producto["cod_barra"] = st.text_input("Código del producto", value=default_cod)
+    producto["cantidad"] = st.number_input("Cantidad comprada", min_value=0.01, step=0.01, value=default_cant)
+    producto["unidad"] = st.selectbox("Unidad de medida", ["libra", "media libra", "quintal", "arroba"], index=["libra", "media libra", "quintal", "arroba"].index(default_unidad))
+    producto["precio_compra"] = st.number_input("Costo total", min_value=0.01, step=0.01, value=max(default_precio_compra, 0.01))
 
     if st.button("➕ Agregar producto"):
-        campos = ["cod_barra", "nombre", "cantidad", "precio_compra", "precio_venta"]
+        campos = ["cod_barra", "cantidad", "precio_compra", "unidad"]
         if all(producto.get(c) for c in campos):
             if st.session_state["editar_indice"] is not None:
                 st.session_state["productos_seleccionados"][st.session_state["editar_indice"]] = producto
-                st.success(f"Producto '{producto['nombre']}' actualizado.")
+                st.success(f"Producto actualizado.")
                 st.session_state["editar_indice"] = None
             else:
                 st.session_state["productos_seleccionados"].append(producto)
-                st.success(f"Producto '{producto['nombre']}' agregado a la compra.")
+                st.success("Producto agregado a la compra.")
             st.rerun()
         else:
             st.error("❌ Por favor, completa todos los campos antes de agregar el producto.")
@@ -80,10 +57,9 @@ def modulo_compras():
             col1, col2 = st.columns([8, 2])
             with col1:
                 st.markdown(
-                    f"{idx + 1}. {p['nombre']} "
-                    f"(Código: {p['cod_barra']}) - "
-                    f"Cantidad: {p['cantidad']} - "
-                    f"🛒 Precio Venta: ${p['precio_venta']:.2f} "
+                    f"{idx + 1}. Código: {p['cod_barra']} - "
+                    f"Cantidad: {p['cantidad']} {p['unidad']} - "
+                    f"💵 Costo: ${p['precio_compra']:.2f}"
                 )
             with col2:
                 if st.button("✏️ Editar", key=f"editar_{idx}"):
@@ -104,19 +80,26 @@ def modulo_compras():
                 id_compra = cursor.lastrowid
 
                 for producto in st.session_state["productos_seleccionados"]:
+                    # Verificar si el producto existe
                     cursor.execute("SELECT COUNT(*) FROM Producto WHERE cod_barra = %s", (producto["cod_barra"],))
                     existe = cursor.fetchone()[0]
 
                     if not existe:
                         cursor.execute("""
-                            INSERT INTO Producto (cod_barra, nombre, precio_sugerido, precio_venta)
-                            VALUES (%s, %s, %s, %s)
-                        """, (producto["cod_barra"], producto["nombre"], producto["precio_sugerido"], producto["precio_venta"]))
+                            INSERT INTO Producto (cod_barra)
+                            VALUES (%s)
+                        """, (producto["cod_barra"],))
 
                     cursor.execute("""
-                        INSERT INTO ProductoxCompra (id_compra, cod_barra, cantidad_comprada, precio_compra)
-                        VALUES (%s, %s, %s, %s)
-                    """, (id_compra, producto["cod_barra"], producto["cantidad"], producto["precio_compra"]))
+                        INSERT INTO ProductoxCompra (id_compra, cod_barra, cantidad_comprada, precio_compra, unidad)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (
+                        id_compra,
+                        producto["cod_barra"],
+                        producto["cantidad"],
+                        producto["precio_compra"],
+                        producto["unidad"]
+                    ))
 
                 conn.commit()
                 st.success(f"✅ Compra registrada correctamente con ID {id_compra}.")
