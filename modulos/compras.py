@@ -3,7 +3,7 @@ from datetime import datetime
 from config.conexion import obtener_conexion
 
 def modulo_compras():
-    st.title("🧾 Módulo de Compras")
+    st.title("🧾 Registro de Compras")
 
     # Conectar a la base de datos
     conn = obtener_conexion()
