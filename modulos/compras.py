@@ -96,7 +96,7 @@ def modulo_compras():
             with col1:
                 if st.button(f"✏️ Editar #{i+1}", key=f"editar_{i}"):
                     st.session_state["editar_indice"] = i
-                    st.experimental_rerun()
+                    st.rerun()
             with col2:
                 if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
                     st.session_state["productos_seleccionados"].pop(i)
