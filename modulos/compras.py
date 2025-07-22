@@ -82,10 +82,19 @@ def modulo_compras():
     boton_texto = "💾 Actualizar producto" if st.session_state["editar_indice"] is not None else "💾 Agregar producto"
     if st.button(boton_texto):
         if producto_encontrado or codigo_barras_disabled:
+            # En edición usar prod_edit, en nuevo usar producto_encontrado
+            if st.session_state["editar_indice"] is not None:
+                prod_ref = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
+            else:
+                prod_ref = {
+                    "nombre": producto_encontrado[1],
+                    "precio_venta": producto_encontrado[2]
+                }
+
             producto = {
                 "cod_barra": st.session_state["form_data_codigo_barras"],
-                "nombre": producto_encontrado[1] if producto_encontrado else prod_edit["nombre"],
-                "precio_venta": producto_encontrado[2] if producto_encontrado else prod_edit["precio_venta"],
+                "nombre": prod_ref["nombre"],
+                "precio_venta": prod_ref["precio_venta"],
                 "precio_compra": st.session_state["form_data_precio_compra"],
                 "unidad": st.session_state["form_data_unidad"],
                 "cantidad": st.session_state["form_data_cantidad"]
@@ -108,7 +117,7 @@ def modulo_compras():
             }
             st.rerun()
         else:
-            st.error("⚠️ Código de barras inválido.")
+            st.error("⚠️ Código de barras inválido. No se puede agregar el producto.")
 
     # 📋 Mostrar lista de productos
     if st.session_state["productos_seleccionados"]:
