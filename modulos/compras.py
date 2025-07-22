@@ -24,8 +24,7 @@ def modulo_compras():
             "codigo_barras": "",
             "precio_compra": 0.01,
             "cantidad": 1,
-            "unidad": "libras",
-            "categoria": "Granos básicos"
+            "unidad": "libras"
         }
 
     if st.session_state["editar_indice"] is not None and "edit_loaded" not in st.session_state:
@@ -34,19 +33,15 @@ def modulo_compras():
             "codigo_barras": prod_edit["cod_barra"],
             "precio_compra": float(prod_edit["precio_compra"]),
             "cantidad": int(prod_edit["cantidad"]),
-            "unidad": prod_edit["unidad"],
-            "categoria": prod_edit.get("categoria", "Granos básicos")  
+            "unidad": prod_edit["unidad"]
         }
         st.session_state["edit_loaded"] = True
 
     codigo_barras_disabled = st.session_state["editar_indice"] is not None
 
-
     categoria = st.radio(
-        "Categoría de producto",
-        ["Granos básicos", "Otros"],
-        index=["Granos básicos", "Otros"].index(st.session_state["form_data"]["categoria"]),
-        key="form_data_categoria"
+        "Seleccione el tipo de producto",
+        ["Granos básicos", "Otros"]
     )
 
     if categoria == "Granos básicos":
@@ -70,7 +65,7 @@ def modulo_compras():
         key="form_data_unidad",
         index=unidades_disponibles.index(st.session_state["form_data"]["unidad"])
         if st.session_state["form_data"]["unidad"] in unidades_disponibles
-        else 0  # Por si cambia la categoría
+        else 0 
     )
     st.number_input(
         "Cantidad comprada", min_value=1, max_value=10000, step=1,
@@ -106,8 +101,7 @@ def modulo_compras():
                 "precio_venta": prod_ref["precio_venta"],
                 "precio_compra": st.session_state["form_data_precio_compra"],
                 "unidad": st.session_state["form_data_unidad"],
-                "cantidad": st.session_state["form_data_cantidad"],
-                "categoria": st.session_state["form_data_categoria"]
+                "cantidad": st.session_state["form_data_cantidad"]
             }
             if st.session_state["editar_indice"] is not None:
                 st.session_state["productos_seleccionados"][st.session_state["editar_indice"]] = producto
@@ -122,8 +116,7 @@ def modulo_compras():
                 "codigo_barras": "",
                 "precio_compra": 0.01,
                 "cantidad": 1,
-                "unidad": "libras",
-                "categoria": "Granos básicos"
+                "unidad": "libras"
             }
             st.rerun()
         else:
@@ -133,7 +126,7 @@ def modulo_compras():
         st.subheader("📦 Productos en la compra actual")
         for i, prod in enumerate(st.session_state["productos_seleccionados"]):
             st.markdown(
-                f"**{prod['nombre']}** — {prod['cantidad']} {prod['unidad']} — Precio compra: ${prod['precio_compra']:.2f} — Categoría: {prod['categoria']}"
+                f"**{prod['nombre']}** — {prod['cantidad']} {prod['unidad']} — Precio compra: ${prod['precio_compra']:.2f}"
             )
             col1, col2 = st.columns([1, 1])
             with col1:
@@ -176,8 +169,7 @@ def modulo_compras():
                     "codigo_barras": "",
                     "precio_compra": 0.01,
                     "cantidad": 1,
-                    "unidad": "libras",
-                    "categoria": "Granos básicos"
+                    "unidad": "libras"
                 }
                 st.rerun()
 
@@ -192,7 +184,6 @@ def modulo_compras():
             "codigo_barras": "",
             "precio_compra": 0.01,
             "cantidad": 1,
-            "unidad": "libras",
-            "categoria": "Granos básicos"
+            "unidad": "libras"
         }
         st.rerun()
