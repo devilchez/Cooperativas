@@ -6,7 +6,7 @@ def modulo_producto():
 
  
     Usuario = st.session_state.get("Usuario")
-    if not id_empleado:
+    if not Usuario:
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
 
