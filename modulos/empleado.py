@@ -12,7 +12,7 @@ def modulo_empleado():
 
     Usuario = st.text_input("Ingrese un usuario")
     Nombre = st.text_input("Nombre del empleado")
-    DUI = st.text_input("Ingrse su DUI (sin guión)")
+    DUI = st.text_input("Ingrese su DUI (sin guión)")
     Contacto = st.text_input("Número de telefono")
     Contrasena = st.text_input("Ingrese una contraseña")
     Nivel_usuario = st.text_input("Nivel de usuario", value="Vendedora", disabled=True)
@@ -35,7 +35,7 @@ def modulo_empleado():
                     cursor.execute("""
                         INSERT INTO Empleado (Usuario, Nombre,Dui,Contacto,Contrasena,Nivel_usuario)
                         VALUES (%s, %s)
-                    """, (Usuario,Nombre,Dui,Contacto,Contrasena,Nivel_usuario))
+                    """, (Usuario,Nombre,DUI,Contacto,Contrasena,Nivel_usuario))
                     conn.commit()
                     st.success(f"✅ Empleado '{Nombre}' registrado correctamente.")
 
