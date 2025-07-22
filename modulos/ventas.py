@@ -15,7 +15,7 @@ def modulo_ventas():
         return
 
     # Obtener id_empleado del usuario
-    cursor.execute("SELECT Id_empleado FROM Empleado WHERE Usuario = %s", (usuario,))
+    cursor.execute("SELECT Usuario FROM Empleado WHERE Usuario = %s", (usuario,))
     resultado_empleado = cursor.fetchone()
     if not resultado_empleado:
         st.error("❌ No se encontró el usuario en la tabla Empleado.")
