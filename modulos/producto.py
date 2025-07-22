@@ -34,10 +34,13 @@ def modulo_producto():
                     """, (Cod_barra, Nombre))
                     conn.commit()
 
-                    # ✅ Limpiar campos y recargar
-                    st.session_state.clear()
-                    st.session_state.usuario = Usuario  # mantener sesión
                     st.success(f"✅ Producto '{Nombre}' registrado correctamente.")
+
+                    🔄 Limpiar solo los campos del formulario
+                    for campo in ["cod_barra_input", "nombre_producto_input"]:
+                    if campo in st.session_state:
+                    del st.session_state[campo]
+
                     st.rerun()
 
             except Exception as e:
