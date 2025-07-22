@@ -34,12 +34,12 @@ def modulo_producto():
                     """, (Cod_barra, Nombre))
                     conn.commit()
 
-                    st.success(f"✅ Producto '{Nombre}' registrado correctamente.")
-                    for campo in ["cod_barra_input", "nombre_producto_input"]:
-                        if campo in st.session_state:
-                            del st.session_state[campo]
+                st.success(f"✅ Producto '{Nombre}' registrado correctamente.")
+                for campo in ["cod_barra_input", "nombre_producto_input"]:
+                    if campo in st.session_state:
+                        del st.session_state[campo]
 
-                    st.rerun()
+                st.rerun()
 
             except Exception as e:
                 st.error(f"❌ Error al guardar el producto: {e}")
