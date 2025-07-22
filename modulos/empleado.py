@@ -26,7 +26,7 @@ def modulo_empleado():
                 cursor = conn.cursor()
 
                
-                cursor.execute("SELECT COUNT(*) FROM Producto WHERE Usuario = %s", (Usuario,))
+                cursor.execute("SELECT COUNT(*) FROM Empleado WHERE Usuario = %s", (Usuario,))
                 existe = cursor.fetchone()[0]
 
                 if existe:
@@ -35,7 +35,7 @@ def modulo_empleado():
                     cursor.execute("""
                         INSERT INTO Empleado (Usuario, Nombre,Dui,Contacto,Contrasena,Nivel_usuario)
                         VALUES (%s, %s)
-                    """, (Usuario, Nombre,Dui,Contacto,Contrasena,Nivel_usuario))
+                    """, (Usuario,Nombre,Dui,Contacto,Contrasena,Nivel_usuario))
                     conn.commit()
                     st.success(f"✅ Empleado '{Nombre}' registrado correctamente.")
 
