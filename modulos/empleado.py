@@ -10,12 +10,12 @@ def modulo_empleado():
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
 
-    Usuario = st.text_input("Ingrese un usuario")
-    Nombre = st.text_input("Nombre del empleado")
-    DUI = st.text_input("Ingrese su DUI (sin guión)")
-    Contacto = st.text_input("Número de telefono")
-    Contrasena = st.text_input("Ingrese una contraseña")
-    Nivel_usuario = st.text_input("Nivel de usuario", value="Vendedora", disabled=True)
+    Usuario = st.text_input("Ingrese un usuario", key="usuario_input")
+    Nombre = st.text_input("Nombre del empleado", key="nombre_input")
+    DUI = st.text_input("Ingrese su DUI (sin guión)", key="dui_input")
+    Contacto = st.text_input("Número de teléfono", key="contacto_input")
+    Contrasena = st.text_input("Ingrese una contraseña", type="password", key="contrasena_input")
+    Nivel_usuario = st.text_input("Nivel de usuario", value="Vendedora", disabled=True, key="nivel_input")
 
     if st.button("Guardar empleado"):
         if not Usuario.strip() or not Nombre.strip() or not DUI.strip() or not Contacto.strip() or not Contrasena.strip():
@@ -46,8 +46,6 @@ def modulo_empleado():
                 cursor.close()
                 conn.close()
 
-    if st.button("🆕 Nuevo empleado"):
-    st.experimental_rerun()
     
     st.markdown("---")
     if st.button("⬅ Volver al menú principal"):
