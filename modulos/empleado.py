@@ -22,7 +22,7 @@ def modulo_empleado():
         st.success("✅ Empleado guardado correctamente.")
         st.session_state.pop("empleado_guardado", None)
 
-    st.subheader("➕ Agregar nuevo empleado")
+    
 
     # Campos del formulario con claves y valores controlados
     Usuario = st.text_input("Ingrese un usuario", value=st.session_state.get("usuario_input", ""), key="usuario_input")
