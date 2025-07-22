@@ -102,7 +102,7 @@ def modulo_compras():
             st.rerun()
 
         if st.session_state["productos_seleccionados"]:
-        st.subheader("📦 Productos en la compra actual")
+            st.subheader("📦 Productos en la compra actual")
 
         for i, prod in enumerate(st.session_state["productos_seleccionados"]):
             st.markdown(
