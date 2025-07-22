@@ -9,7 +9,8 @@ from modulos.compras import modulo_compras
 from modulos.ventas import modulo_ventas  
 from modulos.producto import modulo_producto
 from modulos.editar_producto import modulo_editar_producto
-from modulos.dashboard import dashboard  
+from modulos.dashboard import dashboard
+from modulos.empleado import modulo_empleado
 
 def menu_principal():
     st.title("🏠 Menú Principal")
@@ -17,7 +18,7 @@ def menu_principal():
     nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  
     st.subheader(f"Selecciona un botón, {nombre_empleado}") 
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5 col6 = st.columns(6)
     with col1:
         if st.button("🛒 Ventas"):
             st.session_state.module = "Ventas"
@@ -43,6 +44,11 @@ def menu_principal():
             st.session_state.module = "Editar"
             st.rerun()
 
+    with col6: 
+        if st.button("👩‍💼 Registrar empleado"):
+            st.session_state.module = "Empleado"
+            st.rerun()
+
     st.markdown("---")
     if st.button("🔓 Cerrar sesión"):
         for key in ['logueado', 'usuario', 'module', 'nombre_empleado']: 
@@ -65,6 +71,8 @@ def cargar_modulo():
             modulo_editar_producto()
         elif st.session_state.module == "Dashboard":
             dashboard()  
+        elif st.session_state.module == "Empleado":
+            modulo_empleado()
         else:
             menu_principal()
     else:
