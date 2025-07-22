@@ -35,11 +35,9 @@ def modulo_producto():
                     conn.commit()
 
                     st.success(f"✅ Producto '{Nombre}' registrado correctamente.")
-
-                    🔄 Limpiar solo los campos del formulario
                     for campo in ["cod_barra_input", "nombre_producto_input"]:
-                    if campo in st.session_state:
-                    del st.session_state[campo]
+                        if campo in st.session_state:
+                            del st.session_state[campo]
 
                     st.rerun()
 
