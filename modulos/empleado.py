@@ -37,15 +37,13 @@ def modulo_empleado():
                         VALUES (%s, %s,%s,%s,%s,%s)
                     """, (Usuario,Nombre,DUI,Contacto,Contrasena,Nivel_usuario))
                     conn.commit()
+                    st.session_state.clear()
+                    st.session_state.id_empleado = id_empleado  # Mantener sesión activa
+                    st.success(f"✅ Empleado '{Nombre}' registrado correctamente.")
+                    st.experimental_rerun()
                     st.success(f"✅ Empleado '{Nombre}' registrado correctamente.")
 
-                    st.session_state.usuario_input = ""
-                    st.session_state.nombre_input = ""
-                    st.session_state.dui_input = ""
-                    st.session_state.contacto_input = ""
-                    st.session_state.contrasena_input = ""
-
-                    st.info("👤 Puedes ingresar otro empleado ahora.")
+                    
 
             except Exception as e:
                 st.error(f"❌ Error al guardar el empleado: {e}")
