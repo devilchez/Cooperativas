@@ -8,26 +8,26 @@ def modulo_ventas():
     conn = obtener_conexion()
     cursor = conn.cursor()
 
-    # Validar sesión activa
+    
     usuario = st.session_state.get("usuario")
     if not usuario:
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
 
-    # Si se debe limpiar el código de barras
+    
     if st.session_state.get("limpiar_cod"):
         st.session_state.pop("cod_barras_input", None)
         st.session_state.pop("limpiar_cod", None)
         st.rerun()
 
-    # Si se debe reiniciar el formulario completo después de registrar
+    
     if st.session_state.get("venta_guardada"):
         st.success("✅ Venta registrada exitosamente.")
         st.session_state.pop("productos_vendidos", None)
         st.session_state.pop("venta_guardada", None)
         st.rerun()
 
-    # Obtener Id_empleado del usuario
+    
     cursor.execute("SELECT Id_empleado, Usuario FROM Empleado WHERE Usuario = %s", (usuario,))
     resultado_empleado = cursor.fetchone()
     if not resultado_empleado:
@@ -37,16 +37,16 @@ def modulo_ventas():
     id_empleado = resultado_empleado[0]
     usuario = resultado_empleado[1]
 
-    # Fecha actual
+    
     fecha_venta = datetime.now().strftime("%Y-%m-%d")
     st.text_input("🗓️ Fecha de la venta", value=fecha_venta, disabled=True)
     st.text_input("🧑‍💼 Usuario del empleado", value=usuario, disabled=True)
 
-    # Inicializar lista si no existe
+    
     if "productos_vendidos" not in st.session_state:
         st.session_state["productos_vendidos"] = []
 
-    # Ingreso del código de barras
+    
     cod_barras_input = st.text_input("📦 Ingrese el código de barras del producto", value=st.session_state.get("cod_barras_input", ""), key="cod_barras_input")
 
     if cod_barras_input:
