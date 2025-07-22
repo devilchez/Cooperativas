@@ -5,7 +5,7 @@ def modulo_empleado():
     st.title("📦 Registrar empleados")
 
     # Validar sesión activa
-    usuario_sesion = st.session_state.get("usuario")
+    Usuario= st.session_state.get("usuario")
     id_empleado = st.session_state.get("id_empleado")
     if not usuario_sesion or not id_empleado:
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
