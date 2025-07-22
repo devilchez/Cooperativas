@@ -34,7 +34,7 @@ def modulo_empleado():
                 else:
                     cursor.execute("""
                         INSERT INTO Empleado (Usuario, Nombre,Dui,Contacto,Contrasena,Nivel_usuario)
-                        VALUES (%s, %s)
+                        VALUES (%s, %s,%s,%s,%s,%s,)
                     """, (Usuario,Nombre,DUI,Contacto,Contrasena,Nivel_usuario))
                     conn.commit()
                     st.success(f"✅ Empleado '{Nombre}' registrado correctamente.")
