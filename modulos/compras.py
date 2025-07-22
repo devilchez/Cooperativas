@@ -14,37 +14,36 @@ def modulo_compras():
     if not productos:
         st.warning("⚠️ No hay productos disponibles.")
         return
+    
+    for key, value in {
+        "productos_seleccionados": [],
+        "editar_indice": None,
+        "codigo_barras": "",
+        "precio_compra": 0.01,
+        "cantidad": 1,
+        "unidad": "libras",
+        "limpiar_formulario": False,
+    }.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
 
-    # Inicializar session_state
-    if "productos_seleccionados" not in st.session_state:
-        st.session_state["productos_seleccionados"] = []
-    if "editar_indice" not in st.session_state:
-        st.session_state["editar_indice"] = None
-    if "codigo_barras" not in st.session_state:
+    
+    if st.session_state["limpiar_formulario"]:
         st.session_state["codigo_barras"] = ""
-    if "precio_compra" not in st.session_state:
         st.session_state["precio_compra"] = 0.01
-    if "cantidad" not in st.session_state:
         st.session_state["cantidad"] = 1
-    if "unidad" not in st.session_state:
         st.session_state["unidad"] = "libras"
+        st.session_state["limpiar_formulario"] = False
 
     producto = {}
 
-    # Usar session_state para el código de barras
-    codigo_barras = st.text_input("Código de barras del producto", key="codigo_barras")
+    st.text_input("Código de barras del producto", key="codigo_barras")
+    codigo_barras = st.session_state["codigo_barras"]
 
     if codigo_barras:
-        producto_encontrado = None
-        for prod in productos:
-            if prod[0] == codigo_barras:
-                producto_encontrado = prod
-                break
-
+        producto_encontrado = next((prod for prod in productos if prod[0] == codigo_barras), None)
         if producto_encontrado:
-            producto["cod_barra"] = producto_encontrado[0]
-            producto["nombre"] = producto_encontrado[1]
-            producto["precio_venta"] = producto_encontrado[2]
+            producto["cod_barra"], producto["nombre"], producto["precio_venta"] = producto_encontrado
             st.write(f"Producto encontrado: **{producto['nombre']}**")
         else:
             st.warning("⚠️ Producto no encontrado. Verifique el código de barras.")
@@ -56,13 +55,14 @@ def modulo_compras():
             st.session_state["cantidad"] = int(producto_edit["cantidad"])
             st.session_state["unidad"] = producto_edit["unidad"]
 
-            producto["cod_barra"] = producto_edit["cod_barra"]
-            producto["nombre"] = producto_edit["nombre"]
-            producto["precio_venta"] = producto_edit["precio_venta"]
+            producto.update({
+                "cod_barra": producto_edit["cod_barra"],
+                "nombre": producto_edit["nombre"],
+                "precio_venta": producto_edit["precio_venta"],
+            })
         else:
-            st.session_state["precio_compra"] = 0.01
-            st.session_state["cantidad"] = 1
-            st.session_state["unidad"] = "libras"
+
+            pass
 
         producto["precio_compra"] = st.number_input(
             "Precio de compra",
@@ -98,14 +98,10 @@ def modulo_compras():
                 st.session_state["productos_seleccionados"].append(producto)
                 st.success("✅ Producto agregado a la compra.")
 
-            # 🧹 Limpiar todo el formulario
-            st.session_state["codigo_barras"] = ""
-            st.session_state["precio_compra"] = 0.01
-            st.session_state["cantidad"] = 1
-            st.session_state["unidad"] = "libras"
+            st.session_state["limpiar_formulario"] = True
             st.rerun()
 
-    if st.session_state["productos_seleccionados"]:
+        if st.session_state["productos_seleccionados"]:
         st.subheader("📦 Productos en la compra actual")
 
         for i, prod in enumerate(st.session_state["productos_seleccionados"]):
@@ -135,7 +131,7 @@ def modulo_compras():
                 nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
 
                 fecha = datetime.now().strftime("%Y-%m-%d")
-                id_empleado = 1  
+                id_empleado = 1
 
                 cursor.execute(
                     "INSERT INTO Compra (Id_compra, Fecha, Id_empleado) VALUES (%s, %s, %s)",
@@ -151,6 +147,7 @@ def modulo_compras():
                 conn.commit()
                 st.success(f"📦 Compra registrada exitosamente con ID {nuevo_id}.")
                 st.session_state["productos_seleccionados"] = []
+                st.session_state["limpiar_formulario"] = True
                 st.rerun()
 
             except Exception as e:
