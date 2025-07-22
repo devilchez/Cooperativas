@@ -9,12 +9,11 @@ def verificar_usuario(usuario, contrasena):
 
     try:
         cursor = con.cursor()
-        
+        # Traemos Id_empleado y nombre para guardar en sesión
         query = "SELECT Id_empleado, nombre FROM Empleado WHERE Usuario = %s AND contrasena = %s LIMIT 1"
         cursor.execute(query, (usuario, contrasena))
         resultado = cursor.fetchone()
-        return resultado  
-        
+        return resultado  # Puede ser None si no encuentra
     finally:
         con.close()
 
@@ -30,12 +29,13 @@ def login():
 
         resultado = verificar_usuario(usuario.strip(), contrasena.strip())
         if resultado:
-            id_empleado, nombre_empleado = resultado  
+            id_empleado, nombre_empleado = resultado
             st.session_state["logueado"] = True
             st.session_state["usuario"] = usuario.strip()
             st.session_state["nombre_empleado"] = nombre_empleado
-            st.session_state["id_empleado"] = id_empleado  
+            st.session_state["id_empleado"] = id_empleado
             st.success(f"✔️ Bienvenido {nombre_empleado}")
             st.rerun()
         else:
             st.error("❌ ID Empleado o contraseña incorrectos")
+
