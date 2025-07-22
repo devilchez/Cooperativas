@@ -3,146 +3,142 @@ from datetime import datetime
 from config.conexion import obtener_conexion
 
 def modulo_ventas():
-    st.title("🛒 Registro de Venta")
+    st.title("🛒 Registro de Ventas")
 
     conn = obtener_conexion()
     cursor = conn.cursor()
 
-    Usuario = st.session_state.get("usuario")
-    if not Usuario:
-        st.error("❌ No has iniciado sesión.")
+    # Validar sesión activa
+    usuario = st.session_state.get("usuario")
+    if not usuario:
+        st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
 
-    cursor.execute("SELECT cod_barra, nombre, precio_venta FROM Producto")
-    productos = cursor.fetchall()
-
-    if not productos:
-        st.warning("⚠️ No hay productos disponibles.")
+    # Obtener id_empleado del usuario
+    cursor.execute("SELECT Id_empleado FROM Empleado WHERE Usuario = %s", (usuario,))
+    resultado_empleado = cursor.fetchone()
+    if not resultado_empleado:
+        st.error("❌ No se encontró el usuario en la tabla Empleado.")
         return
+    id_empleado = resultado_empleado[0]
 
+    # Fecha de venta
+    fecha_venta = datetime.now().strftime("%Y-%m-%d")
+    st.text_input("🗓️ Fecha de la venta", value=fecha_venta, disabled=True)
+    st.text_input("🧑‍💼 Código del empleado", value=id_empleado, disabled=True)
+
+    # Inicializar lista si no existe
     if "productos_vendidos" not in st.session_state:
         st.session_state["productos_vendidos"] = []
-    if "editar_indice_venta" not in st.session_state:
-        st.session_state["editar_indice_venta"] = None
-    if "codigo_barras_venta" not in st.session_state:
-        st.session_state["codigo_barras_venta"] = ""
-    if "cantidad_venta" not in st.session_state:
-        st.session_state["cantidad_venta"] = 1
 
-    producto = {}
+    # Ingreso del código de barras
+    cod_barras_input = st.text_input("📦 Ingrese el código de barras del producto")
 
-    codigo_barras = st.text_input("Código de barras del producto", key="codigo_barras_venta")
+    if cod_barras_input:
+        cursor.execute("SELECT Nombre FROM Producto WHERE Cod_barra = %s", (cod_barras_input,))
+        producto = cursor.fetchone()
 
-    if codigo_barras:
-        producto_encontrado = None
-        for prod in productos:
-            if prod[0] == codigo_barras:
-                producto_encontrado = prod
-                break
+        if producto:
+            nombre_producto = producto[0]
+            st.success(f"✅ Producto encontrado: **{nombre_producto}**")
 
-        if producto_encontrado:
-            producto["cod_barra"] = producto_encontrado[0]
-            producto["nombre"] = producto_encontrado[1]
-            producto["precio_unitario"] = producto_encontrado[2]
-            st.write(f"Producto encontrado: **{producto['nombre']}**")
-        else:
-            st.warning("⚠️ Producto no encontrado. Verifique el código de barras.")
+            # Obtener precio máximo de compra
+            cursor.execute("SELECT MAX(precio_compra) FROM ProductoxCompra WHERE cod_barra = %s", (cod_barras_input,))
+            max_precio_compra = cursor.fetchone()[0]
 
-    if producto.get("cod_barra"):
-        if st.session_state["editar_indice_venta"] is not None:
-            prod_edit = st.session_state["productos_vendidos"][st.session_state["editar_indice_venta"]]
-            st.session_state["cantidad_venta"] = prod_edit["cantidad"]
+            if max_precio_compra:
+                precio_sugerido = round(max_precio_compra / 0.8, 2)
+                st.number_input("💰 Precio sugerido (calculado)", value=precio_sugerido, disabled=True)
 
-            producto["cod_barra"] = prod_edit["cod_barra"]
-            producto["nombre"] = prod_edit["nombre"]
-            producto["precio_unitario"] = prod_edit["precio_unitario"]
-        else:
-            st.session_state["cantidad_venta"] = 1
+                precio_venta = st.number_input(
+                    "🧾 Precio de venta (editable)", value=precio_sugerido, min_value=0.01, step=0.01
+                )
 
-        producto["cantidad"] = st.number_input(
-            "Cantidad",
-            min_value=1,
-            max_value=10000,
-            step=1,
-            value=st.session_state["cantidad_venta"],
-            key="cantidad_venta"
-        )
+                cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
-        st.markdown(f"💲 Precio unitario: **${producto['precio_unitario']:.2f}**")
-        st.markdown(f"📦 Subtotal: **${producto['cantidad'] * producto['precio_unitario']:.2f}**")
+                subtotal = round(precio_venta * cantidad, 2)
+                st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True)
 
-        if st.button("💾 Agregar producto a la venta"):
-            if st.session_state["editar_indice_venta"] is not None:
-                st.session_state["productos_vendidos"][st.session_state["editar_indice_venta"]] = producto
-                st.success("✅ Producto editado correctamente.")
-                st.session_state["editar_indice_venta"] = None
+                # Botón para agregar a la lista
+                if st.button("🛒 Agregar producto a la venta"):
+                    producto_venta = {
+                        "cod_barra": cod_barras_input,
+                        "nombre": nombre_producto,
+                        "precio_venta": precio_venta,
+                        "cantidad": cantidad,
+                        "subtotal": subtotal
+                    }
+                    st.session_state["productos_vendidos"].append(producto_venta)
+                    st.success("✅ Producto agregado a la venta.")
+                    st.rerun()
             else:
-                st.session_state["productos_vendidos"].append(producto)
-                st.success("✅ Producto agregado a la venta.")
+                st.warning("⚠️ No hay historial de compras para este producto.")
+        else:
+            st.warning("❌ Producto no encontrado.")
 
-            st.session_state["codigo_barras_venta"] = ""
-            st.session_state["cantidad_venta"] = 1
-            st.rerun()
-
+    # Mostrar productos agregados a la venta
     if st.session_state["productos_vendidos"]:
-        st.subheader("🧾 Productos agregados a la venta")
+        st.subheader("🧾 Productos en esta venta")
 
-        total = 0
+        total_venta = 0
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
-            subtotal = prod["cantidad"] * prod["precio_unitario"]
-            total += subtotal
             st.markdown(
-                f"**{prod['nombre']}** — {prod['cantidad']} unidades — Precio unitario: ${prod['precio_unitario']:.2f} — Subtotal: ${subtotal:.2f}"
+                f"**{prod['nombre']}** — {prod['cantidad']} unidad(es) — "
+                f"Precio: ${prod['precio_venta']:.2f} — Subtotal: ${prod['subtotal']:.2f}"
             )
+            total_venta += prod["subtotal"]
+
             col1, col2 = st.columns([1, 1])
             with col1:
-                if st.button(f"✏️ Editar #{i+1}", key=f"editar_{i}"):
-                    st.session_state["editar_indice_venta"] = i
-                    st.rerun()
-            with col2:
                 if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
                     st.session_state["productos_vendidos"].pop(i)
-                    st.success("🗑️ Producto eliminado.")
+                    st.success("🗑️ Producto eliminado de la venta.")
                     st.rerun()
 
-        st.markdown(f"### 💰 Total de la venta: **${total:.2f}**")
+        st.markdown(f"### 💵 Total de la venta: ${total_venta:.2f}")
 
-    st.subheader("📤 Finalizar venta")
+        # Botón para registrar la venta
+        st.markdown("### ✅ Confirmar y registrar venta")
 
-    id_cliente = st.text_input("🧍 ID del Cliente")
-
-    if st.button("✅ Registrar venta"):
-        if not st.session_state["productos_vendidos"]:
-            st.error("❌ No hay productos agregados.")
-        elif not id_cliente:
-            st.error("⚠️ Debes ingresar el ID del cliente.")
-        else:
+        if st.button("💾 Registrar venta"):
             try:
-                fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                # Generar nuevo ID de venta
+                cursor.execute("SELECT MAX(Id_venta) FROM Venta")
+                ultimo_id = cursor.fetchone()[0]
+                nuevo_id_venta = 1 if ultimo_id is None else ultimo_id + 1
 
-                cursor.execute(
-                    "INSERT INTO Venta (Fecha, Id_empleado, Id_cliente) VALUES (%s, %s, %s)",
-                    (fecha_actual, id_empleado, id_cliente)
-                )
-                id_venta = cursor.lastrowid
+                # Insertar cabecera de venta
+                cursor.execute("""
+                    INSERT INTO Venta (Id_venta, Fecha, Id_empleado, Id_cliente)
+                    VALUES (%s, %s, %s, %s)
+                """, (nuevo_id_venta, fecha_venta, id_empleado, None))  # Id_cliente: None por ahora
 
+                # Insertar productos vendidos
                 for prod in st.session_state["productos_vendidos"]:
                     cursor.execute("""
-                        INSERT INTO ProductoxVenta (id_venta, cod_barra, cantidad_vendida, precio_unitario)
+                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_unitario)
                         VALUES (%s, %s, %s, %s)
-                    """, (id_venta, prod["cod_barra"], prod["cantidad"], prod["precio_unitario"]))
+                    """, (
+                        nuevo_id_venta,
+                        prod["cod_barra"],
+                        prod["cantidad"],
+                        prod["precio_venta"]
+                    ))
 
                 conn.commit()
-                st.success(f"🧾 Venta registrada exitosamente con ID {id_venta}.")
+
+                st.success(f"✅ Venta registrada exitosamente con ID {nuevo_id_venta}.")
                 st.session_state["productos_vendidos"] = []
                 st.rerun()
 
             except Exception as e:
-                st.error(f"⚠️ Error al registrar la venta: {e}")
+                st.error(f"❌ Error al registrar la venta: {e}")
 
     st.divider()
     if st.button("🔙 Volver al menú principal"):
         st.session_state["module"] = None
+        st.session_state["productos_vendidos"] = []
         st.rerun()
+
 
 
