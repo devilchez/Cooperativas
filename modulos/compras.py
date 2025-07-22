@@ -39,11 +39,13 @@ def modulo_compras():
 
     codigo_barras_disabled = st.session_state["editar_indice"] is not None
 
+    # NUEVO: Selector para guiar al usuario
     categoria = st.radio(
         "Seleccione el tipo de producto",
         ["Granos básicos", "Otros"]
     )
 
+    # Mostrar unidades según la selección
     if categoria == "Granos básicos":
         unidades_disponibles = ["libras", "quintal", "arroba"]
     else:
@@ -65,7 +67,7 @@ def modulo_compras():
         key="form_data_unidad",
         index=unidades_disponibles.index(st.session_state["form_data"]["unidad"])
         if st.session_state["form_data"]["unidad"] in unidades_disponibles
-        else 0 
+        else 0  # Si cambia la categoría, seleccionar la primera unidad
     )
     st.number_input(
         "Cantidad comprada", min_value=1, max_value=10000, step=1,
@@ -149,7 +151,7 @@ def modulo_compras():
                 nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
 
                 fecha = datetime.now().strftime("%Y-%m-%d")
-                id_empleado = 1  
+                id_empleado = st.session_state["id_empleado"]  # 👈 Toma el ID desde session_state
 
                 cursor.execute(
                     "INSERT INTO Compra (Id_compra, Fecha, Id_empleado) VALUES (%s, %s, %s)",
