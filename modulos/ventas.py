@@ -20,12 +20,12 @@ def modulo_ventas():
     if not resultado_empleado:
         st.error("❌ No se encontró el usuario en la tabla Empleado.")
         return
-    id_empleado = resultado_empleado[0]
+    Usuario = resultado_empleado[0]
 
     # Fecha de venta
     fecha_venta = datetime.now().strftime("%Y-%m-%d")
     st.text_input("🗓️ Fecha de la venta", value=fecha_venta, disabled=True)
-    st.text_input("🧑‍💼 Código del empleado", value=id_empleado, disabled=True)
+    st.text_input("🧑‍💼 Usuario del empleado", value=Usuario, disabled=True)
 
     # Inicializar lista si no existe
     if "productos_vendidos" not in st.session_state:
