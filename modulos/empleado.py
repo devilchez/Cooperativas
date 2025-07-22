@@ -6,8 +6,8 @@ def modulo_empleado():
 
     # Validar sesión activa
     Usuario= st.session_state.get("usuario")
-    id_empleado = st.session_state.get("id_empleado")
-    if not Usuario or not id_empleado:
+   
+    if not Usuario
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
 
