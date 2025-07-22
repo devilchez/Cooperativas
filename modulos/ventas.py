@@ -14,13 +14,13 @@ def modulo_ventas():
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
 
-    # Obtener id_empleado del usuario
-    cursor.execute("SELECT Usuario FROM Empleado WHERE Usuario = %s", (usuario,))
+    # Obtener id_empleado y mostrar usuario
+    cursor.execute("SELECT Id_empleado, Usuario FROM Empleado WHERE Usuario = %s", (usuario,))
     resultado_empleado = cursor.fetchone()
     if not resultado_empleado:
         st.error("❌ No se encontró el usuario en la tabla Empleado.")
         return
-    Usuario = resultado_empleado[0]
+    id_empleado, Usuario = resultado_empleado
 
     # Fecha de venta
     fecha_venta = datetime.now().strftime("%Y-%m-%d")
@@ -139,6 +139,3 @@ def modulo_ventas():
         st.session_state["module"] = None
         st.session_state["productos_vendidos"] = []
         st.rerun()
-
-
-
