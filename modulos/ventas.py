@@ -16,23 +16,25 @@ def modulo_ventas():
 
     # Obtener id_empleado y mostrar usuario
     cursor.execute("SELECT Id_empleado, Usuario FROM Empleado WHERE Usuario = %s", (usuario,))
-    resultado_empleado = cursor.fetchone()
-    if not resultado_empleado:
+    empleado_data = cursor.fetchone()
+    if not empleado_data:
         st.error("❌ No se encontró el usuario en la tabla Empleado.")
         return
-    id_empleado, Usuario = resultado_empleado
 
-    # Fecha de venta
+    id_empleado = empleado_data[0]
+    nombre_usuario = empleado_data[1]
+
+    # Fecha de venta automática
     fecha_venta = datetime.now().strftime("%Y-%m-%d")
     st.text_input("🗓️ Fecha de la venta", value=fecha_venta, disabled=True)
-    st.text_input("🧑‍💼 Usuario del empleado", value=Usuario, disabled=True)
+    st.text_input("🧑‍💼 Usuario del empleado", value=nombre_usuario, disabled=True)
 
     # Inicializar lista si no existe
     if "productos_vendidos" not in st.session_state:
         st.session_state["productos_vendidos"] = []
 
-    # Ingreso del código de barras
-    cod_barras_input = st.text_input("📦 Ingrese el código de barras del producto")
+    # Código de barras
+    cod_barras_input = st.text_input("📦 Ingrese el código de barras del producto").strip()
 
     if cod_barras_input:
         cursor.execute("SELECT Nombre FROM Producto WHERE Cod_barra = %s", (cod_barras_input,))
@@ -42,12 +44,16 @@ def modulo_ventas():
             nombre_producto = producto[0]
             st.success(f"✅ Producto encontrado: **{nombre_producto}**")
 
-            # Obtener precio máximo de compra
-            cursor.execute("SELECT MAX(precio_compra) FROM ProductoxCompra WHERE cod_barra = %s", (cod_barras_input,))
+            # Obtener precio máximo de compra (sugerido)
+            cursor.execute("""
+                SELECT MAX(precio_compra)
+                FROM ProductoxCompra
+                WHERE cod_barra = %s
+            """, (cod_barras_input,))
             max_precio_compra = cursor.fetchone()[0]
 
-            if max_precio_compra:
-                precio_sugerido = round(max_precio_compra / 0.8, 2)
+            if max_precio_compra is not None:
+                precio_sugerido = round(float(max_precio_compra) / 0.8, 2)
                 st.number_input("💰 Precio sugerido (calculado)", value=precio_sugerido, disabled=True)
 
                 precio_venta = st.number_input(
@@ -59,16 +65,14 @@ def modulo_ventas():
                 subtotal = round(precio_venta * cantidad, 2)
                 st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True)
 
-                # Botón para agregar a la lista
                 if st.button("🛒 Agregar producto a la venta"):
-                    producto_venta = {
+                    st.session_state["productos_vendidos"].append({
                         "cod_barra": cod_barras_input,
                         "nombre": nombre_producto,
                         "precio_venta": precio_venta,
                         "cantidad": cantidad,
                         "subtotal": subtotal
-                    }
-                    st.session_state["productos_vendidos"].append(producto_venta)
+                    })
                     st.success("✅ Producto agregado a la venta.")
                     st.rerun()
             else:
@@ -76,9 +80,9 @@ def modulo_ventas():
         else:
             st.warning("❌ Producto no encontrado.")
 
-    # Mostrar productos agregados a la venta
+    # Mostrar productos en la venta
     if st.session_state["productos_vendidos"]:
-        st.subheader("🧾 Productos en esta venta")
+        st.subheader("🧾 Productos agregados a esta venta")
 
         total_venta = 0
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
@@ -88,7 +92,7 @@ def modulo_ventas():
             )
             total_venta += prod["subtotal"]
 
-            col1, col2 = st.columns([1, 1])
+            col1, col2 = st.columns(2)
             with col1:
                 if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
                     st.session_state["productos_vendidos"].pop(i)
@@ -97,23 +101,22 @@ def modulo_ventas():
 
         st.markdown(f"### 💵 Total de la venta: ${total_venta:.2f}")
 
-        # Botón para registrar la venta
+        # Confirmar y registrar
         st.markdown("### ✅ Confirmar y registrar venta")
-
         if st.button("💾 Registrar venta"):
             try:
-                # Generar nuevo ID de venta
+                # Nuevo ID de venta
                 cursor.execute("SELECT MAX(Id_venta) FROM Venta")
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id_venta = 1 if ultimo_id is None else ultimo_id + 1
 
-                # Insertar cabecera de venta
+                # Insertar en tabla Venta
                 cursor.execute("""
                     INSERT INTO Venta (Id_venta, Fecha, Id_empleado, Id_cliente)
                     VALUES (%s, %s, %s, %s)
-                """, (nuevo_id_venta, fecha_venta, id_empleado, None))  # Id_cliente: None por ahora
+                """, (nuevo_id_venta, fecha_venta, id_empleado, None))  # Cliente: por defecto None
 
-                # Insertar productos vendidos
+                # Insertar en ProductoxVenta
                 for prod in st.session_state["productos_vendidos"]:
                     cursor.execute("""
                         INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_unitario)
