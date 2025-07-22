@@ -10,7 +10,7 @@ def modulo_empleado():
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
 
-    Usuario = st.text_input("Ingrse un usuario")
+    Usuario = st.text_input("Ingrese un usuario")
     Nombre = st.text_input("Nombre del empleado")
     DUI = st.text_input("Ingrse su DUI (sin guión)")
     Contacto = st.text_input("Número de telefono")
