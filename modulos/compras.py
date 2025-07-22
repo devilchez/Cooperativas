@@ -1,112 +1,88 @@
-from config.conexion import obtener_conexion
 import streamlit as st
+from datetime import datetime
+from config.conexion import obtener_conexion
 
 def modulo_compras():
-    st.title("📦 Registro de Compras")
+    st.title("📦 Módulo de Compras")
+
+    # Inicializar variables de sesión
+    if "productos_agregados" not in st.session_state:
+        st.session_state.productos_agregados = []
+    if "modo_edicion" not in st.session_state:
+        st.session_state.modo_edicion = False
+    if "indice_edicion" not in st.session_state:
+        st.session_state.indice_edicion = None
+    if "form_data" not in st.session_state:
+        st.session_state.form_data = {"cod_barra": "", "cantidad": 0}
 
     conn = obtener_conexion()
     cursor = conn.cursor()
-
-    # Cargar productos existentes para autocompletado
     cursor.execute("SELECT Cod_barra, Nombre, Precio_venta FROM Producto")
-    productos_disponibles = cursor.fetchall()
+    productos = cursor.fetchall()
 
-    if "productos_compra" not in st.session_state:
-        st.session_state.productos_compra = []
+    if not productos:
+        st.warning("⚠️ No hay productos disponibles.")
+        return
 
-    if "modo_edicion" not in st.session_state:
-        st.session_state.modo_edicion = False
+    producto_dict = {cod: (cod, nombre, precio) for cod, nombre, precio in productos}
 
-    if "indice_edicion" not in st.session_state:
-        st.session_state.indice_edicion = None
+    with st.form("formulario_producto", clear_on_submit=False):
+        cod_barra = st.text_input("Código de Barras", value=st.session_state.form_data["cod_barra"])
+        cantidad = st.number_input("Cantidad", min_value=1, value=st.session_state.form_data["cantidad"])
 
-    st.subheader("Agregar Producto a la Compra")
+        submitted = st.form_submit_button("Agregar producto" if not st.session_state.modo_edicion else "Actualizar producto")
 
-    producto = {
-        "cod_barra": "",
-        "nombre": "",
-        "cantidad": 1,
-        "precio_unitario": 0.0,
-        "precio_venta": 0.0
-    }
-
-    if st.session_state.modo_edicion and st.session_state.indice_edicion is not None:
-        producto_existente = st.session_state.productos_compra[st.session_state.indice_edicion]
-        producto.update(producto_existente)
-
-    cod_barra = st.text_input("Código de barras", value=producto["cod_barra"])
-    cantidad = st.number_input("Cantidad", min_value=1, value=producto["cantidad"])
-    precio_unitario = st.number_input("Precio unitario de compra", min_value=0.0, value=producto["precio_unitario"], step=0.1)
-
-    # Buscar producto por código
-    producto_encontrado = next((p for p in productos_disponibles if p[0] == cod_barra), None)
-
-    if producto_encontrado:
-        producto["cod_barra"] = producto_encontrado[0]
-        producto["nombre"] = producto_encontrado[1]
-        producto["precio_venta"] = producto_encontrado[2]
-    else:
-        producto["cod_barra"] = cod_barra
-        producto["nombre"] = st.text_input("Nombre del producto", value=producto["nombre"])
-        producto["precio_venta"] = st.number_input("Precio de venta sugerido", min_value=0.0, value=producto["precio_venta"], step=0.1)
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        if st.session_state.modo_edicion:
-            if st.button("Actualizar"):
-                st.session_state.productos_compra[st.session_state.indice_edicion] = {
-                    "cod_barra": producto["cod_barra"],
-                    "nombre": producto["nombre"],
-                    "cantidad": cantidad,
-                    "precio_unitario": precio_unitario,
-                    "precio_venta": producto["precio_venta"]
+        if submitted:
+            if cod_barra not in producto_dict:
+                st.error("❌ El producto no se encuentra registrado.")
+            else:
+                cod, nombre, precio = producto_dict[cod_barra]
+                nuevo_producto = {
+                    "cod_barra": cod,
+                    "nombre": nombre,
+                    "precio_venta": precio,
+                    "cantidad": cantidad
                 }
-                st.success("Producto actualizado.")
-                st.session_state.modo_edicion = False
-                st.session_state.indice_edicion = None
-                st.experimental_rerun()
-        else:
-            if st.button("Agregar"):
-                st.session_state.productos_compra.append({
-                    "cod_barra": producto["cod_barra"],
-                    "nombre": producto["nombre"],
-                    "cantidad": cantidad,
-                    "precio_unitario": precio_unitario,
-                    "precio_venta": producto["precio_venta"]
-                })
-                st.success("Producto agregado.")
-                st.experimental_rerun()
 
-    with col2:
-        if st.session_state.modo_edicion:
-            if st.button("Cancelar"):
-                st.session_state.modo_edicion = False
-                st.session_state.indice_edicion = None
-                st.experimental_rerun()
+                if st.session_state.modo_edicion:
+                    st.session_state.productos_agregados[st.session_state.indice_edicion] = nuevo_producto
+                    st.success("✅ Producto actualizado correctamente.")
+                    st.session_state.modo_edicion = False
+                    st.session_state.indice_edicion = None
+                else:
+                    st.session_state.productos_agregados.append(nuevo_producto)
+                    st.success("✅ Producto agregado correctamente.")
 
-    st.subheader("Productos en esta compra")
+                
+                st.session_state.form_data = {"cod_barra": "", "cantidad": 0}
 
-    if st.session_state.productos_compra:
-        for i, p in enumerate(st.session_state.productos_compra):
-            col1, col2, col3, col4, col5, col6 = st.columns([2, 3, 2, 3, 2, 2])
+    st.subheader("🧾 Lista de productos por registrar:")
+    if st.session_state.productos_agregados:
+        for i, prod in enumerate(st.session_state.productos_agregados):
+            col1, col2, col3 = st.columns([4, 1, 1])
             with col1:
-                st.write(p["cod_barra"])
+                st.write(f"🔹 **{prod['nombre']}** - {prod['cantidad']} unidades - ${prod['precio_venta']}")
             with col2:
-                st.write(p["nombre"])
-            with col3:
-                st.write(p["cantidad"])
-            with col4:
-                st.write(f"${p['precio_unitario']:.2f}")
-            with col5:
                 if st.button("Editar", key=f"editar_{i}"):
+                    st.session_state.form_data = {
+                        "cod_barra": prod["cod_barra"],
+                        "cantidad": prod["cantidad"]
+                    }
                     st.session_state.modo_edicion = True
                     st.session_state.indice_edicion = i
-                    st.experimental_rerun()
-            with col6:
+            with col3:
                 if st.button("Eliminar", key=f"eliminar_{i}"):
-                    st.session_state.productos_compra.pop(i)
-                    st.success("Producto eliminado.")
-                    st.experimental_rerun()
+                    del st.session_state.productos_agregados[i]
+                    st.success("🗑️ Producto eliminado.")
+                    st.rerun()
+
+        if st.button("Registrar compra"):
+            
+            st.success("💾 Compra registrada exitosamente.")
+            st.session_state.productos_agregados.clear()
     else:
-        st.info("No hay productos agregados.")
+        st.info("🕐 Aún no se han agregado productos.")
+
+    if st.button("🔙 Volver al menú principal"):
+        del st.session_state.module
+        st.rerun()
