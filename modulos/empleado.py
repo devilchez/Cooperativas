@@ -46,7 +46,8 @@ def modulo_empleado():
                 cursor.close()
                 conn.close()
 
-    
+    if st.button("🆕 Nuevo empleado"):
+    st.experimental_rerun()
     
     st.markdown("---")
     if st.button("⬅ Volver al menú principal"):
