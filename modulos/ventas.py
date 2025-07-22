@@ -57,6 +57,8 @@ def modulo_ventas():
             nombre_producto = producto[0]
             st.success(f"✅ Producto encontrado: **{nombre_producto}**")
 
+            es_grano_basico = st.radio("🌾 ¿Es grano básico?", ["No", "Sí"], index=0, key="es_grano_basico")
+
             cursor.execute("SELECT MAX(precio_compra) FROM ProductoxCompra WHERE cod_barra = %s", (cod_barras_input,))
             max_precio_compra = cursor.fetchone()[0]
 
