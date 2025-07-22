@@ -15,7 +15,6 @@ def modulo_compras():
         st.warning("⚠️ No hay productos disponibles.")
         return
 
-    # Inicializar estados
     if "productos_seleccionados" not in st.session_state:
         st.session_state["productos_seleccionados"] = []
     if "editar_indice" not in st.session_state:
@@ -28,7 +27,7 @@ def modulo_compras():
             "unidad": "libras"
         }
 
-    # Si estamos editando, cargar valores SOLO UNA VEZ
+
     if st.session_state["editar_indice"] is not None and "edit_loaded" not in st.session_state:
         prod_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
         st.session_state["form_data"] = {
@@ -39,10 +38,10 @@ def modulo_compras():
         }
         st.session_state["edit_loaded"] = True
 
-    # 🔒 Bloquear código de barras en modo edición
+
     codigo_barras_disabled = st.session_state["editar_indice"] is not None
 
-    # 📦 Widgets del formulario
+
     st.text_input(
         "Código de barras del producto",
         key="form_data_codigo_barras",
@@ -66,7 +65,7 @@ def modulo_compras():
         value=st.session_state["form_data"]["cantidad"]
     )
 
-    # Buscar producto si no estamos editando
+
     producto_encontrado = None
     if st.session_state["form_data_codigo_barras"] and not codigo_barras_disabled:
         producto_encontrado = next(
@@ -78,11 +77,11 @@ def modulo_compras():
         else:
             st.warning("⚠️ Producto no encontrado. Verifique el código de barras.")
 
-    # 💾 Botón para agregar o actualizar producto
+
     boton_texto = "💾 Actualizar producto" if st.session_state["editar_indice"] is not None else "💾 Agregar producto"
     if st.button(boton_texto):
         if producto_encontrado or codigo_barras_disabled:
-            # En edición usar prod_edit, en nuevo usar producto_encontrado
+            
             if st.session_state["editar_indice"] is not None:
                 prod_ref = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
             else:
@@ -108,7 +107,7 @@ def modulo_compras():
                 st.session_state["productos_seleccionados"].append(producto)
                 st.success("✅ Producto agregado a la compra.")
 
-            # Resetear formulario
+            
             st.session_state["form_data"] = {
                 "codigo_barras": "",
                 "precio_compra": 0.01,
@@ -119,7 +118,7 @@ def modulo_compras():
         else:
             st.error("⚠️ Código de barras inválido. No se puede agregar el producto.")
 
-    # 📋 Mostrar lista de productos
+
     if st.session_state["productos_seleccionados"]:
         st.subheader("📦 Productos en la compra actual")
         for i, prod in enumerate(st.session_state["productos_seleccionados"]):
@@ -137,7 +136,6 @@ def modulo_compras():
                     st.success("🗑️ Producto eliminado.")
                     st.rerun()
 
-    # 📥 Botón para registrar compra
     if st.button("✅ Registrar compra"):
         if not st.session_state["productos_seleccionados"]:
             st.error("❌ No hay productos agregados.")
