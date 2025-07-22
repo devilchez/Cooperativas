@@ -9,7 +9,7 @@ def verificar_usuario(usuario, contrasena):
 
     try:
         cursor = con.cursor()
-        # Traemos Id_empleado y nombre para guardar en sesión
+        
         query = "SELECT Id_empleado, nombre FROM Empleado WHERE Usuario = %s AND contrasena = %s LIMIT 1"
         cursor.execute(query, (usuario, contrasena))
         resultado = cursor.fetchone()
