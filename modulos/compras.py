@@ -5,7 +5,6 @@ from config.conexion import obtener_conexion
 def modulo_compras():
     st.title("📦 Módulo de Compras")
 
-    # Inicializar variables de sesión
     if "productos_agregados" not in st.session_state:
         st.session_state.productos_agregados = []
     if "modo_edicion" not in st.session_state:
@@ -14,6 +13,7 @@ def modulo_compras():
         st.session_state.indice_edicion = None
     if "form_data" not in st.session_state:
         st.session_state.form_data = {"cod_barra": "", "cantidad": 0}
+
 
     conn = obtener_conexion()
     cursor = conn.cursor()
@@ -53,7 +53,6 @@ def modulo_compras():
                     st.session_state.productos_agregados.append(nuevo_producto)
                     st.success("✅ Producto agregado correctamente.")
 
-                
                 st.session_state.form_data = {"cod_barra": "", "cantidad": 0}
 
     st.subheader("🧾 Lista de productos por registrar:")
@@ -72,12 +71,12 @@ def modulo_compras():
                     st.session_state.indice_edicion = i
             with col3:
                 if st.button("Eliminar", key=f"eliminar_{i}"):
-                    del st.session_state.productos_agregados[i]
+                    st.session_state.productos_agregados.pop(i)
                     st.success("🗑️ Producto eliminado.")
+                    
                     st.rerun()
 
         if st.button("Registrar compra"):
-            
             st.success("💾 Compra registrada exitosamente.")
             st.session_state.productos_agregados.clear()
     else:
