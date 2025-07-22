@@ -5,7 +5,7 @@ def modulo_producto():
     st.title("📦 Registro de productos")
 
  
-    id_empleado = st.session_state.get("Usuario")
+    Usuario = st.session_state.get("Usuario")
     if not id_empleado:
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
