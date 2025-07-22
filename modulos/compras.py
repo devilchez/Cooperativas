@@ -1,147 +1,112 @@
-import streamlit as st
-from datetime import datetime
 from config.conexion import obtener_conexion
+import streamlit as st
 
 def modulo_compras():
-    st.title("🧾 Registro de Compras")
+    st.title("📦 Registro de Compras")
 
     conn = obtener_conexion()
     cursor = conn.cursor()
 
+    # Cargar productos existentes para autocompletado
     cursor.execute("SELECT Cod_barra, Nombre, Precio_venta FROM Producto")
-    productos = cursor.fetchall()
+    productos_disponibles = cursor.fetchall()
 
-    if not productos:
-        st.warning("⚠️ No hay productos disponibles.")
-        return
+    if "productos_compra" not in st.session_state:
+        st.session_state.productos_compra = []
 
-    for key, value in {
-        "productos_seleccionados": [],
-        "editar_indice": None,
-        "codigo_barras": "",
-        "precio_compra": 0.01,
+    if "modo_edicion" not in st.session_state:
+        st.session_state.modo_edicion = False
+
+    if "indice_edicion" not in st.session_state:
+        st.session_state.indice_edicion = None
+
+    st.subheader("Agregar Producto a la Compra")
+
+    producto = {
+        "cod_barra": "",
+        "nombre": "",
         "cantidad": 1,
-        "unidad": "libras"
-    }.items():
-        if key not in st.session_state:
-            st.session_state[key] = value
+        "precio_unitario": 0.0,
+        "precio_venta": 0.0
+    }
 
-    producto = {}
+    if st.session_state.modo_edicion and st.session_state.indice_edicion is not None:
+        producto_existente = st.session_state.productos_compra[st.session_state.indice_edicion]
+        producto.update(producto_existente)
 
-    codigo_barras = st.text_input("Código de barras del producto", value=st.session_state["codigo_barras"])
-    st.session_state["codigo_barras"] = codigo_barras
+    cod_barra = st.text_input("Código de barras", value=producto["cod_barra"])
+    cantidad = st.number_input("Cantidad", min_value=1, value=producto["cantidad"])
+    precio_unitario = st.number_input("Precio unitario de compra", min_value=0.0, value=producto["precio_unitario"], step=0.1)
 
-    if codigo_barras:
-        producto_encontrado = next((prod for prod in productos if prod[0] == codigo_barras), None)
-        if producto_encontrado:
-            producto["cod_barra"], producto["nombre"], producto["precio_venta"] = producto_encontrado
-            st.write(f"Producto encontrado: **{producto['nombre']}**")
+    # Buscar producto por código
+    producto_encontrado = next((p for p in productos_disponibles if p[0] == cod_barra), None)
+
+    if producto_encontrado:
+        producto["cod_barra"] = producto_encontrado[0]
+        producto["nombre"] = producto_encontrado[1]
+        producto["precio_venta"] = producto_encontrado[2]
+    else:
+        producto["cod_barra"] = cod_barra
+        producto["nombre"] = st.text_input("Nombre del producto", value=producto["nombre"])
+        producto["precio_venta"] = st.number_input("Precio de venta sugerido", min_value=0.0, value=producto["precio_venta"], step=0.1)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.session_state.modo_edicion:
+            if st.button("Actualizar"):
+                st.session_state.productos_compra[st.session_state.indice_edicion] = {
+                    "cod_barra": producto["cod_barra"],
+                    "nombre": producto["nombre"],
+                    "cantidad": cantidad,
+                    "precio_unitario": precio_unitario,
+                    "precio_venta": producto["precio_venta"]
+                }
+                st.success("Producto actualizado.")
+                st.session_state.modo_edicion = False
+                st.session_state.indice_edicion = None
+                st.experimental_rerun()
         else:
-            st.warning("⚠️ Producto no encontrado. Verifique el código de barras.")
+            if st.button("Agregar"):
+                st.session_state.productos_compra.append({
+                    "cod_barra": producto["cod_barra"],
+                    "nombre": producto["nombre"],
+                    "cantidad": cantidad,
+                    "precio_unitario": precio_unitario,
+                    "precio_venta": producto["precio_venta"]
+                })
+                st.success("Producto agregado.")
+                st.experimental_rerun()
 
-    if producto.get("cod_barra"):
-        if st.session_state["editar_indice"] is not None:
-            prod_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
-            st.session_state["precio_compra"] = float(prod_edit["precio_compra"])
-            st.session_state["cantidad"] = int(prod_edit["cantidad"])
-            st.session_state["unidad"] = prod_edit["unidad"]
+    with col2:
+        if st.session_state.modo_edicion:
+            if st.button("Cancelar"):
+                st.session_state.modo_edicion = False
+                st.session_state.indice_edicion = None
+                st.experimental_rerun()
 
-            producto.update({
-                "cod_barra": prod_edit["cod_barra"],
-                "nombre": prod_edit["nombre"],
-                "precio_venta": prod_edit["precio_venta"],
-            })
+    st.subheader("Productos en esta compra")
 
-        producto["precio_compra"] = st.number_input(
-            "Precio de compra",
-            min_value=0.01,
-            step=0.01,
-            value=st.session_state["precio_compra"]
-        )
-        st.session_state["precio_compra"] = producto["precio_compra"]
-
-        unidades_disponibles = ["libras", "kilogramos", "unidades", "docena"]
-        producto["unidad"] = st.selectbox(
-            "Unidad de compra",
-            unidades_disponibles,
-            index=unidades_disponibles.index(st.session_state["unidad"])
-        )
-        st.session_state["unidad"] = producto["unidad"]
-
-        producto["cantidad"] = st.number_input(
-            "Cantidad comprada",
-            min_value=1,
-            max_value=10000,
-            step=1,
-            value=st.session_state["cantidad"]
-        )
-        st.session_state["cantidad"] = producto["cantidad"]
-
-        if st.button("💾 Agregar producto"):
-            if st.session_state["editar_indice"] is not None:
-                st.session_state["productos_seleccionados"][st.session_state["editar_indice"]] = producto
-                st.success("✅ Producto editado correctamente.")
-                st.session_state["editar_indice"] = None
-            else:
-                st.session_state["productos_seleccionados"].append(producto)
-                st.success("✅ Producto agregado a la compra.")
-
-            # Limpiar campos del formulario (NO usar rerun)
-            st.session_state["codigo_barras"] = ""
-            st.session_state["precio_compra"] = 0.01
-            st.session_state["cantidad"] = 1
-            st.session_state["unidad"] = "libras"
-
-
-    if st.session_state["productos_seleccionados"]:
-        st.subheader("📦 Productos en la compra actual")
-
-        for i, prod in enumerate(st.session_state["productos_seleccionados"]):
-            st.markdown(
-                f"**{prod['nombre']}** — {prod['cantidad']} {prod['unidad']} — Precio compra: ${prod['precio_compra']:.2f}"
-            )
-            col1, col2 = st.columns([1, 1])
+    if st.session_state.productos_compra:
+        for i, p in enumerate(st.session_state.productos_compra):
+            col1, col2, col3, col4, col5, col6 = st.columns([2, 3, 2, 3, 2, 2])
             with col1:
-                if st.button(f"✏️ Editar #{i+1}", key=f"editar_{i}"):
-                    st.session_state["editar_indice"] = i
+                st.write(p["cod_barra"])
             with col2:
-                if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
-                    st.session_state["productos_seleccionados"].pop(i)
-                    st.success("🗑️ Producto eliminado.")
-                    break  # Evita errores de índice tras eliminación
-
-    st.subheader("📥 Finalizar registro")
-
-    if st.button("✅ Registrar compra"):
-        if not st.session_state["productos_seleccionados"]:
-            st.error("❌ No hay productos agregados.")
-        else:
-            try:
-                cursor.execute("SELECT MAX(Id_compra) FROM Compra")
-                ultimo_id = cursor.fetchone()[0]
-                nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
-
-                fecha = datetime.now().strftime("%Y-%m-%d")
-                id_empleado = 1  # Reemplazar con el real
-
-                cursor.execute(
-                    "INSERT INTO Compra (Id_compra, Fecha, Id_empleado) VALUES (%s, %s, %s)",
-                    (nuevo_id, fecha, id_empleado)
-                )
-
-                for prod in st.session_state["productos_seleccionados"]:
-                    cursor.execute(
-                        "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad) VALUES (%s, %s, %s, %s, %s)",
-                        (nuevo_id, prod["cod_barra"], prod["cantidad"], prod["precio_compra"], prod["unidad"])
-                    )
-
-                conn.commit()
-                st.success(f"📦 Compra registrada exitosamente con ID {nuevo_id}.")
-                st.session_state["productos_seleccionados"] = []
-
-            except Exception as e:
-                st.error(f"⚠️ Error al guardar en la base de datos: {e}")
-
-    st.divider()
-    if st.button("🔙 Volver al menú principal"):
-        st.session_state["module"] = None
+                st.write(p["nombre"])
+            with col3:
+                st.write(p["cantidad"])
+            with col4:
+                st.write(f"${p['precio_unitario']:.2f}")
+            with col5:
+                if st.button("Editar", key=f"editar_{i}"):
+                    st.session_state.modo_edicion = True
+                    st.session_state.indice_edicion = i
+                    st.experimental_rerun()
+            with col6:
+                if st.button("Eliminar", key=f"eliminar_{i}"):
+                    st.session_state.productos_compra.pop(i)
+                    st.success("Producto eliminado.")
+                    st.experimental_rerun()
+    else:
+        st.info("No hay productos agregados.")
