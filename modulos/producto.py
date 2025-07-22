@@ -38,7 +38,7 @@ def modulo_producto():
                     st.session_state.clear()
                     st.session_state.usuario = Usuario  # mantener sesión
                     st.success(f"✅ Producto '{Nombre}' registrado correctamente.")
-                    st.experimental_rerun()
+                    st.rerun()
 
             except Exception as e:
                 st.error(f"❌ Error al guardar el producto: {e}")
