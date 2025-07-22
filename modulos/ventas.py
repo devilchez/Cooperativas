@@ -8,8 +8,8 @@ def modulo_ventas():
     conn = obtener_conexion()
     cursor = conn.cursor()
 
-    id_empleado = st.session_state.get("id_empleado")
-    if not id_empleado:
+    Usuario = st.session_state.get("usuario")
+    if not Usuario:
         st.error("❌ No has iniciado sesión.")
         return
 
