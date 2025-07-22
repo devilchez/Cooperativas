@@ -12,8 +12,11 @@ def obtener_conexion():
             port=3306
         )
         if conexion.is_connected():
-            st.write("✅ Conexión establecida")
+            if "conexion_exitosa" not in st.session_state:
+                st.success("✅ Conexión establecida")
+                st.session_state["conexion_exitosa"] = True
             return conexion
+
         else:
             st.error("❌ Conexión fallida (is_connected = False)")
             return None
