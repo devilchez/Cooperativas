@@ -53,7 +53,7 @@ def menu_principal():
     with col7: 
         if st.button("📋 Inventario"):
             st.session_state.module = "Inventario"
-            st.rerun(
+            st.rerun()
 
     st.markdown("---")
     if st.button("🔓 Cerrar sesión"):
