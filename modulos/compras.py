@@ -139,7 +139,7 @@ def modulo_compras():
         st.subheader("📦 Productos en la compra actual")
         for i, prod in enumerate(st.session_state["productos_seleccionados"]):
             st.markdown(
-                f"**{prod['nombre']}** — {prod['cantidad']} {prod['unidad']} — Precio de Compra: ${prod['precio_compra']:.2f} — Precio de Venta: ${prod['precio_venta']:.2f}"
+                f"**{prod['nombre']}** — {prod['cantidad']} {prod['unidad']} — Precio de Compra: ${prod['precio_compra']:.2f}"
             )
             col1, col2 = st.columns([1, 1])
             with col1:
