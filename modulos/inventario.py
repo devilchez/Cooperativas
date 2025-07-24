@@ -1,8 +1,11 @@
-import streamlit as st
+import streamlit as st  
 import pandas as pd
 from config.conexion import obtener_conexion
 from datetime import datetime, timedelta
 
+def resaltar_stock_bajo(fila):
+    color = 'background-color: #ffcccc' if fila["Stock actual"] < 10 else ''
+    return ['' if col != "Stock actual" else color for col in fila.index]
 
 def modulo_inventario():
     st.title("📦 Inventario Actual")
@@ -62,7 +65,6 @@ def modulo_inventario():
             fila = cursor.fetchone()
             unidad = fila[0] if fila else "N/A"
 
-            # Este total vendido es solamente informativo, luego se elimina antes de mostrar el frame
             cursor.execute(
                 """
                 SELECT IFNULL(SUM(cantidad_vendida), 0)
@@ -85,7 +87,7 @@ def modulo_inventario():
                 "_Total_vendidos": total_vendido
             })
 
-        # 2) DataFrame y modo de visualizacion
+        # Ordenar y mostrar tabla de inventario
         df = pd.DataFrame(inventario).fillna(0)
         if opcion_orden == "Nombre (A-Z)":
             df = df.sort_values("Nombre", ascending=True)
@@ -94,34 +96,32 @@ def modulo_inventario():
         elif opcion_orden == "Stock (Ascendente)":
             df = df.sort_values("Stock actual", ascending=True)
         elif opcion_orden == "Stock (Descendente)":
-            df = df.sort_values("Stock actual", ascending=False)
+            df = df.sort_values("Stock actual", descending=True)
         elif opcion_orden == "Más vendidos":
             df = df.sort_values("_Total_vendidos", ascending=False)
         else:
             df = df.sort_values("_Total_vendidos", ascending=True)
         df = df.drop(columns=["_Total_vendidos"])
 
-        # 3) Redondeo sin formula round() ya que me estaba dando problemas
-        styled_df = df.style.format({
+        # Resaltar de rojo productos con stock inferior a 10
+        styled_df = df.style.apply(resaltar_stock_bajo, axis=1).format({
             "Precio venta ($)": "{:.2f}",
             "Precio promedio compra ($)": "{:.2f}"
         })
 
-        # Se muestra el inventario
         st.subheader("📋 Tabla de inventario")
         st.dataframe(styled_df, use_container_width=True)
 
-        '''
-        # --- Productos próximos a vencer ---
+        # Apartado de los Productos próximos a vencer 
         hoy = datetime.now().date()
         prox_mes = (datetime.now() + timedelta(days=30)).date()
         cursor.execute(
             """
-            SELECT pc.cod_barra, p.nombre, pc.unidad, pc.fecha_de_vencimiento
+            SELECT pc.Cod_barra, p.nombre, pc.unidad, pc.fecha_vencimiento
             FROM ProductoxCompra pc
             JOIN Producto p ON pc.cod_barra = p.cod_barra
-            WHERE pc.fecha_de_vencimiento BETWEEN %s AND %s
-            ORDER BY pc.fecha_de_vencimiento ASC
+            WHERE pc.fecha_vencimiento BETWEEN %s AND %s
+            ORDER BY pc.fecha_vencimiento ASC
             """,
             (hoy, prox_mes)
         )
@@ -137,7 +137,6 @@ def modulo_inventario():
             st.dataframe(df_v, use_container_width=True)
         else:
             st.info("✅ No hay productos próximos a vencer en el próximo mes.")
-        '''
 
     except Exception as e:
         st.error(f"❌ Error al cargar el inventario: {e}")
