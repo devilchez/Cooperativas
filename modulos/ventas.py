@@ -55,16 +55,15 @@ def modulo_ventas():
             unidad_grano = None
             if es_grano_basico == "Sí":
                 unidad_grano = st.selectbox("⚖️ Seleccione la unidad del producto", ["Quintal", "Libra", "Arroba"])
-
+            
             cursor.execute("SELECT MAX(precio_compra) FROM ProductoxCompra WHERE cod_barra = %s", (cod_barras_input,))
             max_precio_compra = cursor.fetchone()[0]
 
             if max_precio_compra:
                 precio_sugerido = round(float(max_precio_compra) / 0.8, 2)
 
-                # No se muestra el precio sugerido, pero se usa para cálculo
                 precio_venta = st.number_input("🧾 Precio de venta", value=precio_sugerido, min_value=0.01, step=0.01)
-                cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
+                cantidad = st.number_input("📦 Cantidad vendida", min_value=1.0, step=1.0)
 
                 if es_grano_basico == "Sí" and unidad_grano:
                     factor_conversion = {
@@ -135,20 +134,5 @@ def modulo_ventas():
                     """, (
                         nuevo_id_venta,
                         prod["cod_barra"],
-                        prod["cantidad"],
-                        prod["precio_venta"]
-                    ))
-
-                conn.commit()
-                st.session_state["venta_guardada"] = True
-                st.rerun()
-
-            except Exception as e:
-                st.error(f"❌ Error al registrar la venta: {e}")
-
-    st.divider()
-    if st.button("🔙 Volver al menú principal"):
-        st.session_state["module"] = None
-        st.session_state.pop("productos_vendidos", None)
-        st.rerun()
+                        prod["cantidad"],  
 
