@@ -85,7 +85,7 @@ def modulo_ventas():
                         "cod_barra": cod_barras_input,
                         "nombre": nombre_producto,
                         "precio_venta": precio_venta,
-                        "cantidad": cantidad_final,  # ✅ se guarda ya convertido
+                        "cantidad": cantidad_final,  
                         "subtotal": subtotal
                     }
                     st.session_state["productos_vendidos"].append(producto_venta)
@@ -134,11 +134,12 @@ def modulo_ventas():
                     """, (
                         nuevo_id_venta,
                         prod["cod_barra"],
-                        prod["cantidad"],  # ✅ Esta cantidad ya es en libras si aplica
+                        prod["cantidad"],  
                         prod["precio_venta"]
                     ))
 
                 conn.commit()
+                st.success("✅ Venta registrada exitosamente.")
                 st.session_state["venta_guardada"] = True
                 st.rerun()
 
@@ -150,5 +151,4 @@ def modulo_ventas():
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
-
 
