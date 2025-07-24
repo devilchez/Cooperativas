@@ -71,8 +71,7 @@ def modulo_compras():
     )
 
     precio_sugerido = round(precio_compra / 0.80, 2)
-
-    st.number_input("💡 Precio de venta sugerido", value=precio_sugerido, format="%.2f", disabled=True)
+    st.markdown(f"💡 **Precio de venta sugerido:** ${precio_sugerido:.2f}")
 
     precio_venta = st.number_input("💰 Precio de venta", min_value=0.01, value=precio_sugerido, format="%.2f")
 
@@ -142,7 +141,6 @@ def modulo_compras():
             st.markdown(
                 f"**{prod['nombre']}** — {prod['cantidad']} {prod['unidad']} — "
                 f"Compra: ${prod['precio_compra']:.2f} — "
-                f"Sugerido: ${prod['precio_sugerido']:.2f} — "
                 f"Venta: ${prod['precio_venta']:.2f}"
             )
             col1, col2 = st.columns([1, 1])
@@ -174,13 +172,10 @@ def modulo_compras():
                 )
 
                 for prod in st.session_state["productos_seleccionados"]:
-                    
                     cursor.execute(
                         "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad) VALUES (%s, %s, %s, %s, %s)",
                         (nuevo_id, prod["cod_barra"], prod["cantidad"], prod["precio_compra"], prod["unidad"])
                     )
-
-                    
                     cursor.execute(
                         "UPDATE Producto SET Precio_sugerido = %s, Precio_venta = %s WHERE Cod_barra = %s",
                         (prod["precio_sugerido"], prod["precio_venta"], prod["cod_barra"])
