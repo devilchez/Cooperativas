@@ -141,7 +141,7 @@ def modulo_compras():
             st.markdown(
                 f"**{prod['nombre']}** — {prod['cantidad']} {prod['unidad']} — "
                 f"Precio de Compra: $${prod['precio_compra']:.2f} — "
-                f"Precio de Venta: $${prod['precio_venta']:.2f}"
+                f"Precio de Venta: $${prod['precio_venta']:.2f} — "
             )
             col1, col2 = st.columns([1, 1])
             with col1:
