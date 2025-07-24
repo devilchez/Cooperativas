@@ -53,10 +53,8 @@ def modulo_ventas():
             es_grano_basico = st.radio("🌾 ¿Es grano básico?", ["No", "Sí"], index=0, key="es_grano_basico")
 
             unidad_grano = None
-            cantidad_libras = None
-
             if es_grano_basico == "Sí":
-                unidad_grano = st.selectbox("⚖️ Seleccione la unidad del producto", ["Quintal", "Libra", "Arroba"], key="unidad_grano")
+                unidad_grano = st.selectbox("⚖️ Seleccione la unidad del producto", ["Quintal", "Libra", "Arroba"])
 
             cursor.execute("SELECT MAX(precio_compra) FROM ProductoxCompra WHERE cod_barra = %s", (cod_barras_input,))
             max_precio_compra = cursor.fetchone()[0]
@@ -64,7 +62,7 @@ def modulo_ventas():
             if max_precio_compra:
                 precio_sugerido = round(float(max_precio_compra) / 0.8, 2)
 
-               
+                # No se muestra el precio sugerido, pero se usa para cálculo
                 precio_venta = st.number_input("🧾 Precio de venta", value=precio_sugerido, min_value=0.01, step=0.01)
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
@@ -76,8 +74,11 @@ def modulo_ventas():
                     }
                     cantidad_libras = cantidad * factor_conversion[unidad_grano]
                     st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
+                    subtotal = round(precio_venta * cantidad_libras, 2)
+                else:
+                    cantidad_libras = None
+                    subtotal = round(precio_venta * cantidad, 2)
 
-                subtotal = round(precio_venta * cantidad, 2)
                 st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True)
 
                 if st.button("🛒 Agregar producto a la venta"):
@@ -85,10 +86,8 @@ def modulo_ventas():
                         "cod_barra": cod_barras_input,
                         "nombre": nombre_producto,
                         "precio_venta": precio_venta,
-                        "cantidad": cantidad,
-                        "subtotal": subtotal,
-                        "unidad": unidad_grano if es_grano_basico == "Sí" else None,
-                        "libras": cantidad_libras if es_grano_basico == "Sí" else None
+                        "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
+                        "subtotal": subtotal
                     }
                     st.session_state["productos_vendidos"].append(producto_venta)
                     st.session_state["limpiar_cod"] = True
@@ -103,11 +102,9 @@ def modulo_ventas():
 
         total_venta = 0
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
-            unidad_texto = f" — Unidad: {prod['unidad']}" if prod.get("unidad") else ""
-            libras_texto = f" — Libras: {prod['libras']}" if prod.get("libras") else ""
             st.markdown(
                 f"**{prod['nombre']}** — {prod['cantidad']} unidad(es) — "
-                f"Precio: ${prod['precio_venta']:.2f} — Subtotal: ${prod['subtotal']:.2f}{unidad_texto}{libras_texto}"
+                f"Precio: ${prod['precio_venta']:.2f} — Subtotal: ${prod['subtotal']:.2f}"
             )
             total_venta += prod["subtotal"]
 
@@ -140,7 +137,6 @@ def modulo_ventas():
                         prod["cod_barra"],
                         prod["cantidad"],
                         prod["precio_venta"]
-                        
                     ))
 
                 conn.commit()
