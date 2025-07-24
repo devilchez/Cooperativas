@@ -62,7 +62,6 @@ def modulo_ventas():
             if max_precio_compra:
                 precio_sugerido = round(float(max_precio_compra) / 0.8, 2)
 
-                # No se muestra el precio sugerido, pero se usa como valor inicial
                 precio_venta = st.number_input("🧾 Precio de venta", value=precio_sugerido, min_value=0.01, step=0.01)
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
@@ -127,7 +126,7 @@ def modulo_ventas():
                         prod["cod_barra"],
                         prod["cantidad"],
                         prod["precio_venta"]
-                        # Puedes guardar 'unidad' si agregas ese campo en la tabla
+                        
                     ))
 
                 conn.commit()
