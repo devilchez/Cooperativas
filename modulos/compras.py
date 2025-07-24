@@ -3,7 +3,6 @@ from datetime import datetime
 from config.conexion import obtener_conexion
 
 def modulo_compras():
-
     if "id_empleado" not in st.session_state:
         st.error("⚠️ Debes iniciar sesión para registrar compras.")
         st.stop()
@@ -64,11 +63,19 @@ def modulo_compras():
         value=st.session_state["form_data"]["codigo_barras"],
         disabled=codigo_barras_disabled
     )
-    st.number_input(
+
+    precio_compra = st.number_input(
         "Precio de compra", min_value=0.01, step=0.01,
         key="form_data_precio_compra",
         value=st.session_state["form_data"]["precio_compra"]
     )
+
+    precio_sugerido = round(precio_compra / 0.80, 2)
+
+    st.number_input("💡 Precio de venta sugerido", value=precio_sugerido, format="%.2f", disabled=True)
+
+    precio_venta = st.number_input("💰 Precio de venta", min_value=0.01, value=precio_sugerido, format="%.2f")
+
     st.selectbox(
         "Unidad de compra", unidades_disponibles,
         key="form_data_unidad"
@@ -98,17 +105,18 @@ def modulo_compras():
             else:
                 prod_ref = {
                     "nombre": producto_encontrado[1],
-                    "precio_venta": producto_encontrado[2]
                 }
 
             producto = {
                 "cod_barra": st.session_state["form_data_codigo_barras"],
                 "nombre": prod_ref["nombre"],
-                "precio_venta": prod_ref["precio_venta"],
-                "precio_compra": st.session_state["form_data_precio_compra"],
+                "precio_compra": precio_compra,
+                "precio_sugerido": precio_sugerido,
+                "precio_venta": precio_venta,
                 "unidad": st.session_state["form_data_unidad"],
                 "cantidad": st.session_state["form_data_cantidad"]
             }
+
             if st.session_state["editar_indice"] is not None:
                 st.session_state["productos_seleccionados"][st.session_state["editar_indice"]] = producto
                 st.success("✅ Producto actualizado correctamente.")
@@ -132,7 +140,10 @@ def modulo_compras():
         st.subheader("📦 Productos en la compra actual")
         for i, prod in enumerate(st.session_state["productos_seleccionados"]):
             st.markdown(
-                f"**{prod['nombre']}** — {prod['cantidad']} {prod['unidad']} — Precio compra: ${prod['precio_compra']:.2f}"
+                f"**{prod['nombre']}** — {prod['cantidad']} {prod['unidad']} — "
+                f"Compra: ${prod['precio_compra']:.2f} — "
+                f"Sugerido: ${prod['precio_sugerido']:.2f} — "
+                f"Venta: ${prod['precio_venta']:.2f}"
             )
             col1, col2 = st.columns([1, 1])
             with col1:
@@ -163,9 +174,16 @@ def modulo_compras():
                 )
 
                 for prod in st.session_state["productos_seleccionados"]:
+                    
                     cursor.execute(
                         "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad) VALUES (%s, %s, %s, %s, %s)",
                         (nuevo_id, prod["cod_barra"], prod["cantidad"], prod["precio_compra"], prod["unidad"])
+                    )
+
+                    
+                    cursor.execute(
+                        "UPDATE Producto SET Precio_sugerido = %s, Precio_venta = %s WHERE Cod_barra = %s",
+                        (prod["precio_sugerido"], prod["precio_venta"], prod["cod_barra"])
                     )
 
                 conn.commit()
