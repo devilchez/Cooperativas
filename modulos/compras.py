@@ -2,7 +2,6 @@ import streamlit as st
 from datetime import datetime
 from config.conexion import obtener_conexion
 
-# Diccionario de conversión a libras
 CONVERSIONES_A_LIBRAS = {
     "libras": 1,
     "arroba": 25,
@@ -185,6 +184,7 @@ def modulo_compras():
                         "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad) VALUES (%s, %s, %s, %s, %s)",
                         (nuevo_id, prod["cod_barra"], cantidad_convertida, prod["precio_compra"], "libras")
                     )
+
                     cursor.execute(
                         "UPDATE Producto SET Precio_sugerido = %s, Precio_venta = %s WHERE Cod_barra = %s",
                         (prod["precio_sugerido"], prod["precio_venta"], prod["cod_barra"])
