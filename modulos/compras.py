@@ -91,6 +91,12 @@ def modulo_compras():
         value=st.session_state["form_data"]["cantidad"]
     )
 
+
+    if st.session_state["form_data"]["unidad"] in CONVERSIONES_A_LIBRAS:
+        factor_conversion = CONVERSIONES_A_LIBRAS[st.session_state["form_data"]["unidad"]]
+        cantidad_convertida = st.session_state["form_data"]["cantidad"] * factor_conversion
+        st.markdown(f"**Valor convertido en libras:** {cantidad_convertida:.2f} libras")
+
     producto_encontrado = None
     if st.session_state["form_data_codigo_barras"] and not codigo_barras_disabled:
         producto_encontrado = next(
@@ -184,7 +190,6 @@ def modulo_compras():
                         "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad) VALUES (%s, %s, %s, %s, %s)",
                         (nuevo_id, prod["cod_barra"], cantidad_convertida, prod["precio_compra"], "libras")
                     )
-
                     cursor.execute(
                         "UPDATE Producto SET Precio_sugerido = %s, Precio_venta = %s WHERE Cod_barra = %s",
                         (prod["precio_sugerido"], prod["precio_venta"], prod["cod_barra"])
