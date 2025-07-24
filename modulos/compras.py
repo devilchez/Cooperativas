@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime
 from config.conexion import obtener_conexion
 
+# Diccionario de conversión a libras
 CONVERSIONES_A_LIBRAS = {
     "libras": 1,
     "arroba": 25,
@@ -176,7 +177,7 @@ def modulo_compras():
                 )
 
                 for prod in st.session_state["productos_seleccionados"]:
-                    unidad_original = prod["unidad"]
+                    unidad_original = prod["unidad"].strip().lower()
                     factor = CONVERSIONES_A_LIBRAS.get(unidad_original, 1)
                     cantidad_convertida = prod["cantidad"] * factor
 
