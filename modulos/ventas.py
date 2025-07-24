@@ -61,9 +61,9 @@ def modulo_ventas():
 
             if max_precio_compra:
                 precio_sugerido = round(float(max_precio_compra) / 0.8, 2)
-                st.number_input("💰 Precio sugerido (calculado)", value=precio_sugerido, disabled=True)
 
-                precio_venta = st.number_input("🧾 Precio de venta (editable)", value=precio_sugerido, min_value=0.01, step=0.01)
+                # No se muestra el precio sugerido, pero se usa como valor inicial
+                precio_venta = st.number_input("🧾 Precio de venta", value=precio_sugerido, min_value=0.01, step=0.01)
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
                 subtotal = round(precio_venta * cantidad, 2)
@@ -127,8 +127,8 @@ def modulo_ventas():
                         prod["cod_barra"],
                         prod["cantidad"],
                         prod["precio_venta"]
+                        # Puedes guardar 'unidad' si agregas ese campo en la tabla
                     ))
-                    # Si quieres guardar la unidad, asegúrate de agregarla también aquí
 
                 conn.commit()
                 st.session_state["venta_guardada"] = True
