@@ -169,9 +169,9 @@ def modulo_compras():
         total_libras = sum(
             prod["cantidad"] * CONVERSIONES_A_LIBRAS.get(prod["unidad"].strip().lower(), 1)
             for prod in st.session_state["productos_seleccionados"]
-            if prod["unidad"] in CONVERSIONES_A_LIBRAS  # evita sumar productos tipo "unidad"
+            if prod["unidad"] in CONVERSIONES_A_LIBRAS  
         )
-        st.markdown(f"### 🧮 Total comprado: **{total_libras:.2f} libras**")
+        st.markdown(f"### 🧮 Total libras: **{total_libras:.2f} libras**")
 
     if st.button("✅ Registrar compra"):
         if not st.session_state["productos_seleccionados"]:
