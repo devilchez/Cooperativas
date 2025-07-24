@@ -145,6 +145,7 @@ def modulo_inventario():
         cursor.close()
         conn.close()
 
+
     st.markdown("---")
     if st.button("⬅ Volver al menú principal"):
         st.session_state.module = None
