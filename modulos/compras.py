@@ -81,21 +81,21 @@ def modulo_compras():
 
     precio_venta = st.number_input("💰 Precio de venta", min_value=0.01, value=precio_sugerido, format="%.2f")
 
-    st.selectbox(
+    st.session_state["form_data"]["unidad"] = st.selectbox(
         "Unidad de compra", unidades_disponibles,
-        key="form_data_unidad"
+        index=unidades_disponibles.index(st.session_state["form_data"]["unidad"])
     )
-    st.number_input(
+
+    st.session_state["form_data"]["cantidad"] = st.number_input(
         "Cantidad comprada", min_value=1, max_value=10000, step=1,
-        key="form_data_cantidad",
         value=st.session_state["form_data"]["cantidad"]
     )
 
-
-    if st.session_state["form_data"]["unidad"] in CONVERSIONES_A_LIBRAS:
-        factor_conversion = CONVERSIONES_A_LIBRAS[st.session_state["form_data"]["unidad"]]
-        cantidad_convertida = st.session_state["form_data"]["cantidad"] * factor_conversion
-        st.markdown(f"**Valor convertido en libras:** {cantidad_convertida:.2f} libras")
+    unidad = st.session_state["form_data"]["unidad"]
+    cantidad = st.session_state["form_data"]["cantidad"]
+    factor_conversion = CONVERSIONES_A_LIBRAS.get(unidad, 1)
+    cantidad_convertida = cantidad * factor_conversion
+    st.markdown(f"**Valor convertido en libras:** {cantidad_convertida:.2f} libras")
 
     producto_encontrado = None
     if st.session_state["form_data_codigo_barras"] and not codigo_barras_disabled:
@@ -124,8 +124,8 @@ def modulo_compras():
                 "precio_compra": precio_compra,
                 "precio_sugerido": precio_sugerido,
                 "precio_venta": precio_venta,
-                "unidad": st.session_state["form_data"]["unidad"],
-                "cantidad": st.session_state["form_data"]["cantidad"]
+                "unidad": unidad,
+                "cantidad": cantidad
             }
 
             if st.session_state["editar_indice"] is not None:
@@ -163,6 +163,13 @@ def modulo_compras():
                     st.session_state["productos_seleccionados"].pop(i)
                     st.success("🗑️ Producto eliminado.")
                     st.rerun()
+
+        # 🧮 Total en libras
+        total_libras = sum(
+            prod["cantidad"] * CONVERSIONES_A_LIBRAS.get(prod["unidad"].strip().lower(), 1)
+            for prod in st.session_state["productos_seleccionados"]
+        )
+        st.markdown(f"### 🧮 Total comprado: **{total_libras:.2f} libras**")
 
     if st.button("✅ Registrar compra"):
         if not st.session_state["productos_seleccionados"]:
