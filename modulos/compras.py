@@ -2,6 +2,12 @@ import streamlit as st
 from datetime import datetime
 from config.conexion import obtener_conexion
 
+CONVERSIONES_A_LIBRAS = {
+    "libras": 1,
+    "arroba": 25,
+    "quintal": 220.46
+}
+
 def modulo_compras():
     if "id_empleado" not in st.session_state:
         st.error("⚠️ Debes iniciar sesión para registrar compras.")
@@ -112,8 +118,8 @@ def modulo_compras():
                 "precio_compra": precio_compra,
                 "precio_sugerido": precio_sugerido,
                 "precio_venta": precio_venta,
-                "unidad": st.session_state["form_data_unidad"],
-                "cantidad": st.session_state["form_data_cantidad"]
+                "unidad": st.session_state["form_data"]["unidad"],
+                "cantidad": st.session_state["form_data"]["cantidad"]
             }
 
             if st.session_state["editar_indice"] is not None:
@@ -170,9 +176,13 @@ def modulo_compras():
                 )
 
                 for prod in st.session_state["productos_seleccionados"]:
+                    unidad_original = prod["unidad"]
+                    factor = CONVERSIONES_A_LIBRAS.get(unidad_original, 1)
+                    cantidad_convertida = prod["cantidad"] * factor
+
                     cursor.execute(
                         "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad) VALUES (%s, %s, %s, %s, %s)",
-                        (nuevo_id, prod["cod_barra"], prod["cantidad"], prod["precio_compra"], prod["unidad"])
+                        (nuevo_id, prod["cod_barra"], cantidad_convertida, prod["precio_compra"], "libras")
                     )
                     cursor.execute(
                         "UPDATE Producto SET Precio_sugerido = %s, Precio_venta = %s WHERE Cod_barra = %s",
