@@ -8,26 +8,22 @@ def modulo_ventas():
     conn = obtener_conexion()
     cursor = conn.cursor()
 
-    
     usuario = st.session_state.get("usuario")
     if not usuario:
         st.error("❌ No has iniciado sesión. Inicia sesión primero.")
         return
 
-    
     if st.session_state.get("limpiar_cod"):
         st.session_state.pop("cod_barras_input", None)
         st.session_state.pop("limpiar_cod", None)
         st.rerun()
 
-    
     if st.session_state.get("venta_guardada"):
         st.success("✅ Venta registrada exitosamente.")
         st.session_state.pop("productos_vendidos", None)
         st.session_state.pop("venta_guardada", None)
         st.rerun()
 
-    
     cursor.execute("SELECT Id_empleado, Usuario FROM Empleado WHERE Usuario = %s", (usuario,))
     resultado_empleado = cursor.fetchone()
     if not resultado_empleado:
@@ -37,16 +33,13 @@ def modulo_ventas():
     id_empleado = resultado_empleado[0]
     usuario = resultado_empleado[1]
 
-    
     fecha_venta = datetime.now().strftime("%Y-%m-%d")
     st.text_input("🗓️ Fecha de la venta", value=fecha_venta, disabled=True)
     st.text_input("🧑‍💼 Usuario del empleado", value=usuario, disabled=True)
 
-    
     if "productos_vendidos" not in st.session_state:
         st.session_state["productos_vendidos"] = []
 
-    
     cod_barras_input = st.text_input("📦 Ingrese el código de barras del producto", value=st.session_state.get("cod_barras_input", ""), key="cod_barras_input")
 
     if cod_barras_input:
@@ -58,6 +51,10 @@ def modulo_ventas():
             st.success(f"✅ Producto encontrado: **{nombre_producto}**")
 
             es_grano_basico = st.radio("🌾 ¿Es grano básico?", ["No", "Sí"], index=0, key="es_grano_basico")
+
+            unidad_grano = None
+            if es_grano_basico == "Sí":
+                unidad_grano = st.selectbox("⚖️ Seleccione la unidad del producto", ["Quintal", "Libra", "Arroba"], key="unidad_grano")
 
             cursor.execute("SELECT MAX(precio_compra) FROM ProductoxCompra WHERE cod_barra = %s", (cod_barras_input,))
             max_precio_compra = cursor.fetchone()[0]
@@ -78,7 +75,8 @@ def modulo_ventas():
                         "nombre": nombre_producto,
                         "precio_venta": precio_venta,
                         "cantidad": cantidad,
-                        "subtotal": subtotal
+                        "subtotal": subtotal,
+                        "unidad": unidad_grano if es_grano_basico == "Sí" else None
                     }
                     st.session_state["productos_vendidos"].append(producto_venta)
                     st.session_state["limpiar_cod"] = True
@@ -93,9 +91,10 @@ def modulo_ventas():
 
         total_venta = 0
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
+            unidad_texto = f" — Unidad: {prod['unidad']}" if prod.get("unidad") else ""
             st.markdown(
                 f"**{prod['nombre']}** — {prod['cantidad']} unidad(es) — "
-                f"Precio: ${prod['precio_venta']:.2f} — Subtotal: ${prod['subtotal']:.2f}"
+                f"Precio: ${prod['precio_venta']:.2f} — Subtotal: ${prod['subtotal']:.2f}{unidad_texto}"
             )
             total_venta += prod["subtotal"]
 
@@ -129,6 +128,7 @@ def modulo_ventas():
                         prod["cantidad"],
                         prod["precio_venta"]
                     ))
+                    # Si quieres guardar la unidad, asegúrate de agregarla también aquí
 
                 conn.commit()
                 st.session_state["venta_guardada"] = True
