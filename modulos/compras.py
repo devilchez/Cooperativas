@@ -18,7 +18,7 @@ def modulo_compras():
     conn = obtener_conexion()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT Cod_barra, Nombre, Precio_venta FROM Producto")
+    cursor.execute("SELECT Cod_barra, Nombre, Tipo_producto FROM Producto")
     productos = cursor.fetchall()
 
     if not productos:
