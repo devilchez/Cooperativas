@@ -12,12 +12,13 @@ def modulo_editar_producto():
         try:
             conn = obtener_conexion()
             cursor = conn.cursor()
-            cursor.execute("SELECT cod_barra, nombre FROM Producto WHERE cod_barra = %s", (cod_barra,))
+            cursor.execute("SELECT cod_barra, nombre, tipo_producto FROM Producto WHERE cod_barra = %s", (cod_barra,))
             producto = cursor.fetchone()
             conn.close()
 
             if producto:
                 nuevo_nombre = st.text_input("Nombre del producto", value=producto[1])
+                nuevo_tipo = st.selectbox("Tipo de producto", ["Perecedero", "No perecedero"], index=0 if producto[2] == "Perecedero" else 1)
 
                 col1, col2 = st.columns(2)
                 with col1:
@@ -27,9 +28,10 @@ def modulo_editar_producto():
                             cursor = conn.cursor()
                             cursor.execute("""
                                 UPDATE Producto
-                                SET nombre = %s
+                                SET nombre = %s,
+                                    tipo_producto = %s
                                 WHERE cod_barra = %s
-                            """, (nuevo_nombre, cod_barra))
+                            """, (nuevo_nombre, nuevo_tipo, cod_barra))
                             conn.commit()
                             st.success("✅ Producto actualizado correctamente.")
                         except Exception as e:
@@ -67,16 +69,15 @@ def modulo_editar_producto():
         conn = obtener_conexion()
         cursor = conn.cursor()
 
-        # Si se ha ingresado un código, se filtra, si no, se muestran todos
         if cod_barra:
-            cursor.execute("SELECT cod_barra, nombre FROM Producto WHERE cod_barra LIKE %s ORDER BY nombre", ('%' + cod_barra + '%',))
+            cursor.execute("SELECT cod_barra, nombre, tipo_producto FROM Producto WHERE cod_barra LIKE %s ORDER BY nombre", ('%' + cod_barra + '%',))
         else:
-            cursor.execute("SELECT cod_barra, nombre FROM Producto ORDER BY nombre")
+            cursor.execute("SELECT cod_barra, nombre, tipo_producto FROM Producto ORDER BY nombre")
 
         productos = cursor.fetchall()
         conn.close()
 
-        df = pd.DataFrame(productos, columns=["Código de barras", "Nombre"])
+        df = pd.DataFrame(productos, columns=["Código de barras", "Nombre", "Tipo de producto"])
         st.dataframe(df, use_container_width=True)
 
     except Exception as e:
@@ -86,5 +87,4 @@ def modulo_editar_producto():
     if st.button("⬅ Volver al menú principal"):
         st.session_state.module = None
         st.rerun()
-
 
