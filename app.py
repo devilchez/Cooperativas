@@ -93,3 +93,34 @@ def menu_principal():
                 del st.session_state[key]
         st.success("✅ Sesión cerrada correctamente.")
         st.rerun()
+
+def cargar_modulo():
+    if "module" in st.session_state:
+        if st.session_state.module == "Ventas":
+            modulo_ventas()  
+        elif st.session_state.module == "Compras":
+            modulo_compras()
+        elif st.session_state.module == "Producto":
+            modulo_producto()
+        elif st.session_state.module == "Editar":
+            modulo_editar_producto()
+        elif st.session_state.module == "Dashboard":
+            dashboard()  
+        elif st.session_state.module == "Empleado":
+            modulo_empleado()
+        elif st.session_state.module == "Inventario":
+            modulo_inventario()
+        else:
+            menu_principal()
+    else:
+        menu_principal()
+
+def app():
+    if "logueado" not in st.session_state or not st.session_state["logueado"]:
+        login() 
+    else:
+        cargar_modulo()  
+
+if __name__ == "__main__":
+    app()
+
