@@ -35,6 +35,7 @@ def modulo_compras():
             "precio_compra": 0.01,
             "cantidad": 1,
             "unidad": "libras"
+            "fecha_vencimiento": None
         }
 
     if st.session_state["editar_indice"] is not None and "edit_loaded" not in st.session_state:
@@ -44,6 +45,7 @@ def modulo_compras():
             "precio_compra": float(prod_edit["precio_compra"]),
             "cantidad": int(prod_edit["cantidad"]),
             "unidad": prod_edit["unidad"]
+            "fecha_vencimiento": prod_edit.get("fecha_vencimiento")
         }
         st.session_state["edit_loaded"] = True
 
@@ -107,6 +109,15 @@ def modulo_compras():
         )
         if producto_encontrado:
             st.write(f"Producto encontrado: **{producto_encontrado[1]}**")
+            tipo_producto = producto_encontrado[2]  # índice 2 = Tipo_producto
+            if tipo_producto.lower() == "perecedero":
+                st.session_state["form_data"]["fecha_vencimiento"] = st.date_input(
+                    "📅 Fecha de vencimiento",
+                    key="form_data_fecha_vencimiento"
+                )
+            else:
+                st.session_state["form_data"]["fecha_vencimiento"] = None
+
         else:
             st.warning("⚠️ Producto no encontrado. Verifique el código de barras.")
 
@@ -127,7 +138,8 @@ def modulo_compras():
                 "precio_sugerido": precio_sugerido,
                 "precio_venta": precio_venta,
                 "unidad": unidad,
-                "cantidad": cantidad
+                "cantidad": cantidad,
+                "fecha_vencimiento": st.session_state["form_data"].get("fecha_vencimiento")
             }
 
             if st.session_state["editar_indice"] is not None:
@@ -195,9 +207,17 @@ def modulo_compras():
                     cantidad_convertida = prod["cantidad"] * factor if unidad_original in CONVERSIONES_A_LIBRAS else prod["cantidad"]
 
                     cursor.execute(
-                        "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad) VALUES (%s, %s, %s, %s, %s)",
-                        (nuevo_id, prod["cod_barra"], cantidad_convertida, prod["precio_compra"], "libras" if unidad_original in CONVERSIONES_A_LIBRAS else unidad_original)
+                        "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad, fecha_vencimiento) VALUES (%s, %s, %s, %s, %s, %s)",
+                        (
+                            nuevo_id,
+                            prod["cod_barra"],
+                            cantidad_convertida,
+                            prod["precio_compra"],
+                            "libras" if unidad_original in CONVERSIONES_A_LIBRAS else unidad_original,
+                            prod.get("fecha_vencimiento")  
+                        )
                     )
+
                     cursor.execute(
                         "UPDATE Producto SET Precio_sugerido = %s, Precio_venta = %s WHERE Cod_barra = %s",
                         (prod["precio_sugerido"], prod["precio_venta"], prod["cod_barra"])
