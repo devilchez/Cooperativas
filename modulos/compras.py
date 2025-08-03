@@ -34,7 +34,7 @@ def modulo_compras():
             "codigo_barras": "",
             "precio_compra": 0.01,
             "cantidad": 1,
-            "unidad": "libras"
+            "unidad": "libras",
             "fecha_vencimiento": None
         }
 
