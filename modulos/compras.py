@@ -44,7 +44,7 @@ def modulo_compras():
             "codigo_barras": prod_edit["cod_barra"],
             "precio_compra": float(prod_edit["precio_compra"]),
             "cantidad": int(prod_edit["cantidad"]),
-            "unidad": prod_edit["unidad"]
+            "unidad": prod_edit["unidad"],
             "fecha_vencimiento": prod_edit.get("fecha_vencimiento")
         }
         st.session_state["edit_loaded"] = True
