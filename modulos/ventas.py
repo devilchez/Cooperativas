@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime
 from config.conexion import obtener_conexion
+import traceback  # Para mostrar errores detallados
 
 def modulo_ventas():
     st.title("🛒 Registro de Ventas")
@@ -21,9 +22,6 @@ def modulo_ventas():
     fecha_venta = datetime.now().strftime("%Y-%m-%d")
     st.text_input("🗓️ Fecha de la venta", value=fecha_venta, disabled=True)
     st.text_input("🧑‍💼 Usuario del empleado", value=usuario, disabled=True)
-
-    conn = obtener_conexion()
-    cursor = conn.cursor()
 
     cursor.execute("SELECT Id_empleado FROM Empleado WHERE Usuario = %s", (usuario,))
     empleado = cursor.fetchone()
@@ -74,11 +72,7 @@ def modulo_ventas():
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
                 if es_grano_basico == "Sí" and unidad_grano:
-                    factor_conversion = {
-                        "Libra": 1,
-                        "Arroba": 25,
-                        "Quintal": 100
-                    }
+                    factor_conversion = {"Libra": 1, "Arroba": 25, "Quintal": 100}
                     cantidad_libras = cantidad * factor_conversion[unidad_grano]
                     st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
                     subtotal = round(precio_venta * cantidad_libras, 2)
@@ -128,13 +122,15 @@ def modulo_ventas():
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id_venta = 1 if ultimo_id is None else ultimo_id + 1
 
+                # Insertar en Venta
                 cursor.execute("""
                     INSERT INTO Venta (Id_venta, Fecha, Id_empleado, Id_cliente)
                     VALUES (%s, %s, %s, %s)
                 """, (nuevo_id_venta, fecha_venta, id_empleado, None))
 
+                # Insertar productos
                 for prod in st.session_state["productos_vendidos"]:
-                    st.write("🔍 Insertando en ProductoxVenta:", prod)  # (opcional) para depuración
+                    st.write("Insertando producto:", prod)  # Para verificar los datos
                     cursor.execute("""
                         INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta)
                         VALUES (%s, %s, %s, %s)
@@ -151,12 +147,12 @@ def modulo_ventas():
 
             except Exception as e:
                 conn.rollback()
-                st.error(f"❌ Error al registrar la venta: {e}")
+                st.error("❌ Error al registrar la venta:")
+                st.code(traceback.format_exc())
 
     st.divider()
     if st.button("🔙 Volver al menú principal"):
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
-
 
