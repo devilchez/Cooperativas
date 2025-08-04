@@ -122,11 +122,11 @@ def modulo_ventas():
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id_venta = 1 if ultimo_id is None else ultimo_id + 1
 
-                # Insertar en Venta
+                # Insertar en Venta con tipo de cliente
                 cursor.execute("""
-                    INSERT INTO Venta (Id_venta, Fecha, Id_empleado, Id_cliente)
+                    INSERT INTO Venta (Id_venta, Fecha, Id_empleado, Tipo_de_cliente)
                     VALUES (%s, %s, %s, %s)
-                """, (nuevo_id_venta, fecha_venta, id_empleado, None))
+                """, (nuevo_id_venta, fecha_venta, id_empleado, tipo_cliente))  # Aquí se agrega el tipo de cliente
 
                 # Insertar productos
                 for prod in st.session_state["productos_vendidos"]:
@@ -138,7 +138,7 @@ def modulo_ventas():
                         nuevo_id_venta,
                         prod["cod_barra"],
                         prod["cantidad"],
-                        prod["precio_venta"]
+                        round(prod["precio_venta"], 2)  # Aseguramos que el precio se guarde con decimales
                     ))
 
                 conn.commit()
