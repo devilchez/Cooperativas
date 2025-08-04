@@ -135,7 +135,7 @@ def modulo_ventas():
 
                 for prod in st.session_state["productos_vendidos"]:
                     cursor.execute("""
-                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_unitario)
+                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta)
                         VALUES (%s, %s, %s, %s)
                     """, (
                         nuevo_id_venta,
