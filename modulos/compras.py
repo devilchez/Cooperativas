@@ -84,7 +84,7 @@ def modulo_compras():
     )
 
     precio_sugerido = round(precio_compra / 0.80, 2)
-    st.markdown(f"💡 **Precio de venta sugerido:** ${precio_sugerido:.2f}")
+    st.markdown(f"💡 **Precio de venta sugerido (Mayorista #2):** ${precio_sugerido:.2f}")
 
     precio_venta = st.number_input("💰 Precio de venta", min_value=0.01, value=precio_sugerido, format="%.2f")
 
