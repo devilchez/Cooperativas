@@ -104,9 +104,8 @@ def modulo_ventas():
 
         total_venta = 0
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
-            # Mostrar la información de manera ordenada en una sola línea
-            product_info = f"**{prod['nombre']}** | Cantidad: {prod['cantidad']} unidad(es) | Precio: ${prod['precio_venta']:.2f} | Subtotal: ${prod['subtotal']:.2f} | Tipo de cliente: **{prod['tipo_cliente']}**"
-            st.markdown(product_info)  # Mostrar toda la info en una sola línea
+            # Mostrar toda la información en una sola línea visualmente
+            st.write(f"**{prod['nombre']}** | Cantidad: {prod['cantidad']} unidad(es) | Precio: ${prod['precio_venta']:.2f} | Subtotal: ${prod['subtotal']:.2f} | Tipo de cliente: **{prod['tipo_cliente']}**")
             total_venta += prod["subtotal"]
 
             if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
