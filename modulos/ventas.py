@@ -58,7 +58,6 @@ def modulo_ventas():
                 precio_mayorista_1 = round(float(max_precio_compra) / (1 - 0.25), 2)
                 precio_mayorista_2 = round(float(max_precio_compra) / (1 - 0.20), 2)
 
-                # Aseguramos que tipo_cliente se defina antes de usarlo
                 tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"], index=0)
 
                 if tipo_cliente == "Detallista":
@@ -123,24 +122,23 @@ def modulo_ventas():
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id_venta = 1 if ultimo_id is None else ultimo_id + 1
 
-                # Insertar en la tabla Venta (sin Tipo_de_cliente)
+                # Insertar en Venta
                 cursor.execute("""
-                    INSERT INTO Venta (Id_venta, Fecha, Id_empleado)
-                    VALUES (%s, %s, %s)
-                """, (nuevo_id_venta, fecha_venta, id_empleado))  # Solo insertamos en Venta
+                    INSERT INTO Venta (Id_venta, Fecha, Id_empleado, Id_cliente)
+                    VALUES (%s, %s, %s, %s)
+                """, (nuevo_id_venta, fecha_venta, id_empleado, None))
 
-                # Insertar productos en ProductoxVenta con Tipo_de_cliente
+                # Insertar productos
                 for prod in st.session_state["productos_vendidos"]:
                     st.write("Insertando producto:", prod)  # Para verificar los datos
                     cursor.execute("""
-                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta, Tipo_de_cliente)
-                        VALUES (%s, %s, %s, %s, %s)
+                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta)
+                        VALUES (%s, %s, %s, %s)
                     """, (
                         nuevo_id_venta,
                         prod["cod_barra"],
                         prod["cantidad"],
-                        round(prod["precio_venta"], 2),  # Aseguramos que el precio se guarde con decimales
-                        tipo_cliente  # Aquí insertamos el Tipo_de_cliente en ProductoxVenta
+                        prod["precio_venta"]
                     ))
 
                 conn.commit()
@@ -157,5 +155,4 @@ def modulo_ventas():
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
-
 
