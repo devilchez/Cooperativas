@@ -18,24 +18,20 @@ def modulo_ventas():
         st.session_state.pop("limpiar_cod", None)
         st.rerun()
 
-    if st.session_state.get("venta_guardada"):
-        st.success("✅ Venta registrada exitosamente.")
-        st.session_state.pop("productos_vendidos", None)
-        st.session_state.pop("venta_guardada", None)
-        st.rerun()
-
-    cursor.execute("SELECT Id_empleado, Usuario FROM Empleado WHERE Usuario = %s", (usuario,))
-    resultado_empleado = cursor.fetchone()
-    if not resultado_empleado:
-        st.error("❌ No se encontró el usuario en la tabla Empleado.")
-        return
-
-    id_empleado = resultado_empleado[0]
-    usuario = resultado_empleado[1]
-
     fecha_venta = datetime.now().strftime("%Y-%m-%d")
     st.text_input("🗓️ Fecha de la venta", value=fecha_venta, disabled=True)
     st.text_input("🧑‍💼 Usuario del empleado", value=usuario, disabled=True)
+
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT Id_empleado FROM Empleado WHERE Usuario = %s", (usuario,))
+    empleado = cursor.fetchone()
+    if not empleado:
+        st.error("❌ No se encontró el usuario en la tabla Empleado.")
+        return
+
+    id_empleado = empleado[0]
 
     if "productos_vendidos" not in st.session_state:
         st.session_state["productos_vendidos"] = []
@@ -60,14 +56,11 @@ def modulo_ventas():
             max_precio_compra = cursor.fetchone()[0]
 
             if max_precio_compra:
-                # Precios sugeridos por tipo de cliente
                 precio_detallista = round(float(max_precio_compra) / (1 - 0.30), 2)
                 precio_mayorista_1 = round(float(max_precio_compra) / (1 - 0.25), 2)
                 precio_mayorista_2 = round(float(max_precio_compra) / (1 - 0.20), 2)
 
-                tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", 
-                                        ["Detallista", "Mayorista 1", "Mayorista 2"], 
-                                        index=0)
+                tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"], index=0)
 
                 if tipo_cliente == "Detallista":
                     precio_base = precio_detallista
@@ -76,7 +69,6 @@ def modulo_ventas():
                 else:
                     precio_base = precio_mayorista_2
 
-                # Mostrar precio de venta editable (number_input normal)
                 precio_venta = st.number_input("💲 Precio de venta aplicado", value=precio_base, min_value=0.01, step=0.01)
 
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
@@ -94,7 +86,6 @@ def modulo_ventas():
                     cantidad_libras = None
                     subtotal = round(precio_venta * cantidad, 2)
 
-                # Mostrar subtotal deshabilitado
                 st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True)
 
                 if st.button("🛒 Agregar producto a la venta"):
@@ -124,12 +115,10 @@ def modulo_ventas():
             )
             total_venta += prod["subtotal"]
 
-            col1, col2 = st.columns([1, 1])
-            with col1:
-                if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
-                    st.session_state["productos_vendidos"].pop(i)
-                    st.success("🗑️ Producto eliminado de la venta.")
-                    st.rerun()
+            if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
+                st.session_state["productos_vendidos"].pop(i)
+                st.success("🗑️ Producto eliminado de la venta.")
+                st.rerun()
 
         st.markdown(f"### 💵 Total de la venta: ${total_venta:.2f}")
 
@@ -156,10 +145,11 @@ def modulo_ventas():
                     ))
 
                 conn.commit()
-                st.session_state["venta_guardada"] = True
-                st.rerun()
+                st.success("✅ Venta registrada exitosamente.")
+                st.session_state["productos_vendidos"] = []
 
             except Exception as e:
+                conn.rollback()
                 st.error(f"❌ Error al registrar la venta: {e}")
 
     st.divider()
@@ -167,5 +157,6 @@ def modulo_ventas():
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
+
 
 
