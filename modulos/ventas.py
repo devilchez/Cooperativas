@@ -18,24 +18,20 @@ def modulo_ventas():
         st.session_state.pop("limpiar_cod", None)
         st.rerun()
 
-    if st.session_state.get("venta_guardada"):
-        st.success("✅ Venta registrada exitosamente.")
-        st.session_state.pop("productos_vendidos", None)
-        st.session_state.pop("venta_guardada", None)
-        st.rerun()
-
-    cursor.execute("SELECT Id_empleado, Usuario FROM Empleado WHERE Usuario = %s", (usuario,))
-    resultado_empleado = cursor.fetchone()
-    if not resultado_empleado:
-        st.error("❌ No se encontró el usuario en la tabla Empleado.")
-        return
-
-    id_empleado = resultado_empleado[0]
-    usuario = resultado_empleado[1]
-
     fecha_venta = datetime.now().strftime("%Y-%m-%d")
     st.text_input("🗓️ Fecha de la venta", value=fecha_venta, disabled=True)
     st.text_input("🧑‍💼 Usuario del empleado", value=usuario, disabled=True)
+
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT Id_empleado FROM Empleado WHERE Usuario = %s", (usuario,))
+    empleado = cursor.fetchone()
+    if not empleado:
+        st.error("❌ No se encontró el usuario en la tabla Empleado.")
+        return
+
+    id_empleado = empleado[0]
 
     if "productos_vendidos" not in st.session_state:
         st.session_state["productos_vendidos"] = []
@@ -60,28 +56,22 @@ def modulo_ventas():
             max_precio_compra = cursor.fetchone()[0]
 
             if max_precio_compra:
-                # Cálculo de precios por tipo de cliente
-                precio_detallista = round(max_precio_compra * 1.30, 2)
-                precio_mayorista_1 = round(max_precio_compra * 1.25, 2)
-                precio_mayorista_2 = round(max_precio_compra * 1.20, 2)
+                precio_detallista = round(float(max_precio_compra) / (1 - 0.30), 2)
+                precio_mayorista_1 = round(float(max_precio_compra) / (1 - 0.25), 2)
+                precio_mayorista_2 = round(float(max_precio_compra) / (1 - 0.20), 2)
 
-                st.markdown("### 💲 Seleccione tipo de cliente:")
-                tipo_cliente = st.radio(
-                    "Tipo de cliente",
-                    ["Detallista", "Mayorista 1", "Mayorista 2"],
-                    key="tipo_cliente"
-                )
+                tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"], index=0)
 
                 if tipo_cliente == "Detallista":
-                    precio_aplicado = precio_detallista
+                    precio_base = precio_detallista
                 elif tipo_cliente == "Mayorista 1":
-                    precio_aplicado = precio_mayorista_1
+                    precio_base = precio_mayorista_1
                 else:
-                    precio_aplicado = precio_mayorista_2
+                    precio_base = precio_mayorista_2
 
-                # Precio editable por el usuario
-                precio_venta = st.number_input("💲 Precio de venta aplicado", value=precio_aplicado, min_value=0.01, step=0.01, key="precio_venta_aplicado")
-                cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1, key="cantidad_vendida")
+                precio_venta = st.number_input("💲 Precio de venta aplicado", value=precio_base, min_value=0.01, step=0.01)
+
+                cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
                 if es_grano_basico == "Sí" and unidad_grano:
                     factor_conversion = {
@@ -90,13 +80,13 @@ def modulo_ventas():
                         "Quintal": 100
                     }
                     cantidad_libras = cantidad * factor_conversion[unidad_grano]
-                    st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True, key="cantidad_libras")
+                    st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
                     subtotal = round(precio_venta * cantidad_libras, 2)
                 else:
                     cantidad_libras = None
                     subtotal = round(precio_venta * cantidad, 2)
 
-                st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True, key="subtotal_venta")
+                st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True)
 
                 if st.button("🛒 Agregar producto a la venta"):
                     producto_venta = {
@@ -125,12 +115,10 @@ def modulo_ventas():
             )
             total_venta += prod["subtotal"]
 
-            col1, col2 = st.columns([1, 1])
-            with col1:
-                if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
-                    st.session_state["productos_vendidos"].pop(i)
-                    st.success("🗑️ Producto eliminado de la venta.")
-                    st.rerun()
+            if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
+                st.session_state["productos_vendidos"].pop(i)
+                st.success("🗑️ Producto eliminado de la venta.")
+                st.rerun()
 
         st.markdown(f"### 💵 Total de la venta: ${total_venta:.2f}")
 
@@ -140,13 +128,11 @@ def modulo_ventas():
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id_venta = 1 if ultimo_id is None else ultimo_id + 1
 
-                # Insertar en tabla Venta
                 cursor.execute("""
                     INSERT INTO Venta (Id_venta, Fecha, Id_empleado, Id_cliente)
                     VALUES (%s, %s, %s, %s)
                 """, (nuevo_id_venta, fecha_venta, id_empleado, None))
 
-                # Insertar productos vendidos en tabla ProductoxVenta
                 for prod in st.session_state["productos_vendidos"]:
                     cursor.execute("""
                         INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_unitario)
@@ -160,8 +146,7 @@ def modulo_ventas():
 
                 conn.commit()
                 st.success("✅ Venta registrada exitosamente.")
-                st.session_state["venta_guardada"] = True
-                st.rerun()
+                st.session_state["productos_vendidos"] = []
 
             except Exception as e:
                 conn.rollback()
