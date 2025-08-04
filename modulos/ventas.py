@@ -22,9 +22,6 @@ def modulo_ventas():
     st.text_input("🗓️ Fecha de la venta", value=fecha_venta, disabled=True)
     st.text_input("🧑‍💼 Usuario del empleado", value=usuario, disabled=True)
 
-    conn = obtener_conexion()
-    cursor = conn.cursor()
-
     cursor.execute("SELECT Id_empleado FROM Empleado WHERE Usuario = %s", (usuario,))
     empleado = cursor.fetchone()
     if not empleado:
@@ -70,15 +67,10 @@ def modulo_ventas():
                     precio_base = precio_mayorista_2
 
                 precio_venta = st.number_input("💲 Precio de venta aplicado", value=precio_base, min_value=0.01, step=0.01)
-
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
                 if es_grano_basico == "Sí" and unidad_grano:
-                    factor_conversion = {
-                        "Libra": 1,
-                        "Arroba": 25,
-                        "Quintal": 100
-                    }
+                    factor_conversion = {"Libra": 1, "Arroba": 25, "Quintal": 100}
                     cantidad_libras = cantidad * factor_conversion[unidad_grano]
                     st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
                     subtotal = round(precio_venta * cantidad_libras, 2)
@@ -128,6 +120,9 @@ def modulo_ventas():
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id_venta = 1 if ultimo_id is None else ultimo_id + 1
 
+                st.info(f"Registrando venta con ID: {nuevo_id_venta}")
+                st.write("Productos a registrar:", st.session_state["productos_vendidos"])
+
                 cursor.execute("""
                     INSERT INTO Venta (Id_venta, Fecha, Id_empleado, Id_cliente)
                     VALUES (%s, %s, %s, %s)
@@ -149,12 +144,15 @@ def modulo_ventas():
                 st.session_state["productos_vendidos"] = []
 
             except Exception as e:
+                import traceback
                 conn.rollback()
                 st.error(f"❌ Error al registrar la venta: {e}")
+                st.text(traceback.format_exc())
 
     st.divider()
     if st.button("🔙 Volver al menú principal"):
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
+
 
