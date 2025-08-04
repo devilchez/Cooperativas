@@ -60,10 +60,30 @@ def modulo_ventas():
             max_precio_compra = cursor.fetchone()[0]
 
             if max_precio_compra:
-                precio_sugerido = round(float(max_precio_compra) / 0.8, 2)
+                # Precios sugeridos por tipo de cliente
+                precio_detallista = round(float(max_precio_compra) / (1 - 0.30), 2)
+                precio_mayorista_1 = round(float(max_precio_compra) / (1 - 0.25), 2)
+                precio_mayorista_2 = round(float(max_precio_compra) / (1 - 0.20), 2)
 
-                # No se muestra el precio sugerido, pero se usa para cálculo
-                precio_venta = st.number_input("🧾 Precio de venta", value=precio_sugerido, min_value=0.01, step=0.01)
+                st.markdown("### 💰 Precios sugeridos por tipo de cliente")
+                st.markdown(f"- 🧍 **Detallista (30%)**: ${precio_detallista:.2f}")
+                st.markdown(f"- 👥 **Mayorista 1 (25%)**: ${precio_mayorista_1:.2f}")
+                st.markdown(f"- 🧑‍🤝‍🧑 **Mayorista 2 (20%)**: ${precio_mayorista_2:.2f}")
+
+                tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", 
+                                        ["Detallista", "Mayorista 1", "Mayorista 2", "Otro precio manual"], 
+                                        index=0)
+
+                if tipo_cliente == "Detallista":
+                    precio_venta = precio_detallista
+                elif tipo_cliente == "Mayorista 1":
+                    precio_venta = precio_mayorista_1
+                elif tipo_cliente == "Mayorista 2":
+                    precio_venta = precio_mayorista_2
+                else:
+                    precio_venta = st.number_input("🧾 Ingrese el precio de venta manualmente", 
+                                                   min_value=0.01, step=0.01)
+
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
                 if es_grano_basico == "Sí" and unidad_grano:
