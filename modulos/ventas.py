@@ -134,6 +134,7 @@ def modulo_ventas():
                 """, (nuevo_id_venta, fecha_venta, id_empleado, None))
 
                 for prod in st.session_state["productos_vendidos"]:
+                    st.write("🔍 Insertando en ProductoxVenta:", prod)  # (opcional) para depuración
                     cursor.execute("""
                         INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta)
                         VALUES (%s, %s, %s, %s)
