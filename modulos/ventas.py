@@ -58,6 +58,7 @@ def modulo_ventas():
                 precio_mayorista_1 = round(float(max_precio_compra) / (1 - 0.25), 2)
                 precio_mayorista_2 = round(float(max_precio_compra) / (1 - 0.20), 2)
 
+                # Aseguramos que tipo_cliente se defina antes de usarlo
                 tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"], index=0)
 
                 if tipo_cliente == "Detallista":
