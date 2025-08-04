@@ -94,8 +94,7 @@ def modulo_ventas():
                         "nombre": nombre_producto,
                         "precio_venta": precio_venta,
                         "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
-                        "subtotal": subtotal,
-                        "tipo_cliente": tipo_cliente  # Guardar tipo de cliente
+                        "subtotal": subtotal
                     }
                     st.session_state["productos_vendidos"].append(producto_venta)
                     st.session_state["limpiar_cod"] = True
@@ -112,7 +111,7 @@ def modulo_ventas():
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
             st.markdown(
                 f"**{prod['nombre']}** — {prod['cantidad']} unidad(es) — "
-                f"Precio: ${prod['precio_venta']:.2f} — Subtotal: ${prod['subtotal']:.2f} — Tipo de cliente: {prod['tipo_cliente']}"
+                f"Precio: ${prod['precio_venta']:.2f} — Subtotal: ${prod['subtotal']:.2f}"
             )
             total_venta += prod["subtotal"]
 
@@ -136,14 +135,13 @@ def modulo_ventas():
 
                 for prod in st.session_state["productos_vendidos"]:
                     cursor.execute("""
-                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_unitario, Tipo_de_cliente)
-                        VALUES (%s, %s, %s, %s, %s)
+                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_unitario)
+                        VALUES (%s, %s, %s, %s)
                     """, (
                         nuevo_id_venta,
                         prod["cod_barra"],
                         prod["cantidad"],
-                        prod["precio_venta"],
-                        prod["tipo_cliente"]
+                        prod["precio_venta"]
                     ))
 
                 conn.commit()
