@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime
 from config.conexion import obtener_conexion
+import traceback  # Para mostrar errores detallados
 
 def modulo_ventas():
     st.title("🛒 Registro de Ventas")
@@ -103,10 +104,12 @@ def modulo_ventas():
 
         total_venta = 0
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
-            st.markdown(
-                f"**{prod['nombre']}** — {prod['cantidad']} unidad(es) — "
-                f"Precio: ${prod['precio_venta']:.2f} — Subtotal: ${prod['subtotal']:.2f}"
-            )
+            # Mostrar la información de una forma más amigable
+            st.markdown(f"**{prod['nombre']}**")
+            st.markdown(f"Cantidad: {prod['cantidad']} unidad(es)")
+            st.markdown(f"Precio: ${prod['precio_venta']:.2f}")
+            st.markdown(f"Subtotal: ${prod['subtotal']:.2f}")
+            st.markdown(f"Tipo de cliente: **{prod['tipo_cliente']}**")
             total_venta += prod["subtotal"]
 
             if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
@@ -130,7 +133,6 @@ def modulo_ventas():
 
                 # Insertar productos con tipo de cliente
                 for prod in st.session_state["productos_vendidos"]:
-                    st.write("Insertando producto:", prod)  # Para verificar los datos
                     cursor.execute("""
                         INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta, Tipo_de_cliente)
                         VALUES (%s, %s, %s, %s, %s)
@@ -143,16 +145,18 @@ def modulo_ventas():
                     ))
 
                 conn.commit()
-                st.success("✅ Venta registrada exitosamente.")
+
+                # Mostrar solo un mensaje de confirmación
+                st.success("✅ Venta registrada correctamente.")
                 st.session_state["productos_vendidos"] = []
 
             except Exception as e:
                 conn.rollback()
-                st.error("❌ Error al registrar la venta:")
-                st.code(traceback.format_exc())
+                st.error("❌ Error al registrar la venta.")
 
     st.divider()
     if st.button("🔙 Volver al menú principal"):
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
+
