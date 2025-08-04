@@ -207,20 +207,16 @@ def modulo_compras():
                     cantidad_convertida = prod["cantidad"] * factor if unidad_original in CONVERSIONES_A_LIBRAS else prod["cantidad"]
 
                     cursor.execute(
-                        "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad, fecha_vencimiento) VALUES (%s, %s, %s, %s, %s, %s)",
+                        "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad, fecha_vencimiento, precio_venta) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                         (
                             nuevo_id,
                             prod["cod_barra"],
                             cantidad_convertida,
                             prod["precio_compra"],
                             "libras" if unidad_original in CONVERSIONES_A_LIBRAS else unidad_original,
-                            prod.get("fecha_vencimiento")  
+                            prod.get("fecha_vencimiento"),
+                            prod["precio_venta"]
                         )
-                    )
-
-                    cursor.execute(
-                        "UPDATE ProductoxVenta SET Precio_mayorista2 = %s WHERE Cod_barra = %s",
-                        (prod["precio_venta"], prod["cod_barra"])
                     )
 
                 conn.commit()
