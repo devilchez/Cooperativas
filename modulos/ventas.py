@@ -70,14 +70,14 @@ def modulo_ventas():
                                         index=0)
 
                 if tipo_cliente == "Detallista":
-                    precio_venta = precio_detallista
+                    precio_base = precio_detallista
                 elif tipo_cliente == "Mayorista 1":
-                    precio_venta = precio_mayorista_1
+                    precio_base = precio_mayorista_1
                 else:
-                    precio_venta = precio_mayorista_2
+                    precio_base = precio_mayorista_2
 
-                # Mostrar precio de venta en formato number_input (deshabilitado)
-                st.number_input("💲 Precio de venta aplicado", value=precio_venta, disabled=True)
+                # Mostrar precio de venta editable (number_input normal)
+                precio_venta = st.number_input("💲 Precio de venta aplicado", value=precio_base, min_value=0.01, step=0.01)
 
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
@@ -94,7 +94,7 @@ def modulo_ventas():
                     cantidad_libras = None
                     subtotal = round(precio_venta * cantidad, 2)
 
-                # Mostrar subtotal en formato number_input (deshabilitado)
+                # Mostrar subtotal deshabilitado
                 st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True)
 
                 if st.button("🛒 Agregar producto a la venta"):
