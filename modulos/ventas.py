@@ -59,59 +59,55 @@ def modulo_ventas():
             cursor.execute("SELECT MAX(precio_compra) FROM ProductoxCompra WHERE cod_barra = %s", (cod_barras_input,))
             max_precio_compra = cursor.fetchone()[0]
 
-            if max_precio_compra:
-                # Precios sugeridos por tipo de cliente
-                precio_detallista = round(float(max_precio_compra) / (1 - 0.30), 2)
-                precio_mayorista_1 = round(float(max_precio_compra) / (1 - 0.25), 2)
-                precio_mayorista_2 = round(float(max_precio_compra) / (1 - 0.20), 2)
+          # Precios sugeridos por tipo de cliente
+precio_detallista = round(float(max_precio_compra) / (1 - 0.30), 2)
+precio_mayorista_1 = round(float(max_precio_compra) / (1 - 0.25), 2)
+precio_mayorista_2 = round(float(max_precio_compra) / (1 - 0.20), 2)
 
-                st.markdown("### 💰 Precios sugeridos por tipo de cliente")
-                st.markdown(f"- 🧍 **Detallista (30%)**: ${precio_detallista:.2f}")
-                st.markdown(f"- 👥 **Mayorista 1 (25%)**: ${precio_mayorista_1:.2f}")
-                st.markdown(f"- 🧑‍🤝‍🧑 **Mayorista 2 (20%)**: ${precio_mayorista_2:.2f}")
+tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", 
+                        ["Detallista", "Mayorista 1", "Mayorista 2"], 
+                        index=0)
 
-                tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", 
-                                        ["Detallista", "Mayorista 1", "Mayorista 2", "Otro precio manual"], 
-                                        index=0)
+if tipo_cliente == "Detallista":
+    precio_venta = precio_detallista
+elif tipo_cliente == "Mayorista 1":
+    precio_venta = precio_mayorista_1
+else:
+    precio_venta = precio_mayorista_2
 
-                if tipo_cliente == "Detallista":
-                    precio_venta = precio_detallista
-                elif tipo_cliente == "Mayorista 1":
-                    precio_venta = precio_mayorista_1
-                elif tipo_cliente == "Mayorista 2":
-                    precio_venta = precio_mayorista_2
-                else:
-                    precio_venta = st.number_input("🧾 Ingrese el precio de venta manualmente", 
-                                                   min_value=0.01, step=0.01)
+# Mostrar precio de venta en number_input (deshabilitado, solo visual)
+st.number_input("💲 Precio de venta aplicado", value=precio_venta, disabled=True)
 
-                cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
+cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
-                if es_grano_basico == "Sí" and unidad_grano:
-                    factor_conversion = {
-                        "Libra": 1,
-                        "Arroba": 25,
-                        "Quintal": 100
-                    }
-                    cantidad_libras = cantidad * factor_conversion[unidad_grano]
-                    st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
-                    subtotal = round(precio_venta * cantidad_libras, 2)
-                else:
-                    cantidad_libras = None
-                    subtotal = round(precio_venta * cantidad, 2)
+if es_grano_basico == "Sí" and unidad_grano:
+    factor_conversion = {
+        "Libra": 1,
+        "Arroba": 25,
+        "Quintal": 100
+    }
+    cantidad_libras = cantidad * factor_conversion[unidad_grano]
+    st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
+    subtotal = round(precio_venta * cantidad_libras, 2)
+else:
+    cantidad_libras = None
+    subtotal = round(precio_venta * cantidad, 2)
 
-                st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True)
+# Mostrar subtotal como number_input deshabilitado (como en tu imagen)
+st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True)
 
-                if st.button("🛒 Agregar producto a la venta"):
-                    producto_venta = {
-                        "cod_barra": cod_barras_input,
-                        "nombre": nombre_producto,
-                        "precio_venta": precio_venta,
-                        "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
-                        "subtotal": subtotal
-                    }
-                    st.session_state["productos_vendidos"].append(producto_venta)
-                    st.session_state["limpiar_cod"] = True
-                    st.rerun()
+if st.button("🛒 Agregar producto a la venta"):
+    producto_venta = {
+        "cod_barra": cod_barras_input,
+        "nombre": nombre_producto,
+        "precio_venta": precio_venta,
+        "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
+        "subtotal": subtotal
+    }
+    st.session_state["productos_vendidos"].append(producto_venta)
+    st.session_state["limpiar_cod"] = True
+    st.rerun()
+
             else:
                 st.warning("⚠️ No hay historial de compras para este producto.")
         else:
