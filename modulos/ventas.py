@@ -88,7 +88,8 @@ def modulo_ventas():
                         "nombre": nombre_producto,
                         "precio_venta": precio_venta,
                         "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
-                        "subtotal": subtotal
+                        "subtotal": subtotal,
+                        "tipo_cliente": tipo_cliente  # Guardamos el tipo de cliente aquí
                     }
                     st.session_state["productos_vendidos"].append(producto_venta)
                     st.session_state["limpiar_cod"] = True
@@ -128,17 +129,18 @@ def modulo_ventas():
                     VALUES (%s, %s, %s, %s)
                 """, (nuevo_id_venta, fecha_venta, id_empleado, None))
 
-                # Insertar productos
+                # Insertar productos con tipo de cliente
                 for prod in st.session_state["productos_vendidos"]:
                     st.write("Insertando producto:", prod)  # Para verificar los datos
                     cursor.execute("""
-                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta)
-                        VALUES (%s, %s, %s, %s)
+                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta, Tipo_de_cliente)
+                        VALUES (%s, %s, %s, %s, %s)
                     """, (
                         nuevo_id_venta,
                         prod["cod_barra"],
                         prod["cantidad"],
-                        prod["precio_venta"]
+                        prod["precio_venta"],
+                        prod["tipo_cliente"]  # Aquí insertamos el tipo de cliente
                     ))
 
                 conn.commit()
@@ -155,4 +157,3 @@ def modulo_ventas():
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
-
