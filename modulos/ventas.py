@@ -122,11 +122,18 @@ def modulo_ventas():
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id_venta = 1 if ultimo_id is None else ultimo_id + 1
 
-                # Insertar en Venta con tipo de cliente
+                # Validar que tipo_cliente tenga un valor antes de intentar usarlo
+                tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"], index=0)
+
+                if tipo_cliente is None:
+                    st.error("❌ Por favor, selecciona el tipo de cliente.")
+                    return  # Salir si no se selecciona el tipo de cliente
+
+                # Inserción en la tabla Venta con tipo de cliente
                 cursor.execute("""
                     INSERT INTO Venta (Id_venta, Fecha, Id_empleado, Tipo_de_cliente)
                     VALUES (%s, %s, %s, %s)
-                """, (nuevo_id_venta, fecha_venta, id_empleado, tipo_cliente))  # Aquí se agrega el tipo de cliente
+                """, (nuevo_id_venta, fecha_venta, id_empleado, tipo_cliente))  # Se asegura de que tipo_cliente tenga un valor
 
                 # Insertar productos
                 for prod in st.session_state["productos_vendidos"]:
