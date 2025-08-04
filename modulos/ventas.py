@@ -100,7 +100,24 @@ def modulo_ventas():
             st.warning("❌ Producto no encontrado.")
 
     if st.session_state["productos_vendidos"]:
-        # Eliminar la parte que muestra los productos, por lo que ya no aparecerá la lista de productos en la venta
+        st.subheader("🧾 Productos en esta venta")
+
+        total_venta = 0
+        for i, prod in enumerate(st.session_state["productos_vendidos"]):
+            # Mostrar la información de una forma más amigable
+            st.markdown(f"**{prod['nombre']}**")
+            st.markdown(f"Cantidad: {prod['cantidad']} unidad(es)")
+            st.markdown(f"Precio: ${prod['precio_venta']:.2f}")
+            st.markdown(f"Subtotal: ${prod['subtotal']:.2f}")
+            st.markdown(f"Tipo de cliente: **{prod['tipo_cliente']}**")
+            total_venta += prod["subtotal"]
+
+            if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
+                st.session_state["productos_vendidos"].pop(i)
+                st.success("🗑️ Producto eliminado de la venta.")
+                st.rerun()
+
+        st.markdown(f"### 💵 Total de la venta: ${total_venta:.2f}")
 
         if st.button("💾 Registrar venta"):
             try:
@@ -142,4 +159,5 @@ def modulo_ventas():
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
+
 
