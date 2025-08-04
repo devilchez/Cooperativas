@@ -219,8 +219,8 @@ def modulo_compras():
                     )
 
                     cursor.execute(
-                        "UPDATE Producto SET Precio_sugerido = %s, Precio_venta = %s WHERE Cod_barra = %s",
-                        (prod["precio_sugerido"], prod["precio_venta"], prod["cod_barra"])
+                        "UPDATE ProductoxVenta SET Precio_mayorista2 = %s WHERE Cod_barra = %s",
+                        (prod["precio_venta"], prod["cod_barra"])
                     )
 
                 conn.commit()
