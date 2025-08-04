@@ -1,7 +1,6 @@
 import streamlit as st
 from datetime import datetime
 from config.conexion import obtener_conexion
-import traceback  # Para mostrar errores detallados
 
 def modulo_ventas():
     st.title("🛒 Registro de Ventas")
