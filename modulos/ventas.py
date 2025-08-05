@@ -127,6 +127,7 @@ def modulo_ventas():
                     VALUES (%s, %s, %s, %s)
                 """, (nuevo_id_venta, fecha_venta, id_empleado, None))
 
+               
                 for prod in st.session_state["productos_vendidos"]:
                     cursor.execute("""
                         INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta, Tipo_de_cliente)
@@ -139,49 +140,18 @@ def modulo_ventas():
                         prod["tipo_cliente"]  
                     ))
 
-                    # Actualizar el inventario
-                    cursor.execute("""
-                        SELECT ID_Inventario, Stock FROM Inventario 
-                        WHERE Cod_barra = %s AND Stock >= %s
-                        ORDER BY Fecha_ingreso ASC
-                    """, (prod["cod_barra"], prod["cantidad"]))
-                    inventarios = cursor.fetchall()
-
-                    restante = prod["cantidad"]
-                    for id_inventario, stock in inventarios:
-                        if restante <= 0:
-                            break
-                        if stock <= restante:
-                            cursor.execute("""
-                                UPDATE Inventario 
-                                SET Stock = 0, Fecha_salida = %s 
-                                WHERE ID_Inventario = %s
-                            """, (fecha_venta, id_inventario))
-                            restante -= stock
-                        else:
-                            nuevo_stock = stock - restante
-                            cursor.execute("""
-                                UPDATE Inventario 
-                                SET Stock = %s, Fecha_salida = %s 
-                                WHERE ID_Inventario = %s
-                            """, (nuevo_stock, fecha_venta, id_inventario))
-                            restante = 0
-
-                    if restante > 0:
-                        raise Exception(f"Stock insuficiente para el producto con código de barras {prod['cod_barra']}")
-
                 conn.commit()
 
+             
                 st.success("✅ Venta registrada correctamente.")
                 st.session_state["productos_vendidos"] = []
 
             except Exception as e:
                 conn.rollback()
-                st.error(f"❌ Error al registrar la venta o actualizar inventario: {e}")
+                st.error("❌ Error al registrar la venta.")
 
     st.divider()
     if st.button("🔙 Volver al menú principal"):
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
-
