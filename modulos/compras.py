@@ -216,7 +216,7 @@ def modulo_compras():
                     cantidad_convertida = prod["cantidad"] * factor if unidad_original in CONVERSIONES_A_LIBRAS else prod["cantidad"]
 
                     cursor.execute(
-                        "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad, fecha_vencimiento, Precio_minorista, Precio_mayorista1, Precio_mayorista2) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                        "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad, fecha_vencimiento, Precio_minorista, Precio_mayorista1, Precio_mayorista2) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
                         (
                             nuevo_id,
                             prod["cod_barra"],
