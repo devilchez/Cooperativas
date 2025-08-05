@@ -83,10 +83,18 @@ def modulo_compras():
         value=st.session_state["form_data"]["precio_compra"]
     )
 
+    precio_minorista = round(precio_compra / 0.70, 2)
+    st.markdown(f"💡 **Precio de venta sugerido (Al Detalle):** ${precio_minorista:.2f}")
+    
+    precio_sugerido2 = round(precio_compra / 0.75, 2)
+    st.markdown(f"💡 **Precio de venta sugerido (Mayorista #1):** ${precio_sugerido2:.2f}")
+    
     precio_sugerido = round(precio_compra / 0.80, 2)
     st.markdown(f"💡 **Precio de venta sugerido (Mayorista #2):** ${precio_sugerido:.2f}")
 
-    precio_venta = st.number_input("💰 Precio de venta", min_value=0.01, value=precio_sugerido, format="%.2f")
+    precio_venta = st.number_input("💰 Precio de venta al detalle", min_value=0.01, value=precio_minorista, format="%.2f")
+    precio_venta2 = st.number_input("💰 Precio de venta mayorista #1", min_value=0.01, value=precio_sugerido2, format="%.2f")
+    precio_venta3 = st.number_input("💰 Precio de venta mayorista #2", min_value=0.01, value=precio_sugerido, format="%.2f")
 
     st.session_state["form_data"]["cantidad"] = st.number_input(
         "Cantidad comprada", min_value=1, max_value=10000, step=1,
@@ -109,7 +117,7 @@ def modulo_compras():
         )
         if producto_encontrado:
             st.write(f"Producto encontrado: **{producto_encontrado[1]}**")
-            tipo_producto = producto_encontrado[2]  # índice 2 = Tipo_producto
+            tipo_producto = producto_encontrado[2]  
             if tipo_producto.lower() == "perecedero":
                 st.session_state["form_data"]["fecha_vencimiento"] = st.date_input(
                     "📅 Fecha de vencimiento",
@@ -135,6 +143,8 @@ def modulo_compras():
                 "cod_barra": st.session_state["form_data_codigo_barras"],
                 "nombre": prod_ref["nombre"],
                 "precio_compra": precio_compra,
+                "precio_minorista": precio_minorista,
+                "precio_sugerido2": precio_sugerido2,
                 "precio_sugerido": precio_sugerido,
                 "precio_venta": precio_venta,
                 "unidad": unidad,
@@ -207,7 +217,7 @@ def modulo_compras():
                     cantidad_convertida = prod["cantidad"] * factor if unidad_original in CONVERSIONES_A_LIBRAS else prod["cantidad"]
 
                     cursor.execute(
-                        "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad, fecha_vencimiento, Precio_mayorista2) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                        "INSERT INTO ProductoxCompra (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad, fecha_vencimiento, Precio_minorista, Precio_mayorista1, Precio_mayorista2) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                         (
                             nuevo_id,
                             prod["cod_barra"],
@@ -215,7 +225,9 @@ def modulo_compras():
                             prod["precio_compra"],
                             "libras" if unidad_original in CONVERSIONES_A_LIBRAS else unidad_original,
                             prod.get("fecha_vencimiento"),
-                            prod["precio_venta"]
+                            prod["precio_venta"],
+                            prod["precio_venta2"],
+                            prod["precio_venta3"]
                         )
                     )
 
