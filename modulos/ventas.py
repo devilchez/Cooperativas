@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime
 from config.conexion import obtener_conexion
-import traceback  # Para mostrar errores detallados
+import traceback  
 
 def modulo_ventas():
     st.title("🛒 Registro de Ventas")
@@ -89,7 +89,7 @@ def modulo_ventas():
                         "precio_venta": precio_venta,
                         "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
                         "subtotal": subtotal,
-                        "tipo_cliente": tipo_cliente  # Guardamos el tipo de cliente aquí
+                        "tipo_cliente": tipo_cliente  
                     }
                     st.session_state["productos_vendidos"].append(producto_venta)
                     st.session_state["limpiar_cod"] = True
@@ -104,7 +104,7 @@ def modulo_ventas():
 
         total_venta = 0
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
-            # Mostrar toda la información en una sola línea visualmente
+           
             st.write(f"**{prod['nombre']}** | Cantidad: {prod['cantidad']} unidad(es) | Precio: ${prod['precio_venta']:.2f} | Subtotal: ${prod['subtotal']:.2f} | Tipo de cliente: **{prod['tipo_cliente']}**")
             total_venta += prod["subtotal"]
 
@@ -127,7 +127,7 @@ def modulo_ventas():
                     VALUES (%s, %s, %s, %s)
                 """, (nuevo_id_venta, fecha_venta, id_empleado, None))
 
-                # Insertar productos con tipo de cliente
+               
                 for prod in st.session_state["productos_vendidos"]:
                     cursor.execute("""
                         INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta, Tipo_de_cliente)
@@ -137,12 +137,12 @@ def modulo_ventas():
                         prod["cod_barra"],
                         prod["cantidad"],
                         prod["precio_venta"],
-                        prod["tipo_cliente"]  # Aquí insertamos el tipo de cliente
+                        prod["tipo_cliente"]  
                     ))
 
                 conn.commit()
 
-                # Mostrar solo un mensaje de confirmación
+             
                 st.success("✅ Venta registrada correctamente.")
                 st.session_state["productos_vendidos"] = []
 
