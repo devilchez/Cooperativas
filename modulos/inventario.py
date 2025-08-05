@@ -1,5 +1,4 @@
-# modulos/inventario.py
-import streamlit as st
+import streamlit as st  
 import pandas as pd
 from config.conexion import obtener_conexion
 from datetime import datetime, timedelta
@@ -150,4 +149,3 @@ def modulo_inventario():
     if st.button("⬅ Volver al menú principal"):
         st.session_state.module = None
         st.rerun()
-
