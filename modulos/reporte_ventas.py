@@ -51,6 +51,9 @@ def reporte_ventas():
         ])
         df["Total"] = df["Cantidad Vendida"] * df["Precio Venta"]
 
+        # Reorganizamos las columnas para que "Fecha Venta" esté al final
+        df = df[["ID_Venta", "Código de Barra", "Cantidad Vendida", "Precio Venta", "Total", "Fecha Venta"]]
+
         # Mostrar detalles de ventas en formato tabla
         st.markdown("---")
         st.markdown("### 🗂 Detalles de Ventas")
@@ -94,7 +97,8 @@ def reporte_ventas():
             pdf.cell(40, 10, 'Código Barra', 1, 0, 'C')
             pdf.cell(40, 10, 'Cantidad Vendida', 1, 0, 'C')
             pdf.cell(40, 10, 'Precio Venta', 1, 0, 'C')
-            pdf.cell(40, 10, 'Total', 1, 1, 'C')
+            pdf.cell(40, 10, 'Total', 1, 0, 'C')
+            pdf.cell(40, 10, 'Fecha Venta', 1, 1, 'C')
 
             # Rellenar los datos de la tabla
             pdf.set_font("Arial", size=10)
@@ -104,13 +108,15 @@ def reporte_ventas():
                 cantidad_vendida = row['Cantidad Vendida'] if row['Cantidad Vendida'] is not None else 0
                 precio_venta = row['Precio Venta'] if row['Precio Venta'] is not None else 0.0
                 total = row['Total'] if row['Total'] is not None else 0.0
+                fecha_venta = row['Fecha Venta'].strftime('%Y-%m-%d') if row['Fecha Venta'] is not None else 'N/A'
 
                 # Insertar los datos en la tabla
                 pdf.cell(40, 10, str(venta_id), 1, 0, 'C')
                 pdf.cell(40, 10, str(cod_barra), 1, 0, 'C')
                 pdf.cell(40, 10, str(cantidad_vendida), 1, 0, 'C')
                 pdf.cell(40, 10, f"${precio_venta:.2f}", 1, 0, 'C')
-                pdf.cell(40, 10, f"${total:.2f}", 1, 1, 'C')
+                pdf.cell(40, 10, f"${total:.2f}", 1, 0, 'C')
+                pdf.cell(40, 10, str(fecha_venta), 1, 1, 'C')
 
             pdf_buffer = BytesIO()
             pdf.output(pdf_buffer)
