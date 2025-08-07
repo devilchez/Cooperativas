@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from config.conexion import obtener_conexion  # Importación corregida
+from config.conexion import obtener_conexion  
 from datetime import datetime
 from io import BytesIO
 from fpdf import FPDF
@@ -23,11 +23,6 @@ def reporte_ventas():
         # Establecer conexión a la base de datos
         con = obtener_conexion()
         cursor = con.cursor()
-
-        # Verificar base de datos activa (diagnóstico adicional)
-        cursor.execute("SELECT DATABASE();")
-        base_de_datos = cursor.fetchone()[0]
-        st.write(f"Conectado a la base de datos: {base_de_datos}")  # Mostrar la base de datos activa
 
         # Consulta SQL para obtener las ventas en el rango de fechas
         query = """
@@ -61,10 +56,7 @@ def reporte_ventas():
         # Mostramos la tabla con los datos de ventas
         st.table(df)
 
-        # Si prefieres una tabla más interactiva, puedes usar st.dataframe
-        # st.dataframe(df)
-
-        # Opciones de exportación de los datos a Excel y PDF
+      
         st.markdown("---")
         st.markdown("### 📁 Exportar ventas filtradas")
         col1, col2 = st.columns(2)
@@ -82,16 +74,16 @@ def reporte_ventas():
             )
 
         with col2:
-            # Exportar a PDF con tabla estética
+            # Exportar a PDF 
             pdf = FPDF()
             pdf.add_page()
 
-            # Establecer título
+           
             pdf.set_font("Arial", 'B', 16)
             pdf.cell(200, 10, txt="Reporte de Ventas", ln=True, align='C')
             pdf.ln(10)  # Salto de línea
 
-            # Encabezado de tabla
+            
             pdf.set_font("Arial", 'B', 12)
             pdf.cell(40, 10, 'Venta ID', 1, 0, 'C')
             pdf.cell(40, 10, 'Código Barra', 1, 0, 'C')
@@ -100,7 +92,7 @@ def reporte_ventas():
             pdf.cell(40, 10, 'Total', 1, 0, 'C')
             pdf.cell(40, 10, 'Fecha Venta', 1, 1, 'C')
 
-            # Rellenar los datos de la tabla
+         
             pdf.set_font("Arial", size=10)
             for index, row in df.iterrows():
                 venta_id = row['ID_Venta'] if row['ID_Venta'] is not None else 'N/A'
@@ -110,7 +102,7 @@ def reporte_ventas():
                 total = row['Total'] if row['Total'] is not None else 0.0
                 fecha_venta = row['Fecha Venta'].strftime('%Y-%m-%d') if row['Fecha Venta'] is not None else 'N/A'
 
-                # Insertar los datos en la tabla
+                
                 pdf.cell(40, 10, str(venta_id), 1, 0, 'C')
                 pdf.cell(40, 10, str(cod_barra), 1, 0, 'C')
                 pdf.cell(40, 10, str(cantidad_vendida), 1, 0, 'C')
@@ -131,6 +123,6 @@ def reporte_ventas():
         st.error(f"❌ Error al generar el reporte: {e}")
 
     finally:
-        # Cerrar la conexión a la base de datos
+       
         if 'cursor' in locals(): cursor.close()
         if 'con' in locals(): con.close()
