@@ -18,7 +18,6 @@ def modulo_ventas():
         conn = obtener_conexion()
         cursor = conn.cursor()
 
-        # Obtener el producto más reciente ingresado con precios
         cursor.execute("""
             SELECT p.Nombre, pc.Precio_minorista, pc.Precio_mayorista1, pc.Precio_mayorista2
             FROM ProductoxCompra pc
@@ -47,15 +46,18 @@ def modulo_ventas():
     elif tipo_cliente == "Mayorista 2":
         precio_seleccionado = precio_mayorista2
 
+    # Mostrar y permitir edición del precio unitario
     if precio_seleccionado is not None:
-        st.info(f"💰 Precio aplicado: **${precio_seleccionado:.2f}**")
-        total = cantidad * precio_seleccionado
-        st.markdown(f"🧾 **Total a pagar: ${total:.2f}**")
+        precio_editable = st.number_input("💲 Precio a pagar (editable)", value=float(precio_seleccionado), step=0.01, format="%.2f")
+        subtotal = cantidad * precio_editable
+        st.markdown(f"🧾 **Subtotal: ${subtotal:.2f}**")
     elif cod_barra:
         st.error("❌ No se encontraron precios para este producto.")
+        precio_editable = None
+        subtotal = None
 
     if st.button("💾 Registrar venta"):
-        if not all([empleado, cod_barra, precio_seleccionado]):
+        if not all([empleado, cod_barra, precio_editable is not None]):
             st.error("⚠️ Faltan datos para registrar la venta.")
         else:
             try:
@@ -63,20 +65,19 @@ def modulo_ventas():
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
 
-                # Registrar en la tabla Venta
                 cursor.execute("INSERT INTO Venta (Id_venta, Fecha, Id_empleado) VALUES (%s, %s, %s)",
                                (nuevo_id, fecha_venta, empleado))
 
-                # Registrar el detalle de la venta
                 cursor.execute("""
                     INSERT INTO DetalleVenta (Id_venta, Cod_barra, Cantidad, Precio_unitario, Precio_total)
                     VALUES (%s, %s, %s, %s, %s)
-                """, (nuevo_id, cod_barra, cantidad, precio_seleccionado, total))
+                """, (nuevo_id, cod_barra, cantidad, precio_editable, subtotal))
 
                 conn.commit()
                 st.success("✅ Venta registrada exitosamente.")
             except Exception as e:
                 st.error(f"⚠️ Error al registrar la venta: {e}")
+
 
 
 
