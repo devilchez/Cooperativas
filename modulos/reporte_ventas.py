@@ -6,7 +6,7 @@ from io import BytesIO
 from fpdf import FPDF
 
 def reporte_ventas():
-    st.header("📊 Reporte de Ventas por Emprendimiento")
+    st.header("📊 Reporte de Ventas por Producto")
 
     # Filtros de fecha
     col1, col2 = st.columns(2)
@@ -26,12 +26,10 @@ def reporte_ventas():
 
         # Consulta SQL para obtener las ventas en el rango de fechas
         query = """
-            SELECT v.ID_Venta, e.Nombre_emprendimiento, pr.Nombre_producto, pv.cantidad, pv.precio_unitario, v.fecha_venta, pr.ID_Producto
+            SELECT v.ID_Venta, pv.Cod_barra, pv.Cantidad_vendida, pv.Precio_Venta, v.Fecha
             FROM VENTA v
             JOIN PRODUCTOXVENTA pv ON v.ID_Venta = pv.ID_Venta
-            JOIN PRODUCTO pr ON pv.ID_Producto = pr.ID_Producto
-            JOIN EMPRENDIMIENTO e ON pr.ID_Emprendimiento = e.ID_Emprendimiento
-            WHERE v.fecha_venta BETWEEN %s AND %s
+            WHERE v.Fecha BETWEEN %s AND %s
             ORDER BY v.ID_Venta DESC
         """
 
@@ -44,9 +42,9 @@ def reporte_ventas():
 
         # Crear DataFrame con los resultados de la consulta
         df = pd.DataFrame(rows, columns=[
-            "ID_Venta", "Emprendimiento", "Producto", "Cantidad", "Precio Unitario", "Fecha Venta", "ID_Producto"
+            "ID_Venta", "Código de Barra", "Cantidad Vendida", "Precio Venta", "Fecha Venta"
         ])
-        df["Total"] = df["Cantidad"] * df["Precio Unitario"]
+        df["Total"] = df["Cantidad Vendida"] * df["Precio Venta"]
 
         # Mostrar detalles de ventas
         st.markdown("---")
@@ -58,17 +56,16 @@ def reporte_ventas():
             with col1:
                 st.markdown(
                     f"**Venta ID:** {row['ID_Venta']}  \n"
-                    f"**Emprendimiento:** {row['Emprendimiento']}  \n"
-                    f"**Producto:** {row['Producto']}  \n"
-                    f"**Cantidad:** {row['Cantidad']}  \n"
+                    f"**Código de Barra:** {row['Código de Barra']}  \n"
+                    f"**Cantidad Vendida:** {row['Cantidad Vendida']}  \n"
                     f"**Total:** ${row['Total']:.2f}  "
                 )
             with col2:
-                if st.button("🗑", key=f"delete_{row['ID_Venta']}_{row['ID_Producto']}_{index}"):
+                if st.button("🗑", key=f"delete_{row['ID_Venta']}_{index}"):
                     try:
                         cursor.execute(
-                            "DELETE FROM PRODUCTOXVENTA WHERE ID_Venta = %s AND ID_Producto = %s",
-                            (row['ID_Venta'], row['ID_Producto'])
+                            "DELETE FROM PRODUCTOXVENTA WHERE ID_Venta = %s",
+                            (row['ID_Venta'],)
                         )
                         con.commit()  # Confirmar cambios en la base de datos
                         st.success("¡Producto eliminado exitosamente de la venta!")
@@ -98,7 +95,7 @@ def reporte_ventas():
             # Exportar a Excel
             excel_buffer = BytesIO()
             with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-                df.drop(columns=["ID_Producto"]).to_excel(writer, index=False, sheet_name='ReporteVentas')
+                df.drop(columns=["Total"]).to_excel(writer, index=False, sheet_name='ReporteVentas')
             st.download_button(
                 label="⬇️ Descargar Excel",
                 data=excel_buffer.getvalue(),
@@ -115,7 +112,7 @@ def reporte_ventas():
             pdf.set_font("Arial", size=10)
 
             for index, row in df.iterrows():
-                texto = f"{row['Emprendimiento']} | {row['Producto']} | {row['Cantidad']} x ${row['Precio Unitario']:.2f} = ${row['Total']:.2f}"
+                texto = f"{row['Código de Barra']} | {row['Cantidad Vendida']} x ${row['Precio Venta']:.2f} = ${row['Total']:.2f}"
                 pdf.cell(0, 10, txt=texto, ln=True)
 
             pdf_buffer = BytesIO()
