@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from config.conexion import obtener_conexion  
+from config.conexion import obtener_conexion  # Importación corregida
 from datetime import datetime
 from io import BytesIO
 from fpdf import FPDF
@@ -24,6 +24,10 @@ def reporte_ventas():
         con = obtener_conexion()
         cursor = con.cursor()
 
+        # Verificar base de datos activa (diagnóstico adicional)
+        cursor.execute("SELECT DATABASE();")
+        base_de_datos = cursor.fetchone()[0]
+        st.write(f"Conectado a la base de datos: {base_de_datos}")  # Mostrar la base de datos activa
 
         # Consulta SQL para obtener las ventas en el rango de fechas
         query = """
@@ -55,11 +59,20 @@ def reporte_ventas():
         for index, row in df.iterrows():
             col1, col2 = st.columns([6, 1])
             with col1:
+                # Asegurarnos de que los valores no sean None antes de formatear
+                venta_id = row['ID_Venta'] if row['ID_Venta'] is not None else 'N/A'
+                cod_barra = row['Código de Barra'] if row['Código de Barra'] is not None else 'N/A'
+                cantidad_vendida = row['Cantidad Vendida'] if row['Cantidad Vendida'] is not None else 0
+                precio_venta = row['Precio Venta'] if row['Precio Venta'] is not None else 0.0
+                total = row['Total'] if row['Total'] is not None else 0.0
+
+                # Mostramos los datos sin errores de formato
                 st.markdown(
-                    f"**Venta ID:** {row['ID_Venta']}  \n"
-                    f"**Código de Barra:** {row['Código de Barra']}  \n"
-                    f"**Cantidad Vendida:** {row['Cantidad Vendida']}  \n"
-                    f"**Total:** ${row['Total']:.2f}  "
+                    f"**Venta ID:** {venta_id}  \n"
+                    f"**Código de Barra:** {cod_barra}  \n"
+                    f"**Cantidad Vendida:** {cantidad_vendida}  \n"
+                    f"**Precio Venta:** ${precio_venta:.2f}  \n"
+                    f"**Total:** ${total:.2f}  "
                 )
             with col2:
                 if st.button("🗑", key=f"delete_{row['ID_Venta']}_{index}"):
@@ -105,16 +118,38 @@ def reporte_ventas():
             )
 
         with col2:
-            # Exportar a PDF
+            # Exportar a PDF con tabla estética
             pdf = FPDF()
             pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            pdf.cell(200, 10, txt="Reporte de Ventas", ln=True, align='C')
-            pdf.set_font("Arial", size=10)
 
+            # Establecer título
+            pdf.set_font("Arial", 'B', 16)
+            pdf.cell(200, 10, txt="Reporte de Ventas", ln=True, align='C')
+            pdf.ln(10)  # Salto de línea
+
+            # Encabezado de tabla
+            pdf.set_font("Arial", 'B', 12)
+            pdf.cell(40, 10, 'Venta ID', 1, 0, 'C')
+            pdf.cell(40, 10, 'Código Barra', 1, 0, 'C')
+            pdf.cell(40, 10, 'Cantidad Vendida', 1, 0, 'C')
+            pdf.cell(40, 10, 'Precio Venta', 1, 0, 'C')
+            pdf.cell(40, 10, 'Total', 1, 1, 'C')
+
+            # Rellenar los datos de la tabla
+            pdf.set_font("Arial", size=10)
             for index, row in df.iterrows():
-                texto = f"{row['Código de Barra']} | {row['Cantidad Vendida']} x ${row['Precio Venta']:.2f} = ${row['Total']:.2f}"
-                pdf.cell(0, 10, txt=texto, ln=True)
+                venta_id = row['ID_Venta'] if row['ID_Venta'] is not None else 'N/A'
+                cod_barra = row['Código de Barra'] if row['Código de Barra'] is not None else 'N/A'
+                cantidad_vendida = row['Cantidad Vendida'] if row['Cantidad Vendida'] is not None else 0
+                precio_venta = row['Precio Venta'] if row['Precio Venta'] is not None else 0.0
+                total = row['Total'] if row['Total'] is not None else 0.0
+
+                # Insertar los datos en la tabla
+                pdf.cell(40, 10, str(venta_id), 1, 0, 'C')
+                pdf.cell(40, 10, str(cod_barra), 1, 0, 'C')
+                pdf.cell(40, 10, str(cantidad_vendida), 1, 0, 'C')
+                pdf.cell(40, 10, f"${precio_venta:.2f}", 1, 0, 'C')
+                pdf.cell(40, 10, f"${total:.2f}", 1, 1, 'C')
 
             pdf_buffer = BytesIO()
             pdf.output(pdf_buffer)
@@ -132,5 +167,4 @@ def reporte_ventas():
         # Cerrar la conexión a la base de datos
         if 'cursor' in locals(): cursor.close()
         if 'con' in locals(): con.close()
-
 
