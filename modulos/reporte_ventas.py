@@ -61,7 +61,7 @@ def reporte_ventas():
         if st.button("🔙 Volver al Menú Principal"):
             # Cambiar el estado de sesión a 'menu_principal'
             st.session_state["page"] = "menu_principal"
-            st.experimental_rerun()  # Recargar la aplicación para volver al menú principal
+            st.session_state["module"] = None  # Limpiar el módulo actual
 
         st.markdown("---")
         st.markdown("### 📁 Exportar ventas filtradas")
@@ -139,3 +139,4 @@ elif st.session_state["page"] == "menu_principal":
     # Aquí agregas el código para el menú principal
     st.title("🏠 Menú Principal")
     # Agrega el contenido de tu menú principal aquí
+
