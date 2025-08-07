@@ -45,7 +45,7 @@ def modulo_ventas():
 
     cod_barras_input = st.text_input("📦 Ingrese el código de barras del producto", value=st.session_state.get("cod_barras_input", ""), key="cod_barras_input")
 
-    tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"], index=0)
+    tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Minorista", "Mayorista 1", "Mayorista 2"], index=0)
 
     if cod_barras_input:
         cursor.execute("SELECT Nombre FROM Producto WHERE Cod_barra = %s", (cod_barras_input,))
