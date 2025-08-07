@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from config.conexion import obtener_conexion  # Importación corregida
+from config.conexion import obtener_conexion  
 from datetime import datetime
 from io import BytesIO
 from fpdf import FPDF
@@ -24,10 +24,6 @@ def reporte_ventas():
         con = obtener_conexion()
         cursor = con.cursor()
 
-        # Verificar base de datos activa (diagnóstico adicional)
-        cursor.execute("SELECT DATABASE();")
-        base_de_datos = cursor.fetchone()[0]
-        st.write(f"Conectado a la base de datos: {base_de_datos}")  # Mostrar la base de datos activa
 
         # Consulta SQL para obtener las ventas en el rango de fechas
         query = """
