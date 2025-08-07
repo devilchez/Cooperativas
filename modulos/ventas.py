@@ -39,19 +39,19 @@ def modulo_ventas():
         else:
             st.warning("⚠️ Producto no encontrado en compras registradas.")
 
-    tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"])
+    tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Minorista", "Mayorista 1", "Mayorista 2"])
     cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
     precio_seleccionado = None
-    if tipo_cliente == "Detallista":
+    if tipo_cliente == "Minorista":
         precio_seleccionado = precio_minorista
-        tipo_cliente_id = 1
+        tipo_cliente_id = "Minorista"
     elif tipo_cliente == "Mayorista 1":
         precio_seleccionado = precio_mayorista1
-        tipo_cliente_id = 2
+        tipo_cliente_id = "Mayorista 1"
     elif tipo_cliente == "Mayorista 2":
         precio_seleccionado = precio_mayorista2
-        tipo_cliente_id = 3
+        tipo_cliente_id = "Mayorista 2"
 
     if precio_seleccionado is not None:
         precio_editable = st.number_input("💲 Precio de venta", value=float(precio_seleccionado), step=0.01, format="%.2f")
