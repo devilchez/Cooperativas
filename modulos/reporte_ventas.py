@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from config.conexion import obtener_conexion
+from config.conexion import obtener_conexion  # Importación corregida
 from datetime import datetime
 from io import BytesIO
 from fpdf import FPDF
@@ -131,4 +131,5 @@ def reporte_ventas():
         # Cerrar la conexión a la base de datos
         if 'cursor' in locals(): cursor.close()
         if 'con' in locals(): con.close()
+
 
