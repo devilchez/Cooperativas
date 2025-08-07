@@ -67,18 +67,26 @@ def modulo_ventas():
             st.error("⚠️ Faltan datos para registrar la venta.")
         else:
             try:
+                # Obtener el Id_empleado correspondiente al usuario (código del empleado)
                 conn = obtener_conexion()
                 cursor = conn.cursor()
+                cursor.execute("SELECT Id_empleado FROM Empleado WHERE Usuario = %s", (st.session_state["usuario"],))
+                empleado = cursor.fetchone()
 
+                if not empleado:
+                    st.error("⚠️ No se encontró el ID del empleado.")
+                    return
+
+                id_empleado = empleado[0]
+
+                # Obtener el nuevo ID para la venta
                 cursor.execute("SELECT MAX(Id_venta) FROM Venta")
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
 
-                usuario_empleado = st.session_state["usuario"]
-
                 # Insertar en tabla Venta
                 cursor.execute("INSERT INTO Venta (Id_venta, Fecha, Id_empleado) VALUES (%s, %s, %s)",
-                               (nuevo_id, fecha_venta, usuario_empleado))
+                               (nuevo_id, fecha_venta, id_empleado))
 
                 # Insertar en tabla ProductoxVenta (Usando Precio_Venta y Tipo_de_cliente)
                 cursor.execute("""
@@ -90,3 +98,4 @@ def modulo_ventas():
                 st.success("✅ Venta registrada exitosamente.")
             except Exception as e:
                 st.error(f"⚠️ Error al registrar la venta: {e}")
+
