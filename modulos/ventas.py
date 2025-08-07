@@ -9,11 +9,22 @@ def modulo_ventas():
 
     st.title("🛒 Registro de Ventas")
 
-    fecha_venta = st.date_input("📅 Fecha de la venta", date.today())
+    conn = obtener_conexion()
+    cursor = conn.cursor()
 
-    # Usuario cargado automáticamente
+    # Obtener ID del empleado desde la sesión
     id_empleado = st.session_state["id_empleado"]
-    st.text_input("🧑‍💼 Usuario del empleado", value=id_empleado, disabled=True)
+
+    # Buscar el nombre del empleado
+    cursor.execute("SELECT Nombre FROM Empleado WHERE Id_empleado = %s", (id_empleado,))
+    resultado = cursor.fetchone()
+    nombre_empleado = resultado[0] if resultado else "Empleado no encontrado"
+
+    # Mostrar nombre e ID
+    st.text_input("🧑‍💼 ID del empleado", value=id_empleado, disabled=True)
+    st.text_input("📛 Nombre del empleado", value=nombre_empleado, disabled=True)
+
+    fecha_venta = st.date_input("📅 Fecha de la venta", date.today())
 
     cod_barra = st.text_input("📦 Ingrese el código de barras del producto")
 
@@ -21,9 +32,6 @@ def modulo_ventas():
     nombre_producto = None
 
     if cod_barra:
-        conn = obtener_conexion()
-        cursor = conn.cursor()
-
         cursor.execute("""
             SELECT p.Nombre, pc.Precio_minorista, pc.Precio_mayorista1, pc.Precio_mayorista2
             FROM ProductoxCompra pc
