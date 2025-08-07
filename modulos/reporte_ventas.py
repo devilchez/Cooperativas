@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from modulos.config.conexion import obtener_conexion
+from config.conexion import obtener_conexion
 from datetime import datetime
 from io import BytesIO
 from fpdf import FPDF
