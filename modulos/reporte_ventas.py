@@ -59,20 +59,11 @@ def reporte_ventas():
         for index, row in df.iterrows():
             col1, col2 = st.columns([6, 1])
             with col1:
-                # Asegurarnos de que los valores no sean None antes de formatear
-                venta_id = row['ID_Venta'] if row['ID_Venta'] is not None else 'N/A'
-                cod_barra = row['Código de Barra'] if row['Código de Barra'] is not None else 'N/A'
-                cantidad_vendida = row['Cantidad Vendida'] if row['Cantidad Vendida'] is not None else 0
-                precio_venta = row['Precio Venta'] if row['Precio Venta'] is not None else 0.0
-                total = row['Total'] if row['Total'] is not None else 0.0
-
-                # Mostramos los datos sin errores de formato
                 st.markdown(
-                    f"**Venta ID:** {venta_id}  \n"
-                    f"**Código de Barra:** {cod_barra}  \n"
-                    f"**Cantidad Vendida:** {cantidad_vendida}  \n"
-                    f"**Precio Venta:** ${precio_venta:.2f}  \n"
-                    f"**Total:** ${total:.2f}  "
+                    f"**Venta ID:** {row['ID_Venta']}  \n"
+                    f"**Código de Barra:** {row['Código de Barra']}  \n"
+                    f"**Cantidad Vendida:** {row['Cantidad Vendida']}  \n"
+                    f"**Total:** ${row['Total']:.2f}  "
                 )
             with col2:
                 if st.button("🗑", key=f"delete_{row['ID_Venta']}_{index}"):
@@ -126,9 +117,7 @@ def reporte_ventas():
             pdf.set_font("Arial", size=10)
 
             for index, row in df.iterrows():
-                # Asegurarnos de que no haya None antes de formatear para PDF
-                total = row['Total'] if row['Total'] is not None else 0.0
-                texto = f"{row['Código de Barra']} | {row['Cantidad Vendida']} x ${row['Precio Venta']:.2f} = ${total:.2f}"
+                texto = f"{row['Código de Barra']} | {row['Cantidad Vendida']} x ${row['Precio Venta']:.2f} = ${row['Total']:.2f}"
                 pdf.cell(0, 10, txt=texto, ln=True)
 
             pdf_buffer = BytesIO()
@@ -147,4 +136,5 @@ def reporte_ventas():
         # Cerrar la conexión a la base de datos
         if 'cursor' in locals(): cursor.close()
         if 'con' in locals(): con.close()
+
 
