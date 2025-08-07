@@ -27,8 +27,8 @@ def reporte_ventas():
         # Consulta SQL para obtener las ventas en el rango de fechas
         query = """
             SELECT v.ID_Venta, pv.Cod_barra, pv.Cantidad_vendida, pv.Precio_Venta, v.Fecha
-            FROM Venta v  # Tabla 'Venta' con 'V' en mayúscula
-            JOIN ProductoXVenta pv ON v.ID_Venta = pv.ID_Venta  # Corregido nombre de la tabla
+            FROM Venta v  # Usando 'Venta' con 'V' en mayúscula
+            JOIN ProductoXVenta pv ON v.ID_Venta = pv.ID_Venta  # Usando 'ProductoXVenta' correctamente
             WHERE v.Fecha BETWEEN %s AND %s
             ORDER BY v.ID_Venta DESC
         """
