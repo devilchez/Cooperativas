@@ -141,11 +141,11 @@ def modulo_ventas():
                     VALUES (%s, %s, %s, %s)
                 """, (nuevo_id_venta, fecha_venta, id_empleado, None))
 
-                # Insertar productos en ProductoxVenta
+                # Insertar productos en ProductoxVenta (con Precio_Venta y Tipo_de_cliente)
                 for prod in st.session_state["productos_vendidos"]:
                     tipo_cliente_id = obtener_tipo_cliente_id(tipo_cliente)
                     cursor.execute("""
-                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Tipo_de_cliente, Precio_unitario)
+                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Tipo_de_cliente, Precio_Venta)
                         VALUES (%s, %s, %s, %s, %s)
                     """, (
                         nuevo_id_venta,
