@@ -1,7 +1,6 @@
-import streamlit as st
+mport streamlit as st
 from datetime import datetime
 from config.conexion import obtener_conexion
-import traceback  
 
 def modulo_ventas():
     st.title("🛒 Registro de Ventas")
@@ -22,6 +21,9 @@ def modulo_ventas():
     fecha_venta = datetime.now().strftime("%Y-%m-%d")
     st.text_input("🗓️ Fecha de la venta", value=fecha_venta, disabled=True)
     st.text_input("🧑‍💼 Usuario del empleado", value=usuario, disabled=True)
+
+    conn = obtener_conexion()
+    cursor = conn.cursor()
 
     cursor.execute("SELECT Id_empleado FROM Empleado WHERE Usuario = %s", (usuario,))
     empleado = cursor.fetchone()
@@ -72,7 +74,11 @@ def modulo_ventas():
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
                 if es_grano_basico == "Sí" and unidad_grano:
-                    factor_conversion = {"Libra": 1, "Arroba": 25, "Quintal": 100}
+                    factor_conversion = {
+                        "Libra": 1,
+                        "Arroba": 25,
+                        "Quintal": 100
+                    }
                     cantidad_libras = cantidad * factor_conversion[unidad_grano]
                     st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
                     subtotal = round(precio_venta * cantidad_libras, 2)
@@ -88,8 +94,7 @@ def modulo_ventas():
                         "nombre": nombre_producto,
                         "precio_venta": precio_venta,
                         "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
-                        "subtotal": subtotal,
-                        "tipo_cliente": tipo_cliente  
+                        "subtotal": subtotal
                     }
                     st.session_state["productos_vendidos"].append(producto_venta)
                     st.session_state["limpiar_cod"] = True
@@ -104,8 +109,10 @@ def modulo_ventas():
 
         total_venta = 0
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
-           
-            st.write(f"**{prod['nombre']}** | Cantidad: {prod['cantidad']} unidad(es) | Precio: ${prod['precio_venta']:.2f} | Subtotal: ${prod['subtotal']:.2f} | Tipo de cliente: **{prod['tipo_cliente']}**")
+            st.markdown(
+                f"**{prod['nombre']}** — {prod['cantidad']} unidad(es) — "
+                f"Precio: ${prod['precio_venta']:.2f} — Subtotal: ${prod['subtotal']:.2f}"
+            )
             total_venta += prod["subtotal"]
 
             if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
@@ -121,34 +128,29 @@ def modulo_ventas():
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id_venta = 1 if ultimo_id is None else ultimo_id + 1
 
-                # Insertar en Venta
                 cursor.execute("""
                     INSERT INTO Venta (Id_venta, Fecha, Id_empleado, Id_cliente)
                     VALUES (%s, %s, %s, %s)
                 """, (nuevo_id_venta, fecha_venta, id_empleado, None))
 
-               
                 for prod in st.session_state["productos_vendidos"]:
                     cursor.execute("""
-                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta, Tipo_de_cliente)
-                        VALUES (%s, %s, %s, %s, %s)
+                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_unitario)
+                        VALUES (%s, %s, %s, %s)
                     """, (
                         nuevo_id_venta,
                         prod["cod_barra"],
                         prod["cantidad"],
-                        prod["precio_venta"],
-                        prod["tipo_cliente"]  
+                        prod["precio_venta"]
                     ))
 
                 conn.commit()
-
-             
-                st.success("✅ Venta registrada correctamente.")
+                st.success("✅ Venta registrada exitosamente.")
                 st.session_state["productos_vendidos"] = []
 
             except Exception as e:
                 conn.rollback()
-                st.error("❌ Error al registrar la venta.")
+                st.error(f"❌ Error al registrar la venta: {e}")
 
     st.divider()
     if st.button("🔙 Volver al menú principal"):
