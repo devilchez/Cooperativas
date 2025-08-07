@@ -67,8 +67,7 @@ def modulo_ventas():
 
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
-                # Ya no calculamos el subtotal aquí, solo recuperamos el precio de venta
-                # El subtotal ahora se gestiona directamente en la base de datos
+                # Mostrar el precio de venta directamente
                 st.write(f"💲 Precio de venta: ${precio_venta:.2f}")
 
                 if st.button("🛒 Agregar producto a la venta"):
@@ -93,7 +92,7 @@ def modulo_ventas():
         total_venta = 0
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
             st.write(f"**{prod['nombre']}** | Cantidad: {prod['cantidad']} unidad(es) | Precio: ${prod['precio_venta']:.2f} | Tipo de cliente: **{prod['tipo_cliente']}**")
-            total_venta += prod["precio_venta"] * prod["cantidad"]  # Calculamos el total de la venta
+            total_venta += prod["precio_venta"] * prod["cantidad"]  # El total se calcula con los precios ya proporcionados
 
             if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
                 st.session_state["productos_vendidos"].pop(i)
