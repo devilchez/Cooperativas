@@ -51,54 +51,15 @@ def reporte_ventas():
         ])
         df["Total"] = df["Cantidad Vendida"] * df["Precio Venta"]
 
-        # Mostrar detalles de ventas
+        # Mostrar detalles de ventas en formato tabla
         st.markdown("---")
         st.markdown("### 🗂 Detalles de Ventas")
         
-        # Iterar sobre las filas del DataFrame para mostrar los productos vendidos
-        for index, row in df.iterrows():
-            col1, col2 = st.columns([6, 1])
-            with col1:
-                # Asegurarnos de que los valores no sean None antes de formatear
-                venta_id = row['ID_Venta'] if row['ID_Venta'] is not None else 'N/A'
-                cod_barra = row['Código de Barra'] if row['Código de Barra'] is not None else 'N/A'
-                cantidad_vendida = row['Cantidad Vendida'] if row['Cantidad Vendida'] is not None else 0
-                precio_venta = row['Precio Venta'] if row['Precio Venta'] is not None else 0.0
-                total = row['Total'] if row['Total'] is not None else 0.0
+        # Mostramos la tabla con los datos de ventas
+        st.table(df)
 
-                # Mostramos los datos sin errores de formato
-                st.markdown(
-                    f"**Venta ID:** {venta_id}  \n"
-                    f"**Código de Barra:** {cod_barra}  \n"
-                    f"**Cantidad Vendida:** {cantidad_vendida}  \n"
-                    f"**Precio Venta:** ${precio_venta:.2f}  \n"
-                    f"**Total:** ${total:.2f}  "
-                )
-            with col2:
-                if st.button("🗑", key=f"delete_{row['ID_Venta']}_{index}"):
-                    try:
-                        cursor.execute(
-                            "DELETE FROM ProductoxVenta WHERE ID_Venta = %s",
-                            (row['ID_Venta'],)
-                        )
-                        con.commit()  # Confirmar cambios en la base de datos
-                        st.success("¡Producto eliminado exitosamente de la venta!")
-
-                        # Verificar si ya no hay productos asociados a la venta
-                        cursor.execute(
-                            "SELECT COUNT(*) FROM ProductoxVenta WHERE ID_Venta = %s",
-                            (row['ID_Venta'],)
-                        )
-                        count = cursor.fetchone()[0]
-                        if count == 0:
-                            cursor.execute("DELETE FROM Venta WHERE ID_Venta = %s", (row['ID_Venta'],))
-                            con.commit()
-                            st.success(f"✅ Venta ID {row['ID_Venta']} eliminada completamente.")
-
-                        st.rerun()  # Recargar la página para reflejar los cambios
-
-                    except Exception as e:
-                        st.error(f"❌ Error al eliminar el producto: {e}")
+        # Si prefieres una tabla más interactiva, puedes usar st.dataframe
+        # st.dataframe(df)
 
         # Opciones de exportación de los datos a Excel y PDF
         st.markdown("---")
@@ -167,4 +128,3 @@ def reporte_ventas():
         # Cerrar la conexión a la base de datos
         if 'cursor' in locals(): cursor.close()
         if 'con' in locals(): con.close()
-
