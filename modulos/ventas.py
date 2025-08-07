@@ -7,7 +7,7 @@ def modulo_ventas():
 
     fecha_venta = st.date_input("📅 Fecha de la venta", date.today())
 
-    # Verificar usuario en sesión
+    
     if "usuario" not in st.session_state:
         st.error("⚠️ No hay usuario en sesión.")
         return
@@ -19,7 +19,7 @@ def modulo_ventas():
     precio_minorista = precio_mayorista1 = precio_mayorista2 = None
     nombre_producto = None
 
-    # Si se ingresa el código de barras, buscar el producto
+  
     if cod_barra:
         conn = obtener_conexion()
         cursor = conn.cursor()
@@ -38,18 +38,17 @@ def modulo_ventas():
             nombre_producto, precio_minorista, precio_mayorista1, precio_mayorista2 = resultado
             st.success(f"✅ Producto encontrado: **{nombre_producto}**")
 
-            # Preguntar si es grano básico
+           
             es_grano_basico = st.radio("🌾 ¿Es grano básico?", ["No", "Sí"], index=0, key="es_grano_basico")
 
-            # Si es grano básico, seleccionar la unidad
+           
             unidad_grano = None
             if es_grano_basico == "Sí":
                 unidad_grano = st.selectbox("⚖️ Seleccione la unidad del producto", ["Quintal", "Libra", "Arroba"])
 
-            # Seleccionar tipo de cliente
+        
             tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Minorista", "Mayorista 1", "Mayorista 2"])
 
-            # Calcular precios según tipo de cliente
             if tipo_cliente == "Minorista":
                 precio_seleccionado = precio_minorista
                 tipo_cliente_id = "Minorista"
@@ -60,12 +59,12 @@ def modulo_ventas():
                 precio_seleccionado = precio_mayorista2
                 tipo_cliente_id = "Mayorista 2"
 
-            # Mostrar precio de venta y calcular subtotal
+           
             if precio_seleccionado is not None:
                 precio_editable = st.number_input("💲 Precio de venta", value=float(precio_seleccionado), step=0.01, format="%.2f")
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
-                # Si es grano básico, realizar conversión de unidades
+              
                 if es_grano_basico == "Sí" and unidad_grano:
                     factor_conversion = {
                         "Libra": 1,
@@ -81,7 +80,7 @@ def modulo_ventas():
 
                 st.number_input("Subtotal", value=round(subtotal, 2), step=0.01, format="%.2f", disabled=True)
 
-                # Agregar producto a la venta
+              
                 if st.button("🛒 Agregar producto a la venta"):
                     producto_venta = {
                         "cod_barra": cod_barra,
@@ -91,7 +90,7 @@ def modulo_ventas():
                         "subtotal": subtotal
                     }
 
-                    # Guardar productos en sesión
+                   
                     if "productos_vendidos" not in st.session_state:
                         st.session_state["productos_vendidos"] = []
 
@@ -105,7 +104,7 @@ def modulo_ventas():
         else:
             st.warning("❌ Producto no encontrado.")
 
-    # Si hay productos en la venta, mostrarlos
+   
     if st.session_state.get("productos_vendidos"):
         st.subheader("🧾 Productos en esta venta")
 
@@ -126,7 +125,7 @@ def modulo_ventas():
 
         if st.button("💾 Registrar venta"):
             try:
-                # Obtener el Id_empleado correspondiente al usuario (código del empleado)
+                
                 conn = obtener_conexion()
                 cursor = conn.cursor()
                 cursor.execute("SELECT Id_empleado FROM Empleado WHERE Usuario = %s", (st.session_state["usuario"],))
@@ -138,16 +137,16 @@ def modulo_ventas():
 
                 id_empleado = empleado[0]
 
-                # Obtener el nuevo ID para la venta
+              
                 cursor.execute("SELECT MAX(Id_venta) FROM Venta")
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
 
-                # Insertar en tabla Venta
+               
                 cursor.execute("INSERT INTO Venta (Id_venta, Fecha, Id_empleado) VALUES (%s, %s, %s)",
                                (nuevo_id, fecha_venta, id_empleado))
 
-                # Insertar en tabla ProductoxVenta (Usando Precio_Venta y Tipo_de_cliente)
+              
                 for prod in st.session_state["productos_vendidos"]:
                     cursor.execute("""
                         INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Tipo_de_cliente, Precio_Venta)
