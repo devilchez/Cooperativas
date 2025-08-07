@@ -1,5 +1,7 @@
 streamlit
 mysql-connector-python
-pandas                
-plotly                
-python-dotenv         
+pandas
+plotly
+python-dotenv
+fpdf2
+xlsxwriter
