@@ -46,11 +46,11 @@ def modulo_ventas():
     elif tipo_cliente == "Mayorista 2":
         precio_seleccionado = precio_mayorista2
 
-    # Mostrar y permitir edición del precio unitario
+    # Mostrar precio editable y subtotal no editable
     if precio_seleccionado is not None:
         precio_editable = st.number_input("💲 Precio a pagar (editable)", value=float(precio_seleccionado), step=0.01, format="%.2f")
         subtotal = cantidad * precio_editable
-        st.markdown(f"🧾 **Subtotal: ${subtotal:.2f}**")
+        st.number_input("🧾 Subtotal", value=round(subtotal, 2), step=0.01, format="%.2f", disabled=True)
     elif cod_barra:
         st.error("❌ No se encontraron precios para este producto.")
         precio_editable = None
@@ -77,7 +77,3 @@ def modulo_ventas():
                 st.success("✅ Venta registrada exitosamente.")
             except Exception as e:
                 st.error(f"⚠️ Error al registrar la venta: {e}")
-
-
-
-
