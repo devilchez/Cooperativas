@@ -56,7 +56,12 @@ def reporte_ventas():
         # Mostramos la tabla con los datos de ventas
         st.table(df)
 
-      
+        # Agregar botón de regresar al menú principal
+        st.markdown("---")
+        if st.button("🔙 Volver al Menú Principal"):
+            st.session_state["module"] = None
+            st.experimental_rerun()  # Recargar la aplicación para volver al menú principal
+
         st.markdown("---")
         st.markdown("### 📁 Exportar ventas filtradas")
         col1, col2 = st.columns(2)
@@ -78,12 +83,10 @@ def reporte_ventas():
             pdf = FPDF()
             pdf.add_page()
 
-           
             pdf.set_font("Arial", 'B', 16)
             pdf.cell(200, 10, txt="Reporte de Ventas", ln=True, align='C')
             pdf.ln(10)  # Salto de línea
 
-            
             pdf.set_font("Arial", 'B', 12)
             pdf.cell(40, 10, 'Venta ID', 1, 0, 'C')
             pdf.cell(40, 10, 'Código Barra', 1, 0, 'C')
@@ -92,7 +95,6 @@ def reporte_ventas():
             pdf.cell(40, 10, 'Total', 1, 0, 'C')
             pdf.cell(40, 10, 'Fecha Venta', 1, 1, 'C')
 
-         
             pdf.set_font("Arial", size=10)
             for index, row in df.iterrows():
                 venta_id = row['ID_Venta'] if row['ID_Venta'] is not None else 'N/A'
@@ -102,7 +104,6 @@ def reporte_ventas():
                 total = row['Total'] if row['Total'] is not None else 0.0
                 fecha_venta = row['Fecha Venta'].strftime('%Y-%m-%d') if row['Fecha Venta'] is not None else 'N/A'
 
-                
                 pdf.cell(40, 10, str(venta_id), 1, 0, 'C')
                 pdf.cell(40, 10, str(cod_barra), 1, 0, 'C')
                 pdf.cell(40, 10, str(cantidad_vendida), 1, 0, 'C')
@@ -123,6 +124,7 @@ def reporte_ventas():
         st.error(f"❌ Error al generar el reporte: {e}")
 
     finally:
-       
+        # Cerrar la conexión a la base de datos
         if 'cursor' in locals(): cursor.close()
         if 'con' in locals(): con.close()
+
