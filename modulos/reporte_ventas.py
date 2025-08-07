@@ -61,8 +61,8 @@ def reporte_ventas():
         if st.button("🔙 Volver al Menú Principal"):
             # Cambiar el estado de sesión a 'menu_principal'
             st.session_state["page"] = "menu_principal"
-            # Recargar la página para reflejar el cambio de estado de página
-            st.experimental_rerun()
+            # No hace falta `st.experimental_rerun()` ya que Streamlit actualizará la vista
+            st.session_state["module"] = None  # Limpiar el módulo actual
 
         st.markdown("---")
         st.markdown("### 📁 Exportar ventas filtradas")
@@ -140,4 +140,5 @@ elif st.session_state["page"] == "menu_principal":
     # Aquí agregas el código para el menú principal
     st.title("🏠 Menú Principal")
     # Agrega el contenido de tu menú principal aquí
+
 
