@@ -3,11 +3,17 @@ from datetime import date
 from config.conexion import obtener_conexion
 
 def modulo_ventas():
+    if "id_empleado" not in st.session_state:
+        st.error("⚠️ Debes iniciar sesión como empleado para registrar ventas.")
+        st.stop()
+
     st.title("🛒 Registro de Ventas")
 
     fecha_venta = st.date_input("📅 Fecha de la venta", date.today())
 
-    empleado = st.text_input("🧑‍💼 Usuario del empleado", key="usuario_empleado")
+    # Usuario cargado automáticamente
+    id_empleado = st.session_state["id_empleado"]
+    st.text_input("🧑‍💼 Usuario del empleado", value=id_empleado, disabled=True)
 
     cod_barra = st.text_input("📦 Ingrese el código de barras del producto")
 
@@ -18,7 +24,6 @@ def modulo_ventas():
         conn = obtener_conexion()
         cursor = conn.cursor()
 
-        # Obtener el producto más reciente ingresado con precios
         cursor.execute("""
             SELECT p.Nombre, pc.Precio_minorista, pc.Precio_mayorista1, pc.Precio_mayorista2
             FROM ProductoxCompra pc
@@ -55,7 +60,7 @@ def modulo_ventas():
         st.error("❌ No se encontraron precios para este producto.")
 
     if st.button("💾 Registrar venta"):
-        if not all([empleado, cod_barra, precio_seleccionado]):
+        if not all([cod_barra, precio_seleccionado]):
             st.error("⚠️ Faltan datos para registrar la venta.")
         else:
             try:
@@ -63,11 +68,11 @@ def modulo_ventas():
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
 
-                # Registrar en la tabla Venta
-                cursor.execute("INSERT INTO Venta (Id_venta, Fecha, Id_empleado) VALUES (%s, %s, %s)",
-                               (nuevo_id, fecha_venta, empleado))
+                cursor.execute(
+                    "INSERT INTO Venta (Id_venta, Fecha, Id_empleado) VALUES (%s, %s, %s)",
+                    (nuevo_id, fecha_venta, id_empleado)
+                )
 
-                # Registrar el detalle de la venta
                 cursor.execute("""
                     INSERT INTO DetalleVenta (Id_venta, Cod_barra, Cantidad, Precio_unitario, Precio_total)
                     VALUES (%s, %s, %s, %s, %s)
@@ -77,4 +82,5 @@ def modulo_ventas():
                 st.success("✅ Venta registrada exitosamente.")
             except Exception as e:
                 st.error(f"⚠️ Error al registrar la venta: {e}")
+
 
