@@ -33,7 +33,7 @@ def reporte_ventas():
         query = """
             SELECT v.ID_Venta, pv.Cod_barra, pv.Cantidad_vendida, pv.Precio_Venta, v.Fecha
             FROM Venta v
-            JOIN ProductoXVenta pv ON v.ID_Venta = pv.ID_Venta
+            JOIN ProductoxVenta pv ON v.ID_Venta = pv.ID_Venta
             WHERE v.Fecha BETWEEN %s AND %s
             ORDER BY v.ID_Venta DESC
         """
@@ -69,7 +69,7 @@ def reporte_ventas():
                 if st.button("🗑", key=f"delete_{row['ID_Venta']}_{index}"):
                     try:
                         cursor.execute(
-                            "DELETE FROM ProductoXVenta WHERE ID_Venta = %s",
+                            "DELETE FROM ProductoxVenta WHERE ID_Venta = %s",
                             (row['ID_Venta'],)
                         )
                         con.commit()  # Confirmar cambios en la base de datos
@@ -77,7 +77,7 @@ def reporte_ventas():
 
                         # Verificar si ya no hay productos asociados a la venta
                         cursor.execute(
-                            "SELECT COUNT(*) FROM ProductoXVenta WHERE ID_Venta = %s",
+                            "SELECT COUNT(*) FROM ProductoxVenta WHERE ID_Venta = %s",
                             (row['ID_Venta'],)
                         )
                         count = cursor.fetchone()[0]
