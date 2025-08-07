@@ -24,11 +24,16 @@ def reporte_ventas():
         con = obtener_conexion()
         cursor = con.cursor()
 
+        # Verificar base de datos activa (diagnóstico adicional)
+        cursor.execute("SELECT DATABASE();")
+        base_de_datos = cursor.fetchone()[0]
+        st.write(f"Conectado a la base de datos: {base_de_datos}")  # Mostrar la base de datos activa
+
         # Consulta SQL para obtener las ventas en el rango de fechas
         query = """
             SELECT v.ID_Venta, pv.Cod_barra, pv.Cantidad_vendida, pv.Precio_Venta, v.Fecha
-            FROM Venta v  # Usando 'Venta' con 'V' en mayúscula
-            JOIN ProductoXVenta pv ON v.ID_Venta = pv.ID_Venta  # Usando 'ProductoXVenta' correctamente
+            FROM Venta v
+            JOIN ProductoXVenta pv ON v.ID_Venta = pv.ID_Venta
             WHERE v.Fecha BETWEEN %s AND %s
             ORDER BY v.ID_Venta DESC
         """
@@ -131,5 +136,4 @@ def reporte_ventas():
         # Cerrar la conexión a la base de datos
         if 'cursor' in locals(): cursor.close()
         if 'con' in locals(): con.close()
-
 
