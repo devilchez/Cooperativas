@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from config.conexion import obtener_conexion  
+from config.conexion import obtener_conexion  # Importación corregida
 from datetime import datetime
 from io import BytesIO
 from fpdf import FPDF
@@ -24,7 +24,10 @@ def reporte_ventas():
         con = obtener_conexion()
         cursor = con.cursor()
 
-      
+        # Verificar base de datos activa (diagnóstico adicional)
+        cursor.execute("SELECT DATABASE();")
+        base_de_datos = cursor.fetchone()[0]
+        st.write(f"Conectado a la base de datos: {base_de_datos}")  # Mostrar la base de datos activa
 
         # Consulta SQL para obtener las ventas en el rango de fechas
         query = """
@@ -56,11 +59,17 @@ def reporte_ventas():
         for index, row in df.iterrows():
             col1, col2 = st.columns([6, 1])
             with col1:
+                # Evitar que valores None causen error en el formato
+                venta_id = row['ID_Venta'] if row['ID_Venta'] is not None else 'N/A'
+                cod_barra = row['Código de Barra'] if row['Código de Barra'] is not None else 'N/A'
+                cantidad_vendida = row['Cantidad Vendida'] if row['Cantidad Vendida'] is not None else 0
+                total = row['Total'] if row['Total'] is not None else 0.0
+
                 st.markdown(
-                    f"**Venta ID:** {row['ID_Venta']}  \n"
-                    f"**Código de Barra:** {row['Código de Barra']}  \n"
-                    f"**Cantidad Vendida:** {row['Cantidad Vendida']}  \n"
-                    f"**Total:** ${row['Total']:.2f}  "
+                    f"**Venta ID:** {venta_id}  \n"
+                    f"**Código de Barra:** {cod_barra}  \n"
+                    f"**Cantidad Vendida:** {cantidad_vendida}  \n"
+                    f"**Total:** ${total:.2f}  "
                 )
             with col2:
                 if st.button("🗑", key=f"delete_{row['ID_Venta']}_{index}"):
@@ -83,7 +92,7 @@ def reporte_ventas():
                             con.commit()
                             st.success(f"✅ Venta ID {row['ID_Venta']} eliminada completamente.")
 
-                        st.rerun()  
+                        st.rerun()  # Recargar la página para reflejar los cambios
 
                     except Exception as e:
                         st.error(f"❌ Error al eliminar el producto: {e}")
