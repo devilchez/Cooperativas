@@ -44,41 +44,31 @@ def modulo_ventas():
             nombre_producto = producto[0]
             st.success(f"✅ Producto encontrado: **{nombre_producto}**")
 
-            es_grano_basico = st.radio("🌾 ¿Es grano básico?", ["No", "Sí"], index=0, key="es_grano_basico")
+            # Recuperar los precios de la tabla ProductoxCompra
+            cursor.execute("""
+                SELECT Precio_minorista, Precio_mayorista1, Precio_mayorista2 
+                FROM ProductoxCompra 
+                WHERE cod_barra = %s
+            """, (cod_barras_input,))
+            precios = cursor.fetchone()
 
-            unidad_grano = None
-            if es_grano_basico == "Sí":
-                unidad_grano = st.selectbox("⚖️ Seleccione la unidad del producto", ["Quintal", "Libra", "Arroba"])
-
-            cursor.execute("SELECT MAX(precio_compra) FROM ProductoxCompra WHERE cod_barra = %s", (cod_barras_input,))
-            max_precio_compra = cursor.fetchone()[0]
-
-            if max_precio_compra:
-                precio_detallista = round(float(max_precio_compra) / (1 - 0.30), 2)
-                precio_mayorista_1 = round(float(max_precio_compra) / (1 - 0.25), 2)
-                precio_mayorista_2 = round(float(max_precio_compra) / (1 - 0.20), 2)
+            if precios:
+                precio_minorista, precio_mayorista1, precio_mayorista2 = precios
 
                 tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"], index=0)
 
+                # Seleccionamos el precio según el tipo de cliente
                 if tipo_cliente == "Detallista":
-                    precio_base = precio_detallista
+                    precio_venta = precio_minorista
                 elif tipo_cliente == "Mayorista 1":
-                    precio_base = precio_mayorista_1
+                    precio_venta = precio_mayorista1
                 else:
-                    precio_base = precio_mayorista_2
-
-                precio_venta = st.number_input("💲 Precio de venta aplicado", value=precio_base, min_value=0.01, step=0.01)
+                    precio_venta = precio_mayorista2
 
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
-                if es_grano_basico == "Sí" and unidad_grano:
-                    factor_conversion = {"Libra": 1, "Arroba": 25, "Quintal": 100}
-                    cantidad_libras = cantidad * factor_conversion[unidad_grano]
-                    st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
-                    subtotal = round(precio_venta * cantidad_libras, 2)
-                else:
-                    cantidad_libras = None
-                    subtotal = round(precio_venta * cantidad, 2)
+                # Calcular el subtotal según la cantidad y el precio de venta
+                subtotal = round(precio_venta * cantidad, 2)
 
                 st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True)
 
@@ -87,7 +77,7 @@ def modulo_ventas():
                         "cod_barra": cod_barras_input,
                         "nombre": nombre_producto,
                         "precio_venta": precio_venta,
-                        "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
+                        "cantidad": cantidad,
                         "subtotal": subtotal,
                         "tipo_cliente": tipo_cliente  
                     }
@@ -104,7 +94,6 @@ def modulo_ventas():
 
         total_venta = 0
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
-           
             st.write(f"**{prod['nombre']}** | Cantidad: {prod['cantidad']} unidad(es) | Precio: ${prod['precio_venta']:.2f} | Subtotal: ${prod['subtotal']:.2f} | Tipo de cliente: **{prod['tipo_cliente']}**")
             total_venta += prod["subtotal"]
 
@@ -127,7 +116,6 @@ def modulo_ventas():
                     VALUES (%s, %s, %s, %s)
                 """, (nuevo_id_venta, fecha_venta, id_empleado, None))
 
-               
                 for prod in st.session_state["productos_vendidos"]:
                     cursor.execute("""
                         INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Precio_Venta, Tipo_de_cliente)
@@ -142,7 +130,6 @@ def modulo_ventas():
 
                 conn.commit()
 
-             
                 st.success("✅ Venta registrada correctamente.")
                 st.session_state["productos_vendidos"] = []
 
