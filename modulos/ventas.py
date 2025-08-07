@@ -6,60 +6,58 @@ from modulos.config.conexion import obtener_conexion
 def modulo_ventas():
     st.title("🛒 Registro de Ventas")
 
-    # Validación de sesión
+    # Verificación de sesión
     if "id_empleado" not in st.session_state or "usuario" not in st.session_state:
         st.error("❌ No has iniciado sesión como empleado o no se ha seleccionado cliente.")
         st.stop()
 
-    # Mostrar información del empleado y fecha
-    st.text_input("🧑‍💼 ID del empleado", value=st.session_state["id_empleado"], disabled=True)
-    st.text_input("👤 Usuario", value=st.session_state["usuario"], disabled=True)
-    fecha_venta = st.date_input("📅 Fecha de la venta", value=datetime.now().date())
+    # Mostrar datos del empleado
+    st.text_input("ID del empleado", value=st.session_state["id_empleado"], disabled=True)
+    st.text_input("Usuario", value=st.session_state["usuario"], disabled=True)
 
-    # Entrada de código de barras
-    codigo_barras = st.text_input("📦 Ingrese el código de barras del producto")
+    # Fecha actual
+    fecha_actual = datetime.now().date()
+    st.date_input("Fecha de la venta", value=fecha_actual, disabled=True)
 
-    producto_encontrado = None
+    # Ingreso de código de barras
+    cod_barra = st.text_input("Código de barras del producto")
+    
+    producto = None
     subtotal = 0
 
-    if codigo_barras:
+    if cod_barra:
         con = obtener_conexion()
         cursor = con.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM producto WHERE Cod_barra = %s", (codigo_barras,))
-        producto_encontrado = cursor.fetchone()
+
+        cursor.execute("SELECT * FROM producto WHERE Cod_barra = %s", (cod_barra,))
+        producto = cursor.fetchone()
+
         cursor.close()
         con.close()
 
-        if producto_encontrado:
-            st.success(f"✅ Producto encontrado: **{producto_encontrado['Nombre']}**")
+        if producto:
+            st.success(f"✅ Producto encontrado: {producto['Nombre']}")
 
-            # Mostrar precios
             st.markdown(f"""
-            - 💵 **Precio Minorista**: ${producto_encontrado['precio_minorista']:.2f}  
-            - 🏪 **Precio Mayorista 1**: ${producto_encontrado['precio_mayorista1']:.2f}  
-            - 🏬 **Precio Mayorista 2**: ${producto_encontrado['precio_mayorista2']:.2f}
+                - 💵 **Precio Minorista**: ${producto['precio_minorista']:.2f}  
+                - 🏪 **Precio Mayorista 1**: ${producto['precio_mayorista1']:.2f}  
+                - 🏬 **Precio Mayorista 2**: ${producto['precio_mayorista2']:.2f}
             """)
 
-            # Tipo de cliente
-            tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"])
+            tipo_cliente = st.radio("Tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"])
+            cantidad = st.number_input("Cantidad", min_value=1, value=1)
 
-            # Cantidad
-            cantidad = st.number_input("📦 Cantidad vendida", min_value=1, value=1)
-
-            # Determinar precio según tipo de cliente
             if tipo_cliente == "Detallista":
-                precio = producto_encontrado['precio_minorista']
+                precio = producto["precio_minorista"]
             elif tipo_cliente == "Mayorista 1":
-                precio = producto_encontrado['precio_mayorista1']
+                precio = producto["precio_mayorista1"]
             else:
-                precio = producto_encontrado['precio_mayorista2']
+                precio = producto["precio_mayorista2"]
 
-            # Calcular subtotal
             subtotal = cantidad * precio
-            st.text_input("💰 Subtotal", value=f"${subtotal:.2f}", disabled=True)
+            st.text_input("Subtotal", value=f"${subtotal:.2f}", disabled=True)
 
-            # Botón para guardar venta
-            if st.button("💾 Guardar venta"):
+            if st.button("Guardar venta"):
                 try:
                     con = obtener_conexion()
                     cursor = con.cursor()
@@ -68,9 +66,9 @@ def modulo_ventas():
                         INSERT INTO ventas (Cod_barra, Id_empleado, Fecha, cantidad, subtotal)
                         VALUES (%s, %s, %s, %s, %s)
                     """, (
-                        codigo_barras,
+                        cod_barra,
                         st.session_state["id_empleado"],
-                        fecha_venta.strftime("%Y-%m-%d"),
+                        fecha_actual.strftime('%Y-%m-%d'),
                         cantidad,
                         subtotal
                     ))
@@ -79,11 +77,11 @@ def modulo_ventas():
                     cursor.close()
                     con.close()
 
-                    st.success("✅ Venta guardada exitosamente.")
+                    st.success("✅ Venta guardada correctamente.")
                 except Exception as e:
                     st.error(f"❌ Error al guardar la venta: {e}")
         else:
-            st.error("❌ Producto no encontrado.")
+            st.warning("⚠️ Producto no encontrado.")
 
 
 
