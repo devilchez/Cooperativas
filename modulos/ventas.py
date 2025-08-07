@@ -7,7 +7,7 @@ def modulo_ventas():
 
     fecha_venta = st.date_input("📅 Fecha de la venta", date.today())
 
-    # Mostrar nombre de usuario automáticamente desde sesión
+    # Verificar usuario en sesión
     if "usuario" not in st.session_state:
         st.error("⚠️ No hay usuario en sesión.")
         return
@@ -40,23 +40,22 @@ def modulo_ventas():
             st.warning("⚠️ Producto no encontrado en compras registradas.")
 
     tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"])
-
     cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
     precio_seleccionado = None
     if tipo_cliente == "Detallista":
         precio_seleccionado = precio_minorista
+        tipo_cliente_id = 1
     elif tipo_cliente == "Mayorista 1":
         precio_seleccionado = precio_mayorista1
+        tipo_cliente_id = 2
     elif tipo_cliente == "Mayorista 2":
         precio_seleccionado = precio_mayorista2
+        tipo_cliente_id = 3
 
-    # Mostrar precio editable y subtotal no editable
     if precio_seleccionado is not None:
         precio_editable = st.number_input("💲 Precio de venta", value=float(precio_seleccionado), step=0.01, format="%.2f")
         subtotal = cantidad * precio_editable
-
-        # Mostrar subtotal con mismo estilo pero deshabilitado
         st.number_input("Subtotal", value=round(subtotal, 2), step=0.01, format="%.2f", disabled=True)
     elif cod_barra:
         st.error("❌ No se encontraron precios para este producto.")
@@ -75,20 +74,20 @@ def modulo_ventas():
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
 
-                # Obtener usuario desde sesión
                 usuario_empleado = st.session_state["usuario"]
 
-                # Insertar venta
+                # Insertar en tabla Venta
                 cursor.execute("INSERT INTO Venta (Id_venta, Fecha, Id_empleado) VALUES (%s, %s, %s)",
                                (nuevo_id, fecha_venta, usuario_empleado))
 
-                # Insertar detalle de venta
+                # Insertar en tabla ProductoxVenta
                 cursor.execute("""
-                    INSERT INTO DetalleVenta (Id_venta, Cod_barra, Cantidad, Precio_unitario, Precio_total)
+                    INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Tipo_de_cliente, Precio_Venta)
                     VALUES (%s, %s, %s, %s, %s)
-                """, (nuevo_id, cod_barra, cantidad, precio_editable, subtotal))
+                """, (nuevo_id, cod_barra, cantidad, tipo_cliente_id, round(precio_editable, 2)))
 
                 conn.commit()
                 st.success("✅ Venta registrada exitosamente.")
             except Exception as e:
                 st.error(f"⚠️ Error al registrar la venta: {e}")
+
