@@ -67,7 +67,7 @@ def modulo_ventas():
 
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
-                # Calcular el subtotal según la cantidad y el precio de venta
+                # El subtotal ahora es el precio de venta ya recuperado multiplicado por la cantidad
                 subtotal = round(precio_venta * cantidad, 2)
 
                 st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True)
@@ -142,3 +142,4 @@ def modulo_ventas():
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
+
