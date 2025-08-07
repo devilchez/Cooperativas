@@ -48,9 +48,9 @@ def modulo_ventas():
 
     # Mostrar precio editable y subtotal no editable
     if precio_seleccionado is not None:
-        precio_editable = st.number_input("💲 Precio a pagar (editable)", value=float(precio_seleccionado), step=0.01, format="%.2f")
+        precio_editable = st.number_input("💲 Precio de venta", value=float(precio_seleccionado), step=0.01, format="%.2f")
         subtotal = cantidad * precio_editable
-        st.number_input("🧾 Subtotal", value=round(subtotal, 2), step=0.01, format="%.2f", disabled=True)
+        st.number_input("Subtotal", value=round(subtotal, 2), step=0.01, format="%.2f", disabled=True)
     elif cod_barra:
         st.error("❌ No se encontraron precios para este producto.")
         precio_editable = None
