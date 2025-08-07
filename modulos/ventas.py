@@ -45,6 +45,8 @@ def modulo_ventas():
 
     cod_barras_input = st.text_input("📦 Ingrese el código de barras del producto", value=st.session_state.get("cod_barras_input", ""), key="cod_barras_input")
 
+    tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"], index=0)
+
     if cod_barras_input:
         cursor.execute("SELECT Nombre FROM Producto WHERE Cod_barra = %s", (cod_barras_input,))
         producto = cursor.fetchone()
@@ -66,8 +68,6 @@ def modulo_ventas():
                 precio_detallista = round(float(max_precio_compra) / (1 - 0.30), 2)
                 precio_mayorista_1 = round(float(max_precio_compra) / (1 - 0.25), 2)
                 precio_mayorista_2 = round(float(max_precio_compra) / (1 - 0.20), 2)
-
-                tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"], index=0)
 
                 if tipo_cliente == "Detallista":
                     precio_base = precio_detallista
