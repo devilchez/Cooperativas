@@ -19,6 +19,7 @@ def modulo_ventas():
     precio_minorista = precio_mayorista1 = precio_mayorista2 = None
     nombre_producto = None
 
+    # Si se ingresa el código de barras, buscar el producto
     if cod_barra:
         conn = obtener_conexion()
         cursor = conn.cursor()
@@ -36,77 +37,76 @@ def modulo_ventas():
         if resultado:
             nombre_producto, precio_minorista, precio_mayorista1, precio_mayorista2 = resultado
             st.success(f"✅ Producto encontrado: **{nombre_producto}**")
+
+            # Preguntar si es grano básico
+            es_grano_basico = st.radio("🌾 ¿Es grano básico?", ["No", "Sí"], index=0, key="es_grano_basico")
+
+            # Si es grano básico, seleccionar la unidad
+            unidad_grano = None
+            if es_grano_basico == "Sí":
+                unidad_grano = st.selectbox("⚖️ Seleccione la unidad del producto", ["Quintal", "Libra", "Arroba"])
+
+            # Seleccionar tipo de cliente
+            tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Minorista", "Mayorista 1", "Mayorista 2"])
+
+            # Calcular precios según tipo de cliente
+            if tipo_cliente == "Minorista":
+                precio_seleccionado = precio_minorista
+                tipo_cliente_id = "Minorista"
+            elif tipo_cliente == "Mayorista 1":
+                precio_seleccionado = precio_mayorista1
+                tipo_cliente_id = "Mayorista 1"
+            elif tipo_cliente == "Mayorista 2":
+                precio_seleccionado = precio_mayorista2
+                tipo_cliente_id = "Mayorista 2"
+
+            # Mostrar precio de venta y calcular subtotal
+            if precio_seleccionado is not None:
+                precio_editable = st.number_input("💲 Precio de venta", value=float(precio_seleccionado), step=0.01, format="%.2f")
+                cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
+
+                # Si es grano básico, realizar conversión de unidades
+                if es_grano_basico == "Sí" and unidad_grano:
+                    factor_conversion = {
+                        "Libra": 1,
+                        "Arroba": 25,
+                        "Quintal": 100
+                    }
+                    cantidad_libras = cantidad * factor_conversion[unidad_grano]
+                    st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
+                    subtotal = round(precio_editable * cantidad_libras, 2)
+                else:
+                    cantidad_libras = None
+                    subtotal = round(precio_editable * cantidad, 2)
+
+                st.number_input("Subtotal", value=round(subtotal, 2), step=0.01, format="%.2f", disabled=True)
+
+                # Agregar producto a la venta
+                if st.button("🛒 Agregar producto a la venta"):
+                    producto_venta = {
+                        "cod_barra": cod_barra,
+                        "nombre": nombre_producto,
+                        "precio_venta": precio_editable,
+                        "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
+                        "subtotal": subtotal
+                    }
+
+                    # Guardar productos en sesión
+                    if "productos_vendidos" not in st.session_state:
+                        st.session_state["productos_vendidos"] = []
+
+                    st.session_state["productos_vendidos"].append(producto_venta)
+                    st.session_state["limpiar_cod"] = True
+                    st.success("✅ Producto agregado a la venta.")
+                    st.rerun()
+
+            else:
+                st.error("❌ No se encontraron precios para este producto.")
         else:
-            st.warning("⚠️ Producto no encontrado en compras registradas.")
+            st.warning("❌ Producto no encontrado.")
 
-    tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Minorista", "Mayorista 1", "Mayorista 2"])
-    cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
-
-    precio_seleccionado = None
-    if tipo_cliente == "Minorista":
-        precio_seleccionado = precio_minorista
-        tipo_cliente_id = "Minorista"
-    elif tipo_cliente == "Mayorista 1":
-        precio_seleccionado = precio_mayorista1
-        tipo_cliente_id = "Mayorista 1"
-    elif tipo_cliente == "Mayorista 2":
-        precio_seleccionado = precio_mayorista2
-        tipo_cliente_id = "Mayorista 2"
-
-    # Lógica de grano básico y conversión
-    es_grano_basico = st.radio("🌾 ¿Es grano básico?", ["No", "Sí"], index=0, key="es_grano_basico")
-
-    unidad_grano = None
-    cantidad_libras = None
-    subtotal = None
-
-    if es_grano_basico == "Sí":
-        unidad_grano = st.selectbox("⚖️ Seleccione la unidad del producto", ["Quintal", "Libra", "Arroba"])
-
-    if precio_seleccionado is not None:
-        precio_editable = st.number_input("💲 Precio de venta", value=float(precio_seleccionado), step=0.01, format="%.2f")
-
-        if es_grano_basico == "Sí" and unidad_grano:
-            factor_conversion = {
-                "Libra": 1,
-                "Arroba": 25,
-                "Quintal": 100
-            }
-            cantidad_libras = cantidad * factor_conversion[unidad_grano]
-            st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
-            subtotal = round(precio_editable * cantidad_libras, 2)
-        else:
-            cantidad_libras = None
-            subtotal = round(precio_editable * cantidad, 2)
-
-        st.number_input("Subtotal", value=round(subtotal, 2), step=0.01, format="%.2f", disabled=True)
-
-    elif cod_barra:
-        st.error("❌ No se encontraron precios para este producto.")
-        precio_editable = None
-        subtotal = None
-
-    # Agregar producto a la venta
-    if st.button("🛒 Agregar producto a la venta"):
-        if not all([cod_barra, precio_editable is not None]):
-            st.error("⚠️ Faltan datos para registrar el producto.")
-        else:
-            producto_venta = {
-                "cod_barra": cod_barra,
-                "nombre": nombre_producto,
-                "precio_venta": precio_editable,
-                "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
-                "subtotal": subtotal
-            }
-            if "productos_vendidos" not in st.session_state:
-                st.session_state["productos_vendidos"] = []
-
-            st.session_state["productos_vendidos"].append(producto_venta)
-            st.session_state["limpiar_cod"] = True
-            st.success("✅ Producto agregado a la venta.")
-            st.rerun()
-
-    if st.session_state["productos_vendidos"]:
+    # Si hay productos en la venta, mostrarlos
+    if st.session_state.get("productos_vendidos"):
         st.subheader("🧾 Productos en esta venta")
 
         total_venta = 0
@@ -165,3 +165,4 @@ def modulo_ventas():
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
+
