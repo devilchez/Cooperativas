@@ -44,12 +44,6 @@ def modulo_ventas():
             nombre_producto = producto[0]
             st.success(f"✅ Producto encontrado: **{nombre_producto}**")
 
-            es_grano_basico = st.radio("🌾 ¿Es grano básico?", ["No", "Sí"], index=0, key="es_grano_basico")
-
-            unidad_grano = None
-            if es_grano_basico == "Sí":
-                unidad_grano = st.selectbox("⚖️ Seleccione la unidad del producto", ["Quintal", "Libra", "Arroba"])
-
             # Recuperar los precios de la tabla ProductoxCompra
             cursor.execute("""
                 SELECT Precio_minorista, Precio_mayorista1, Precio_mayorista2 
@@ -63,35 +57,25 @@ def modulo_ventas():
 
                 tipo_cliente = st.radio("🧾 Seleccione el tipo de cliente", ["Detallista", "Mayorista 1", "Mayorista 2"], index=0)
 
+                # Seleccionamos el precio según el tipo de cliente
                 if tipo_cliente == "Detallista":
-                    precio_base = precio_minorista
+                    precio_venta = precio_minorista
                 elif tipo_cliente == "Mayorista 1":
-                    precio_base = precio_mayorista1
+                    precio_venta = precio_mayorista1
                 else:
-                    precio_base = precio_mayorista2
-
-                precio_venta = st.number_input("💲 Precio de venta aplicado", value=precio_base, min_value=0.01, step=0.01)
+                    precio_venta = precio_mayorista2
 
                 cantidad = st.number_input("📦 Cantidad vendida", min_value=1, step=1)
 
-                if es_grano_basico == "Sí" and unidad_grano:
-                    factor_conversion = {"Libra": 1, "Arroba": 25, "Quintal": 100}
-                    cantidad_libras = cantidad * factor_conversion[unidad_grano]
-                    st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
-                    subtotal = round(precio_venta * cantidad_libras, 2)
-                else:
-                    cantidad_libras = None
-                    subtotal = round(precio_venta * cantidad, 2)
-
-                st.number_input("💲 Subtotal de esta venta", value=subtotal, disabled=True)
+                # Mostrar el precio de venta directamente
+                st.write(f"💲 Precio de venta: ${precio_venta:.2f}")
 
                 if st.button("🛒 Agregar producto a la venta"):
                     producto_venta = {
                         "cod_barra": cod_barras_input,
                         "nombre": nombre_producto,
                         "precio_venta": precio_venta,
-                        "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
-                        "subtotal": subtotal,
+                        "cantidad": cantidad,
                         "tipo_cliente": tipo_cliente  
                     }
                     st.session_state["productos_vendidos"].append(producto_venta)
@@ -107,8 +91,8 @@ def modulo_ventas():
 
         total_venta = 0
         for i, prod in enumerate(st.session_state["productos_vendidos"]):
-            st.write(f"**{prod['nombre']}** | Cantidad: {prod['cantidad']} unidad(es) | Precio: ${prod['precio_venta']:.2f} | Subtotal: ${prod['subtotal']:.2f} | Tipo de cliente: **{prod['tipo_cliente']}**")
-            total_venta += prod["subtotal"]
+            st.write(f"**{prod['nombre']}** | Cantidad: {prod['cantidad']} unidad(es) | Precio: ${prod['precio_venta']:.2f} | Tipo de cliente: **{prod['tipo_cliente']}**")
+            total_venta += prod["precio_venta"] * prod["cantidad"]  # Calculamos el total de la venta (sin calcular subtotal por producto)
 
             if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
                 st.session_state["productos_vendidos"].pop(i)
@@ -155,4 +139,3 @@ def modulo_ventas():
         st.session_state["module"] = None
         st.session_state.pop("productos_vendidos", None)
         st.rerun()
-
