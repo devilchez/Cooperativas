@@ -12,6 +12,7 @@ from modulos.editar_producto import modulo_editar_producto
 from modulos.dashboard import dashboard
 from modulos.empleado import modulo_empleado
 from modulos.inventario import modulo_inventario
+from modulos.reportes_ventas import reporte_ventas  # Importa el módulo de reportes de ventas
 
 def menu_principal():
     st.title("🏠 Menú Principal")
@@ -77,6 +78,9 @@ def menu_principal():
         if st.button("📈 Dashboard"):
             st.session_state.module = "Dashboard"
             st.rerun()
+        if st.button("📊 Reporte de Ventas"):  # Agregado el botón para reporte de ventas
+            st.session_state.module = "ReportesVentas"
+            st.rerun()
 
     # Botón para volver
     if st.session_state["macro_modulo"]:
@@ -110,6 +114,8 @@ def cargar_modulo():
             modulo_empleado()
         elif st.session_state.module == "Inventario":
             modulo_inventario()
+        elif st.session_state.module == "ReportesVentas":  # Agregado el manejo del módulo de reportes
+            reporte_ventas()  # Llamar a la función que genera el reporte de ventas
         else:
             menu_principal()
     else:
