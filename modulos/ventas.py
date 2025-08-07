@@ -53,19 +53,78 @@ def modulo_ventas():
         precio_seleccionado = precio_mayorista2
         tipo_cliente_id = "Mayorista 2"
 
+    # Lógica de grano básico y conversión
+    es_grano_basico = st.radio("🌾 ¿Es grano básico?", ["No", "Sí"], index=0, key="es_grano_basico")
+
+    unidad_grano = None
+    cantidad_libras = None
+    subtotal = None
+
+    if es_grano_basico == "Sí":
+        unidad_grano = st.selectbox("⚖️ Seleccione la unidad del producto", ["Quintal", "Libra", "Arroba"])
+
     if precio_seleccionado is not None:
         precio_editable = st.number_input("💲 Precio de venta", value=float(precio_seleccionado), step=0.01, format="%.2f")
-        subtotal = cantidad * precio_editable
+
+        if es_grano_basico == "Sí" and unidad_grano:
+            factor_conversion = {
+                "Libra": 1,
+                "Arroba": 25,
+                "Quintal": 100
+            }
+            cantidad_libras = cantidad * factor_conversion[unidad_grano]
+            st.number_input("⚖️ Equivalente total en libras", value=cantidad_libras, disabled=True)
+            subtotal = round(precio_editable * cantidad_libras, 2)
+        else:
+            cantidad_libras = None
+            subtotal = round(precio_editable * cantidad, 2)
+
         st.number_input("Subtotal", value=round(subtotal, 2), step=0.01, format="%.2f", disabled=True)
+
     elif cod_barra:
         st.error("❌ No se encontraron precios para este producto.")
         precio_editable = None
         subtotal = None
 
-    if st.button("💾 Registrar venta"):
+    # Agregar producto a la venta
+    if st.button("🛒 Agregar producto a la venta"):
         if not all([cod_barra, precio_editable is not None]):
-            st.error("⚠️ Faltan datos para registrar la venta.")
+            st.error("⚠️ Faltan datos para registrar el producto.")
         else:
+            producto_venta = {
+                "cod_barra": cod_barra,
+                "nombre": nombre_producto,
+                "precio_venta": precio_editable,
+                "cantidad": cantidad_libras if cantidad_libras is not None else cantidad,
+                "subtotal": subtotal
+            }
+            if "productos_vendidos" not in st.session_state:
+                st.session_state["productos_vendidos"] = []
+
+            st.session_state["productos_vendidos"].append(producto_venta)
+            st.session_state["limpiar_cod"] = True
+            st.success("✅ Producto agregado a la venta.")
+            st.rerun()
+
+    if st.session_state["productos_vendidos"]:
+        st.subheader("🧾 Productos en esta venta")
+
+        total_venta = 0
+        for i, prod in enumerate(st.session_state["productos_vendidos"]):
+            st.markdown(
+                f"**{prod['nombre']}** — {prod['cantidad']} unidad(es) — "
+                f"Precio: ${prod['precio_venta']:.2f} — Subtotal: ${prod['subtotal']:.2f}"
+            )
+            total_venta += prod["subtotal"]
+
+            if st.button(f"❌ Eliminar #{i+1}", key=f"eliminar_{i}"):
+                st.session_state["productos_vendidos"].pop(i)
+                st.success("🗑️ Producto eliminado de la venta.")
+                st.rerun()
+
+        st.markdown(f"### 💵 Total de la venta: ${total_venta:.2f}")
+
+        if st.button("💾 Registrar venta"):
             try:
                 # Obtener el Id_empleado correspondiente al usuario (código del empleado)
                 conn = obtener_conexion()
@@ -89,13 +148,20 @@ def modulo_ventas():
                                (nuevo_id, fecha_venta, id_empleado))
 
                 # Insertar en tabla ProductoxVenta (Usando Precio_Venta y Tipo_de_cliente)
-                cursor.execute("""
-                    INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Tipo_de_cliente, Precio_Venta)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (nuevo_id, cod_barra, cantidad, tipo_cliente_id, round(precio_editable, 2)))
+                for prod in st.session_state["productos_vendidos"]:
+                    cursor.execute("""
+                        INSERT INTO ProductoxVenta (Id_venta, Cod_barra, Cantidad_vendida, Tipo_de_cliente, Precio_Venta)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (nuevo_id, prod["cod_barra"], prod["cantidad"], tipo_cliente_id, round(prod["precio_venta"], 2)))
 
                 conn.commit()
                 st.success("✅ Venta registrada exitosamente.")
+                st.session_state["productos_vendidos"] = []
             except Exception as e:
                 st.error(f"⚠️ Error al registrar la venta: {e}")
 
+    st.divider()
+    if st.button("🔙 Volver al menú principal"):
+        st.session_state["module"] = None
+        st.session_state.pop("productos_vendidos", None)
+        st.rerun()
