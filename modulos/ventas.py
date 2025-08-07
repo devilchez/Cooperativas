@@ -4,12 +4,12 @@ from config.conexion import obtener_conexion
 
 def obtener_tipo_cliente_id(tipo_cliente):
     """Función para obtener el ID del tipo de cliente."""
-    if tipo_cliente == "Detallista":
-        return 1
+    if tipo_cliente == "Minorista":
+        return "Minorista"
     elif tipo_cliente == "Mayorista 1":
-        return 2
+        return "Mayorista 1 "
     elif tipo_cliente == "Mayorista 2":
-        return 3
+        return "Mayorista 2"
     return None
 
 def modulo_ventas():
