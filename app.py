@@ -15,10 +15,10 @@ from modulos.inventario import modulo_inventario
 from modulos.reporte_ventas import reporte_ventas  # Importa el módulo de reportes de ventas
 
 def menu_principal():
-    st.title("🏠 Menú Principal")
+    st.title("🏠 Menú Principal - Tienda San Antonio del Monte")
 
     nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  
-    st.subheader(f"Selecciona un módulo, {nombre_empleado}")
+    st.subheader(f"Bienvenida {nombre_empleado}, Seleccione un módulo")
 
     if "macro_modulo" not in st.session_state:
         st.session_state["macro_modulo"] = None
@@ -29,24 +29,24 @@ def menu_principal():
         col1, col2 = st.columns(2)
 
         with col1:
-            if st.button("📌 Registro de información"):
+            if st.button("✏️ Registra información"):
                 st.session_state["macro_modulo"] = "registro"
                 st.rerun()
-            if st.button("📊 Reportes"):
+            if st.button("📊 Consulta información"):
                 st.session_state["macro_modulo"] = "reportes"
                 st.rerun()
 
         with col2:
-            if st.button("💸 Transacciones"):
+            if st.button("💸 Compra y Vende productos"):
                 st.session_state["macro_modulo"] = "transacciones"
                 st.rerun()
-            if st.button("📋 Inventario"):
+            if st.button("📋 Consulta Inventario"):
                 st.session_state.module = "Inventario"
                 st.rerun()
 
     # Submenús según macro módulo
     elif st.session_state["macro_modulo"] == "registro":
-        st.markdown("## 📌 Registro de información")
+        st.markdown("## ✏️ Registra información")
         col1, col2, col3 = st.columns(3)
         with col1:
             if st.button("📦 Registrar producto"):
@@ -62,7 +62,7 @@ def menu_principal():
                 st.rerun()
 
     elif st.session_state["macro_modulo"] == "transacciones":
-        st.markdown("## 💸 Transacciones")
+        st.markdown("## 💸 Compra y Vende productos")
         col1, col2 = st.columns(2)
         with col1:
             if st.button("🛒 Ventas"):
@@ -74,7 +74,7 @@ def menu_principal():
                 st.rerun()
 
     elif st.session_state["macro_modulo"] == "reportes":
-        st.markdown("## 📊 Reportes")
+        st.markdown("## 📊 Consulta información")
         if st.button("📈 Dashboard"):
             st.session_state.module = "Dashboard"
             st.rerun()
