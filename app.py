@@ -46,7 +46,7 @@ def menu_principal():
 
     # Submenús según macro módulo
     elif st.session_state["macro_modulo"] == "registro":
-        st.markdown("## ✏️ Registra información")
+        st.markdown("#### ✏️ Registra información")
         col1, col2, col3 = st.columns(3)
         with col1:
             if st.button("📦 Registrar producto"):
@@ -62,7 +62,7 @@ def menu_principal():
                 st.rerun()
 
     elif st.session_state["macro_modulo"] == "transacciones":
-        st.markdown("## 💸 Compra y Vende productos")
+        st.markdown("#### 💸 Compra y Vende productos")
         col1, col2 = st.columns(2)
         with col1:
             if st.button("🛒 Ventas"):
@@ -74,7 +74,7 @@ def menu_principal():
                 st.rerun()
 
     elif st.session_state["macro_modulo"] == "reportes":
-        st.markdown("## 📊 Consulta información")
+        st.markdown("#### 📊 Consulta información")
         if st.button("📈 Dashboard"):
             st.session_state.module = "Dashboard"
             st.rerun()
