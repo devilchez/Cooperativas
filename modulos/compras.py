@@ -76,7 +76,9 @@ def modulo_compras():
         value=st.session_state["form_data"]["codigo_barras"],
         disabled=codigo_barras_disabled
     )
-
+    unidad = st.session_state["form_data"]["unidad"]
+    cantidad = st.session_state["form_data"]["cantidad"]
+    
     precio_compra = st.number_input(
         "Precio de compra", min_value=0.01, step=0.01,
         key="form_data_precio_compra",
