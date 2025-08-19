@@ -76,6 +76,7 @@ def modulo_compras():
         value=st.session_state["form_data"]["codigo_barras"],
         disabled=codigo_barras_disabled
     )
+    
     unidad = st.session_state["form_data"]["unidad"]
     cantidad = st.session_state["form_data"]["cantidad"]
     
@@ -102,9 +103,6 @@ def modulo_compras():
         "Cantidad comprada", min_value=1, max_value=10000, step=1,
         value=st.session_state["form_data"]["cantidad"]
     )
-
-    unidad = st.session_state["form_data"]["unidad"]
-    cantidad = st.session_state["form_data"]["cantidad"]
 
     if categoria == "Granos básicos":
         factor_conversion = CONVERSIONES_A_LIBRAS.get(unidad, 1)
