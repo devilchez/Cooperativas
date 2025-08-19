@@ -142,12 +142,12 @@ def modulo_compras():
             producto = {
                 "cod_barra": st.session_state["form_data_codigo_barras"],
                 "nombre": prod_ref["nombre"],
+                "cantidad": cantidad,
                 "precio_compra": precio_compra,
                 "precio_venta2": precio_venta2,
                 "precio_venta3": precio_venta3,
                 "precio_venta": precio_venta,
                 "unidad": unidad,
-                "cantidad": cantidad,
                 "fecha_vencimiento": st.session_state["form_data"].get("fecha_vencimiento")
             }
 
