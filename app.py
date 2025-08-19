@@ -25,7 +25,7 @@ def menu_principal():
 
     # Mostrar solo los macro módulos
     if st.session_state["macro_modulo"] is None:
-        st.markdown("## Elige la categoría:")
+        st.markdown("### Elige la categoría:")
         col1, col2 = st.columns(2)
 
         with col1:
