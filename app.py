@@ -80,12 +80,12 @@ def menu_principal():
 
         with col1:
             if st.button("📊 Reporte de Ventas"):
-                st.session_state["module"] = "ReportesVentas"
+                st.session_state.module = "ReportesVentas"
                 st.rerun()
 
         with col2:
             if st.button("🏆 Top 30 más vendidos"):
-                st.session_state["module"] = "productomasvendido"
+                st.session_state.module = "productomasvendido"
                 st.rerun()
 
     # Botón para volver
