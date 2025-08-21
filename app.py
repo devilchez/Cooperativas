@@ -13,6 +13,7 @@ from modulos.dashboard import dashboard
 from modulos.empleado import modulo_empleado
 from modulos.inventario import modulo_inventario
 from modulos.reporte_ventas import reporte_ventas  # Importa el módulo de reportes de ventas
+from modulos.productomasvendidos import productomasvendidos
 
 def menu_principal():
     st.title("🏠 Menú Principal - Tienda San Antonio del Monte")
