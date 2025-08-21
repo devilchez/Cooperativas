@@ -12,7 +12,7 @@ def modulo_ventas():
         st.error("⚠️ No hay usuario en sesión.")
         return
     else:
-        st.markdown(f"🧑‍💼 Empleado: **{st.session_state['Nombre']}**")
+        st.markdown(f"🧑‍💼 Empleado: **{st.session_state['nombre']}**")
 
     cod_barra = st.text_input("📦 Ingrese el código de barras del producto")
 
