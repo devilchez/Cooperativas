@@ -23,7 +23,7 @@ def reporte_ventas():
         con = obtener_conexion()
         cursor = con.cursor()
 
-        # ❗ Traer NOMBRE y NO traer ID_Venta ni Código de Barra
+        # Traer NOMBRE del producto, NO ID_Venta ni Código
         query = """
             SELECT
                 p.Nombre            AS Nombre,
@@ -43,17 +43,23 @@ def reporte_ventas():
             st.info("No se encontraron ventas en el rango seleccionado.")
             return
 
-        # DataFrame solo con las columnas deseadas
+        # Construcción del DataFrame
         df = pd.DataFrame(rows, columns=["Nombre", "Cantidad Vendida", "Precio Venta", "Fecha Venta"])
+
+        # 👇 Normalización de tipos (evita "Expected numeric dtype, got object instead")
+        df["Cantidad Vendida"] = pd.to_numeric(df["Cantidad Vendida"], errors="coerce").fillna(0).astype(float)
+        df["Precio Venta"] = pd.to_numeric(df["Precio Venta"], errors="coerce").fillna(0).astype(float)
+        df["Fecha Venta"] = pd.to_datetime(df["Fecha Venta"], errors="coerce")
+
+        # Total
         df["Total"] = (df["Cantidad Vendida"] * df["Precio Venta"]).round(2)
         df = df[["Nombre", "Cantidad Vendida", "Precio Venta", "Total", "Fecha Venta"]]
 
-        # Mostrar detalles de ventas en formato tabla
         st.markdown("---")
         st.markdown("### 🗂 Detalles de Ventas")
         st.table(df)
 
-        # Botón regresar menú
+        # Botón para regresar
         st.markdown("---")
         if st.button("🔙 Volver al Menú Principal"):
             st.session_state["page"] = "menu_principal"
@@ -65,7 +71,7 @@ def reporte_ventas():
         col1, col2 = st.columns(2)
 
         with col1:
-            # Excel (mismas columnas que la vista)
+            # Excel
             excel_buffer = BytesIO()
             with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
                 df.to_excel(writer, index=False, sheet_name="ReporteVentas")
@@ -77,7 +83,7 @@ def reporte_ventas():
             )
 
         with col2:
-            # PDF (mismas columnas que la vista)
+            # PDF
             pdf = FPDF()
             pdf.add_page()
 
@@ -85,7 +91,6 @@ def reporte_ventas():
             pdf.cell(190, 10, txt="Reporte de Ventas", ln=True, align="C")
             pdf.ln(5)
 
-            # Encabezados
             pdf.set_font("Arial", "B", 11)
             widths = [80, 25, 25, 25, 35]  # Nombre, Cantidad, Precio, Total, Fecha
             headers = ["Producto", "Cantidad", "Precio", "Total", "Fecha"]
@@ -93,17 +98,16 @@ def reporte_ventas():
                 pdf.cell(w, 8, h, 1, 0, "C")
             pdf.ln(8)
 
-            # Filas
             pdf.set_font("Arial", size=10)
             for _, row in df.iterrows():
                 nombre = str(row["Nombre"]) if pd.notna(row["Nombre"]) else "N/A"
-                cantidad = int(row["Cantidad Vendida"]) if pd.notna(row["Cantidad Vendida"]) else 0
+                cantidad = float(row["Cantidad Vendida"]) if pd.notna(row["Cantidad Vendida"]) else 0.0
                 precio = float(row["Precio Venta"]) if pd.notna(row["Precio Venta"]) else 0.0
                 total = float(row["Total"]) if pd.notna(row["Total"]) else 0.0
                 fecha = row["Fecha Venta"].strftime("%Y-%m-%d") if pd.notna(row["Fecha Venta"]) else "N/A"
 
-                pdf.cell(widths[0], 8, nombre[:45], 1)   # recorte simple
-                pdf.cell(widths[1], 8, str(cantidad), 1, 0, "R")
+                pdf.cell(widths[0], 8, nombre[:45], 1)                 # recorte simple
+                pdf.cell(widths[1], 8, f"{cantidad:.2f}", 1, 0, "R")
                 pdf.cell(widths[2], 8, f"${precio:.2f}", 1, 0, "R")
                 pdf.cell(widths[3], 8, f"${total:.2f}", 1, 0, "R")
                 pdf.cell(widths[4], 8, fecha, 1, 0, "C")
@@ -124,7 +128,7 @@ def reporte_ventas():
         if "cursor" in locals(): cursor.close()
         if "con" in locals(): con.close()
 
-# Router simple (si lo usas en una página dedicada)
+# Router simple (opcional)
 if "page" not in st.session_state:
     st.session_state["page"] = "reporte_ventas"
 
