@@ -22,8 +22,12 @@ def modulo_ventas():
     # Si marcamos reset en el clic anterior, limpiamos keys ANTES de renderizar widgets
     if st.session_state.get("_reset_venta_next_run"):
         st.session_state["_reset_venta_next_run"] = False
+
+        # Limpia explícitamente el código de barras (text_input necesita asignación directa)
+        st.session_state["venta_cod_barras"] = ""
+
+        # Limpia el resto para que vuelvan a defaults al render
         for k in [
-            "venta_cod_barras",
             "venta_es_grano_basico",
             "venta_unidad_grano",
             "venta_tipo_cliente",
@@ -116,11 +120,10 @@ def modulo_ventas():
                     cantidad_libras = cantidad * factor_conversion[unidad_grano]
                     st.number_input("⚖️ Equivalente total en libras", value=float(cantidad_libras), disabled=True)
                     subtotal = round(precio_editable * cantidad_libras, 2)
-                    cantidad_guardar = cantidad_libras  # guardamos ya en libras
+                    cantidad_guardar = float(cantidad_libras)  # guardamos ya en libras
                 else:
-                    cantidad_libras = None
                     subtotal = round(precio_editable * cantidad, 2)
-                    cantidad_guardar = cantidad
+                    cantidad_guardar = float(cantidad)
 
                 st.number_input("Subtotal", value=float(subtotal), step=0.01, format="%.2f", disabled=True)
 
@@ -130,14 +133,14 @@ def modulo_ventas():
                         "cod_barra": cod_barra,
                         "nombre": nombre_producto,
                         "precio_venta": float(precio_editable),
-                        "cantidad": float(cantidad_guardar),
+                        "cantidad": cantidad_guardar,
                         "subtotal": float(subtotal),
                         "tipo_cliente_id": tipo_cliente_id,   # se guarda por producto
                     }
 
                     st.session_state["productos_vendidos"].append(producto_venta)
 
-                    # Programamos el reseteo en el próximo ciclo (limpia todos los inputs de arriba)
+                    # Programa el reseteo para el próximo render (limpia todos los inputs de arriba)
                     st.session_state["_reset_venta_next_run"] = True
                     st.success("✅ Producto agregado a la venta.")
                     st.rerun()
@@ -202,13 +205,13 @@ def modulo_ventas():
                             nuevo_id,
                             prod["cod_barra"],
                             prod["cantidad"],
-                            prod["tipo_cliente_id"],   # usamos el tipo de cliente de esa línea
+                            prod["tipo_cliente_id"],   # tipo de cliente de esa línea
                             round(prod["precio_venta"], 2),
                         ),
                     )
 
                 conn.commit()
-                st.success("✅ Venta registrada exitosamente.")
+                st.success("✅ Venta registrado exitosamente.")
                 # Limpiamos para una nueva venta
                 st.session_state["productos_vendidos"] = []
                 st.session_state["_reset_venta_next_run"] = True
