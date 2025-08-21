@@ -77,13 +77,13 @@ def menu_principal():
     st.markdown("#### 📊 Consulta información")
     col1, col2 = st.columns(2)
 
-    with col1:
-        if st.button("📊 Reporte de Ventas"):
+        with col1:
+            if st.button("📊 Reporte de Ventas"):
             st.session_state["module"] = "ReportesVentas"
             st.rerun()
 
-    with col2:
-        if st.button("🏆 Top 30 más vendidos"):
+        with col2:
+            if st.button("🏆 Top 30 más vendidos"):
             st.session_state["module"] = "productomasvendido"
             st.rerun()
 
