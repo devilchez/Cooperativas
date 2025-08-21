@@ -86,6 +86,12 @@ def modulo_compras():
         value=st.session_state["form_data"]["precio_compra"]
     )
 
+    # 👉 Cantidad comprada justo después de precio de compra
+    st.session_state["form_data"]["cantidad"] = st.number_input(
+        "Cantidad comprada", min_value=1, max_value=10000, step=1,
+        value=st.session_state["form_data"]["cantidad"]
+    )
+
     precio_minorista = round(precio_compra / 0.70, 2)
     st.markdown(f"💡 **Precio de venta sugerido (Al Detalle):** ${precio_minorista:.2f}")
     
@@ -98,11 +104,6 @@ def modulo_compras():
     precio_venta = st.number_input("💰 Precio de venta al detalle", min_value=0.01, value=precio_minorista, format="%.2f")
     precio_venta2 = st.number_input("💰 Precio de venta mayorista #1", min_value=0.01, value=precio_sugerido2, format="%.2f")
     precio_venta3 = st.number_input("💰 Precio de venta mayorista #2", min_value=0.01, value=precio_sugerido, format="%.2f")
-
-    st.session_state["form_data"]["cantidad"] = st.number_input(
-        "Cantidad comprada", min_value=1, max_value=10000, step=1,
-        value=st.session_state["form_data"]["cantidad"]
-    )
 
     if categoria == "Granos básicos":
         factor_conversion = CONVERSIONES_A_LIBRAS.get(unidad, 1)
