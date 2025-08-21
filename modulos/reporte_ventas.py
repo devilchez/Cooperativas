@@ -23,17 +23,18 @@ def reporte_ventas():
         con = obtener_conexion()
         cursor = con.cursor()
 
-        # 👉 Traer NOMBRE del producto (no mostrar ID_Venta ni código)
+        # ❗ Traer NOMBRE y NO traer ID_Venta ni Código de Barra
         query = """
-            SELECT p.Nombre AS nombre_producto,
-                   pv.Cantidad_vendida,
-                   pv.Precio_Venta,
-                   v.Fecha
+            SELECT
+                p.Nombre            AS Nombre,
+                pv.Cantidad_vendida AS CantidadVendida,
+                pv.Precio_Venta     AS PrecioVenta,
+                v.Fecha             AS FechaVenta
             FROM Venta v
             JOIN ProductoxVenta pv ON v.ID_Venta = pv.ID_Venta
             JOIN Producto p       ON p.Cod_barra = pv.Cod_barra
             WHERE v.Fecha BETWEEN %s AND %s
-            ORDER BY v.Fecha DESC, v.ID_Venta DESC
+            ORDER BY v.Fecha DESC, p.Nombre ASC
         """
         cursor.execute(query, (fecha_inicio, fecha_fin))
         rows = cursor.fetchall()
@@ -42,32 +43,29 @@ def reporte_ventas():
             st.info("No se encontraron ventas en el rango seleccionado.")
             return
 
-        # DataFrame con NUEVAS columnas (sin ID_Venta y mostrando Nombre)
-        df = pd.DataFrame(
-            rows,
-            columns=["Nombre", "Cantidad Vendida", "Precio Venta", "Fecha Venta"]
-        )
+        # DataFrame solo con las columnas deseadas
+        df = pd.DataFrame(rows, columns=["Nombre", "Cantidad Vendida", "Precio Venta", "Fecha Venta"])
         df["Total"] = (df["Cantidad Vendida"] * df["Precio Venta"]).round(2)
-
-        # Reordenar (Nombre primero y Fecha al final)
         df = df[["Nombre", "Cantidad Vendida", "Precio Venta", "Total", "Fecha Venta"]]
 
+        # Mostrar detalles de ventas en formato tabla
         st.markdown("---")
         st.markdown("### 🗂 Detalles de Ventas")
         st.table(df)
 
-        # Botón para regresar al menú principal
+        # Botón regresar menú
         st.markdown("---")
         if st.button("🔙 Volver al Menú Principal"):
             st.session_state["page"] = "menu_principal"
             st.session_state["module"] = None
 
+        # Exportaciones
         st.markdown("---")
         st.markdown("### 📁 Exportar ventas filtradas")
         col1, col2 = st.columns(2)
 
         with col1:
-            # Exportar a Excel (usa las columnas mostradas)
+            # Excel (mismas columnas que la vista)
             excel_buffer = BytesIO()
             with pd.ExcelWriter(excel_buffer, engine="xlsxwriter") as writer:
                 df.to_excel(writer, index=False, sheet_name="ReporteVentas")
@@ -79,7 +77,7 @@ def reporte_ventas():
             )
 
         with col2:
-            # Exportar a PDF (encabezados ajustados)
+            # PDF (mismas columnas que la vista)
             pdf = FPDF()
             pdf.add_page()
 
@@ -87,9 +85,9 @@ def reporte_ventas():
             pdf.cell(190, 10, txt="Reporte de Ventas", ln=True, align="C")
             pdf.ln(5)
 
-            # Encabezados (anchos suman 190)
+            # Encabezados
             pdf.set_font("Arial", "B", 11)
-            widths = [70, 30, 30, 30, 30]  # Nombre, Cantidad, Precio, Total, Fecha
+            widths = [80, 25, 25, 25, 35]  # Nombre, Cantidad, Precio, Total, Fecha
             headers = ["Producto", "Cantidad", "Precio", "Total", "Fecha"]
             for w, h in zip(widths, headers):
                 pdf.cell(w, 8, h, 1, 0, "C")
@@ -104,14 +102,13 @@ def reporte_ventas():
                 total = float(row["Total"]) if pd.notna(row["Total"]) else 0.0
                 fecha = row["Fecha Venta"].strftime("%Y-%m-%d") if pd.notna(row["Fecha Venta"]) else "N/A"
 
-                pdf.cell(widths[0], 8, nombre[:40], 1)  # recorte simple para no desbordar
+                pdf.cell(widths[0], 8, nombre[:45], 1)   # recorte simple
                 pdf.cell(widths[1], 8, str(cantidad), 1, 0, "R")
                 pdf.cell(widths[2], 8, f"${precio:.2f}", 1, 0, "R")
                 pdf.cell(widths[3], 8, f"${total:.2f}", 1, 0, "R")
                 pdf.cell(widths[4], 8, fecha, 1, 0, "C")
                 pdf.ln(8)
 
-            # Salida PDF
             pdf_bytes = pdf.output(dest="S").encode("latin-1")
             st.download_button(
                 label="⬇️ Descargar PDF",
@@ -127,7 +124,7 @@ def reporte_ventas():
         if "cursor" in locals(): cursor.close()
         if "con" in locals(): con.close()
 
-# Router simple
+# Router simple (si lo usas en una página dedicada)
 if "page" not in st.session_state:
     st.session_state["page"] = "reporte_ventas"
 
