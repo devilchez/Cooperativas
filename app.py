@@ -74,8 +74,8 @@ def menu_principal():
                 st.rerun()
 
     elif st.session_state["macro_modulo"] == "reportes":
-    st.markdown("#### 📊 Consulta información")
-    col1, col2 = st.columns(2)
+        st.markdown("#### 📊 Consulta información")
+        col1, col2 = st.columns(2)
 
         with col1:
             if st.button("📊 Reporte de Ventas"):
