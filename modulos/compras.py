@@ -43,7 +43,6 @@ def modulo_compras():
         st.session_state["form_data_codigo_barras"] = ""
     # flag para reiniciar en el próximo ciclo
     if st.session_state.get("_reset_form_next_run"):
-        # Reinicia todos los campos ANTES de crear los widgets
         st.session_state["_reset_form_next_run"] = False
         st.session_state["form_data"] = {
             "precio_compra": 0.01,
@@ -58,7 +57,6 @@ def modulo_compras():
     # ---- Carga de edición ----
     if st.session_state["editar_indice"] is not None and "edit_loaded" not in st.session_state:
         prod_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
-        # seteo inicial ANTES de widgets
         st.session_state["form_data_codigo_barras"] = prod_edit["cod_barra"]
         st.session_state["form_data"] = {
             "precio_compra": float(prod_edit["precio_compra"]),
@@ -140,6 +138,10 @@ def modulo_compras():
     )
     cantidad = st.session_state["form_data"]["cantidad"]
 
+    # ---- Subtotal del producto actual ----
+    subtotal_actual = round(precio_compra * cantidad, 2)
+    st.markdown(f"**🧾 Subtotal del producto actual:** ${subtotal_actual:.2f}")
+
     # ---- Sugerencias de precios ----
     precio_minorista = round(precio_compra / 0.70, 2)
     st.markdown(f"💡 **Precio de venta sugerido (Al Detalle):** ${precio_minorista:.2f}")
@@ -214,19 +216,23 @@ def modulo_compras():
                 }
                 st.session_state["productos_seleccionados"].append(producto)
                 st.success("✅ Producto agregado a la compra.")
-
                 # 🔁 Programa el reseteo para el próximo ciclo
                 st.session_state["_reset_form_next_run"] = True
                 st.rerun()
         else:
             st.error("⚠️ Código de barras inválido. No se puede agregar el producto.")
 
-    # ---- Listado ----
+    # ---- Listado + Totales ----
     if st.session_state["productos_seleccionados"]:
         st.subheader("📦 Productos en la compra actual")
+        total_compra = 0.0
         for i, prod in enumerate(st.session_state["productos_seleccionados"]):
+            subtotal = round(prod["precio_compra"] * prod["cantidad"], 2)
+            total_compra += subtotal
             st.markdown(
-                f"**{prod['nombre']}** — {prod['cantidad']} {prod['unidad']} — Precio de Compra: ${prod['precio_compra']:.2f}"
+                f"**{prod['nombre']}** — {prod['cantidad']} {prod['unidad']} — "
+                f"Precio de Compra: ${prod['precio_compra']:.2f} — "
+                f"**Subtotal:** ${subtotal:.2f}"
             )
             col1, col2 = st.columns([1, 1])
             with col1:
@@ -238,6 +244,9 @@ def modulo_compras():
                     st.session_state["productos_seleccionados"].pop(i)
                     st.success("🗑️ Producto eliminado.")
                     st.rerun()
+
+        st.markdown("---")
+        st.markdown(f"### 🧮 Total de la compra: **${total_compra:.2f}**")
 
     # ---- Registrar compra ----
     if st.button("✅ Registrar compra"):
