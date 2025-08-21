@@ -23,7 +23,7 @@ def reporte_ventas():
         con = obtener_conexion()
         cursor = con.cursor()
 
-        # Traer NOMBRE del producto, NO ID_Venta ni Código
+        # Traer NOMBRE (no ID_Venta ni Código de Barra)
         query = """
             SELECT
                 p.Nombre            AS Nombre,
@@ -43,15 +43,12 @@ def reporte_ventas():
             st.info("No se encontraron ventas en el rango seleccionado.")
             return
 
-        # Construcción del DataFrame
+        # DataFrame con tipos correctos
         df = pd.DataFrame(rows, columns=["Nombre", "Cantidad Vendida", "Precio Venta", "Fecha Venta"])
-
-        # 👇 Normalización de tipos (evita "Expected numeric dtype, got object instead")
         df["Cantidad Vendida"] = pd.to_numeric(df["Cantidad Vendida"], errors="coerce").fillna(0).astype(float)
         df["Precio Venta"] = pd.to_numeric(df["Precio Venta"], errors="coerce").fillna(0).astype(float)
         df["Fecha Venta"] = pd.to_datetime(df["Fecha Venta"], errors="coerce")
 
-        # Total
         df["Total"] = (df["Cantidad Vendida"] * df["Precio Venta"]).round(2)
         df = df[["Nombre", "Cantidad Vendida", "Precio Venta", "Total", "Fecha Venta"]]
 
@@ -59,7 +56,7 @@ def reporte_ventas():
         st.markdown("### 🗂 Detalles de Ventas")
         st.table(df)
 
-        # Botón para regresar
+        # Botón volver
         st.markdown("---")
         if st.button("🔙 Volver al Menú Principal"):
             st.session_state["page"] = "menu_principal"
@@ -106,14 +103,17 @@ def reporte_ventas():
                 total = float(row["Total"]) if pd.notna(row["Total"]) else 0.0
                 fecha = row["Fecha Venta"].strftime("%Y-%m-%d") if pd.notna(row["Fecha Venta"]) else "N/A"
 
-                pdf.cell(widths[0], 8, nombre[:45], 1)                 # recorte simple
+                pdf.cell(widths[0], 8, nombre[:45], 1)
                 pdf.cell(widths[1], 8, f"{cantidad:.2f}", 1, 0, "R")
                 pdf.cell(widths[2], 8, f"${precio:.2f}", 1, 0, "R")
                 pdf.cell(widths[3], 8, f"${total:.2f}", 1, 0, "R")
                 pdf.cell(widths[4], 8, fecha, 1, 0, "C")
                 pdf.ln(8)
 
-            pdf_bytes = pdf.output(dest="S").encode("latin-1")
+            # 🔧 Fix: soportar str/bytes/bytearray según versión de FPDF
+            out = pdf.output(dest="S")
+            pdf_bytes = out.encode("latin-1") if isinstance(out, str) else bytes(out)
+
             st.download_button(
                 label="⬇️ Descargar PDF",
                 data=pdf_bytes,
