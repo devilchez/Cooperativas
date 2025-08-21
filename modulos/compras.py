@@ -70,28 +70,51 @@ def modulo_compras():
     else:
         st.session_state["form_data"]["unidad"] = "unidad"  
 
+    # 👉 Código de barras
     st.text_input(
         "Código de barras del producto",
         key="form_data_codigo_barras",
         value=st.session_state["form_data"]["codigo_barras"],
         disabled=codigo_barras_disabled
     )
-    
+
+    # 👉 Producto encontrado justo debajo del código de barras
+    producto_encontrado = None
+    if st.session_state["form_data_codigo_barras"] and not codigo_barras_disabled:
+        producto_encontrado = next(
+            (p for p in productos if p[0] == st.session_state["form_data_codigo_barras"]),
+            None
+        )
+        if producto_encontrado:
+            st.write(f"Producto encontrado: **{producto_encontrado[1]}**")
+            tipo_producto = producto_encontrado[2]  
+            if tipo_producto.lower() == "perecedero":
+                st.session_state["form_data"]["fecha_vencimiento"] = st.date_input(
+                    "📅 Fecha de vencimiento",
+                    key="form_data_fecha_vencimiento"
+                )
+            else:
+                st.session_state["form_data"]["fecha_vencimiento"] = None
+        else:
+            st.warning("⚠️ Producto no encontrado. Verifique el código de barras.")
+
     unidad = st.session_state["form_data"]["unidad"]
     cantidad = st.session_state["form_data"]["cantidad"]
     
+    # 👉 Precio de compra
     precio_compra = st.number_input(
         "Precio de compra", min_value=0.01, step=0.01,
         key="form_data_precio_compra",
         value=st.session_state["form_data"]["precio_compra"]
     )
 
-    # 👉 Cantidad comprada justo después de precio de compra
+    # 👉 Cantidad comprada (justo después del precio de compra)
     st.session_state["form_data"]["cantidad"] = st.number_input(
         "Cantidad comprada", min_value=1, max_value=10000, step=1,
         value=st.session_state["form_data"]["cantidad"]
     )
 
+    # 👉 Precios sugeridos
     precio_minorista = round(precio_compra / 0.70, 2)
     st.markdown(f"💡 **Precio de venta sugerido (Al Detalle):** ${precio_minorista:.2f}")
     
@@ -109,26 +132,6 @@ def modulo_compras():
         factor_conversion = CONVERSIONES_A_LIBRAS.get(unidad, 1)
         cantidad_convertida = cantidad * factor_conversion
         st.markdown(f"**Valor convertido en libras:** {cantidad_convertida:.2f} libras")
-
-    producto_encontrado = None
-    if st.session_state["form_data_codigo_barras"] and not codigo_barras_disabled:
-        producto_encontrado = next(
-            (p for p in productos if p[0] == st.session_state["form_data_codigo_barras"]),
-            None
-        )
-        if producto_encontrado:
-            st.write(f"Producto encontrado: **{producto_encontrado[1]}**")
-            tipo_producto = producto_encontrado[2]  
-            if tipo_producto.lower() == "perecedero":
-                st.session_state["form_data"]["fecha_vencimiento"] = st.date_input(
-                    "📅 Fecha de vencimiento",
-                    key="form_data_fecha_vencimiento"
-                )
-            else:
-                st.session_state["form_data"]["fecha_vencimiento"] = None
-
-        else:
-            st.warning("⚠️ Producto no encontrado. Verifique el código de barras.")
 
     boton_texto = "💾 Actualizar producto" if st.session_state["editar_indice"] is not None else "💾 Agregar producto"
     if st.button(boton_texto):
@@ -225,34 +228,3 @@ def modulo_compras():
                             prod["precio_compra"],
                             "libras" if unidad_original in CONVERSIONES_A_LIBRAS else unidad_original,
                             prod.get("fecha_vencimiento"),
-                            prod["precio_venta"],
-                            prod["precio_venta2"],
-                            prod["precio_venta3"]
-                        )
-                    )
-
-                conn.commit()
-                st.success(f"📦 Compra registrada exitosamente con ID {nuevo_id}.")
-                st.session_state["productos_seleccionados"] = []
-                st.session_state["form_data"] = {
-                    "codigo_barras": "",
-                    "precio_compra": 0.01,
-                    "cantidad": 1,
-                    "unidad": "libras"
-                }
-                st.rerun()
-
-            except Exception as e:
-                st.error(f"⚠️ Error al guardar en la base de datos: {e}")
-
-    st.divider()
-    if st.button("🔙 Volver al menú principal"):
-        st.session_state["module"] = None
-        st.session_state["productos_seleccionados"] = []
-        st.session_state["form_data"] = {
-            "codigo_barras": "",
-            "precio_compra": 0.01,
-            "cantidad": 1,
-            "unidad": "libras"
-        }
-        st.rerun()
