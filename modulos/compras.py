@@ -38,6 +38,8 @@ def modulo_compras():
             "unidad": "libras",
             "fecha_vencimiento": None,
         }
+    if "categoria_selector" not in st.session_state:
+        st.session_state["categoria_selector"] = "Granos básicos"
 
     if st.session_state["editar_indice"] is not None and "edit_loaded" not in st.session_state:
         prod_edit = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
@@ -91,7 +93,6 @@ def modulo_compras():
             st.write(f"Producto encontrado: **{producto_encontrado[1]}**")
             tipo_producto = producto_encontrado[2]
             if isinstance(tipo_producto, str) and tipo_producto.lower() == "perecedero":
-                # Solo muestra el date_input si es perecedero
                 st.session_state["form_data"]["fecha_vencimiento"] = st.date_input(
                     "📅 Fecha de vencimiento",
                     key="form_data_fecha_vencimiento",
@@ -163,39 +164,54 @@ def modulo_compras():
     if st.button(boton_texto):
         if producto_encontrado or codigo_barras_disabled:
             if st.session_state["editar_indice"] is not None:
+                # --- Modo editar ---
                 prod_ref = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
-            else:
-                prod_ref = {"nombre": producto_encontrado[1]}
-
-            producto = {
-                "cod_barra": st.session_state["form_data_codigo_barras"],
-                "nombre": prod_ref["nombre"],
-                "cantidad": cantidad,
-                "precio_compra": precio_compra,
-                "precio_venta2": precio_venta2,
-                "precio_venta3": precio_venta3,
-                "precio_venta": precio_venta,
-                "unidad": unidad,
-                "fecha_vencimiento": st.session_state["form_data"].get("fecha_vencimiento"),
-            }
-
-            if st.session_state["editar_indice"] is not None:
+                producto = {
+                    "cod_barra": st.session_state["form_data_codigo_barras"],
+                    "nombre": prod_ref["nombre"],
+                    "cantidad": cantidad,
+                    "precio_compra": precio_compra,
+                    "precio_venta2": precio_venta2,
+                    "precio_venta3": precio_venta3,
+                    "precio_venta": precio_venta,
+                    "unidad": unidad,
+                    "fecha_vencimiento": st.session_state["form_data"].get("fecha_vencimiento"),
+                }
                 st.session_state["productos_seleccionados"][st.session_state["editar_indice"]] = producto
                 st.success("✅ Producto actualizado correctamente.")
                 st.session_state["editar_indice"] = None
                 st.session_state.pop("edit_loaded", None)
+
             else:
+                # --- Modo agregar ---
+                prod_ref = {"nombre": producto_encontrado[1]}
+                producto = {
+                    "cod_barra": st.session_state["form_data_codigo_barras"],
+                    "nombre": prod_ref["nombre"],
+                    "cantidad": cantidad,
+                    "precio_compra": precio_compra,
+                    "precio_venta2": precio_venta2,
+                    "precio_venta3": precio_venta3,
+                    "precio_venta": precio_venta,
+                    "unidad": unidad,
+                    "fecha_vencimiento": st.session_state["form_data"].get("fecha_vencimiento"),
+                }
                 st.session_state["productos_seleccionados"].append(producto)
                 st.success("✅ Producto agregado a la compra.")
 
-            st.session_state["form_data"] = {
-                "codigo_barras": "",
-                "precio_compra": 0.01,
-                "cantidad": 1,
-                "unidad": "libras",
-                "fecha_vencimiento": None,
-            }
-            st.rerun()
+                # 🔁 Reiniciar TODOS los campos de arriba tras "Agregar producto"
+                st.session_state["form_data"] = {
+                    "codigo_barras": "",
+                    "precio_compra": 0.01,
+                    "cantidad": 1,
+                    "unidad": "libras",
+                    "fecha_vencimiento": None,
+                }
+                st.session_state["form_data_codigo_barras"] = ""          # limpia el input de código
+                st.session_state.pop("form_data_fecha_vencimiento", None) # limpia el date_input si se mostró
+                st.session_state["categoria_selector"] = "Granos básicos" # reinicia la categoría
+                st.rerun()
+
         else:
             st.error("⚠️ Código de barras inválido. No se puede agregar el producto.")
 
@@ -217,7 +233,7 @@ def modulo_compras():
                     st.success("🗑️ Producto eliminado.")
                     st.rerun()
 
-        # Cálculo agregado (si lo necesitas luego)
+        # (Opcional) cálculo agregado
         _ = sum(
             prod["cantidad"] * CONVERSIONES_A_LIBRAS.get(prod["unidad"].strip().lower(), 1)
             for prod in st.session_state["productos_seleccionados"]
@@ -279,6 +295,9 @@ def modulo_compras():
                     "unidad": "libras",
                     "fecha_vencimiento": None,
                 }
+                st.session_state["form_data_codigo_barras"] = ""
+                st.session_state.pop("form_data_fecha_vencimiento", None)
+                st.session_state["categoria_selector"] = "Granos básicos"
                 st.rerun()
 
             except Exception as e:
@@ -295,4 +314,7 @@ def modulo_compras():
             "unidad": "libras",
             "fecha_vencimiento": None,
         }
+        st.session_state["form_data_codigo_barras"] = ""
+        st.session_state.pop("form_data_fecha_vencimiento", None)
+        st.session_state["categoria_selector"] = "Granos básicos"
         st.rerun()
