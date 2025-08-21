@@ -112,11 +112,7 @@ def modulo_ventas():
 
                 # Conversión si es grano básico
                 if es_grano_basico == "Sí" and unidad_grano:
-                    factor_conversion = {
-                        "Libra": 1,
-                        "Arroba": 25,
-                        "Quintal": 100
-                    }
+                    factor_conversion = {"Libra": 1, "Arroba": 25, "Quintal": 100}
                     cantidad_libras = cantidad * factor_conversion[unidad_grano]
                     st.number_input("⚖️ Equivalente total en libras", value=float(cantidad_libras), disabled=True)
                     subtotal = round(precio_editable * cantidad_libras, 2)
@@ -127,23 +123,39 @@ def modulo_ventas():
 
                 st.number_input("Subtotal", value=float(subtotal), step=0.01, format="%.2f", disabled=True)
 
+                # ====== EXISTENCIA / INVENTARIO ======
+                # Calcula existencia: Compras - Ventas
+                cursor.execute("""
+                    SELECT
+                        COALESCE((SELECT SUM(pc.cantidad_comprada) FROM ProductoxCompra pc WHERE pc.Cod_barra = %s), 0) -
+                        COALESCE((SELECT SUM(pv.Cantidad_vendida) FROM ProductoxVenta  pv WHERE pv.Cod_barra = %s), 0)
+                        AS existencia
+                """, (cod_barra, cod_barra))
+                row = cursor.fetchone()
+                existencia = float(row[0]) if row and row[0] is not None else 0.0
+
+                st.info(f"📦 Existencia actual: **{existencia:.2f}** (misma unidad base que la cantidad a vender)")
+
                 # ====== Agregar producto ======
                 if st.button("🛒 Agregar producto a la venta"):
-                    producto_venta = {
-                        "cod_barra": cod_barra,
-                        "nombre": nombre_producto,
-                        "precio_venta": float(precio_editable),
-                        "cantidad": cantidad_guardar,
-                        "subtotal": float(subtotal),
-                        "tipo_cliente_id": tipo_cliente_id,   # se guarda por producto
-                    }
+                    if cantidad_guardar > existencia:
+                        st.error("❌ No hay suficientes unidades en inventario.")
+                    else:
+                        producto_venta = {
+                            "cod_barra": cod_barra,
+                            "nombre": nombre_producto,
+                            "precio_venta": float(precio_editable),
+                            "cantidad": cantidad_guardar,
+                            "subtotal": float(subtotal),
+                            "tipo_cliente_id": tipo_cliente_id,   # se guarda por producto
+                        }
 
-                    st.session_state["productos_vendidos"].append(producto_venta)
+                        st.session_state["productos_vendidos"].append(producto_venta)
 
-                    # Programa el reseteo para el próximo render (limpia todos los inputs de arriba)
-                    st.session_state["_reset_venta_next_run"] = True
-                    st.success("✅ Producto agregado a la venta.")
-                    st.rerun()
+                        # Programa el reseteo para el próximo render (limpia todos los inputs de arriba)
+                        st.session_state["_reset_venta_next_run"] = True
+                        st.success("✅ Producto agregado a la venta.")
+                        st.rerun()
             else:
                 st.error("❌ No se encontraron precios para este producto.")
         else:
@@ -211,7 +223,7 @@ def modulo_ventas():
                     )
 
                 conn.commit()
-                st.success("✅ Venta registrado exitosamente.")
+                st.success("✅ Venta registrada exitosamente.")
                 # Limpiamos para una nueva venta
                 st.session_state["productos_vendidos"] = []
                 st.session_state["_reset_venta_next_run"] = True
