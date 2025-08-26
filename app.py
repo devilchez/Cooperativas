@@ -16,7 +16,7 @@ from modulos.reporte_ventas import reporte_ventas  # Importa el módulo de repor
 
 
 def menu_principal():
-    st.title("🏠 Menú Principal - Tienda San Antonio del Monte")
+    st.title("🏠 Menú Principal - Tiendas")
 
     nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  
     st.subheader(f"Bienvenida {nombre_empleado}, Seleccione un módulo")
