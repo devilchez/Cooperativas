@@ -79,7 +79,7 @@ def modulo_ventas():
             # ====== Tipo de cliente ======
             tipo_cliente = st.radio(
                 "🧾 Seleccione el tipo de cliente",
-                ["Minorista", "Mayorista 1", "Mayorista 2"],
+                ["Minorista** ${precio_minorista:.2f}", "Mayorista 1", "Mayorista 2"],
                 key="venta_tipo_cliente"
             )
 
