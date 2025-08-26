@@ -5,7 +5,7 @@ from config.conexion import obtener_conexion
 CONVERSIONES_A_LIBRAS = {
     "libras": 1,
     "arroba": 25,
-    "quintal": 220.46,
+    "quintal": 100,
 }
 
 def modulo_compras():
