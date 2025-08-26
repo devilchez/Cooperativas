@@ -3,7 +3,7 @@ from datetime import date
 from config.conexion import obtener_conexion
 
 def modulo_ventas():
-    st.title("🛒 Registro de Ventas")
+    st.title("🛒 Registro de Venta")
 
     # --- Fecha de venta ---
     fecha_venta = st.date_input("📅 Fecha de la venta", date.today(), key="venta_fecha")
