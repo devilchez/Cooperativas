@@ -13,6 +13,20 @@ from modulos.dashboard import dashboard
 from modulos.empleado import modulo_empleado
 from modulos.inventario import modulo_inventario
 from modulos.reporte_ventas import reporte_ventas  # Importa el módulo de reportes de ventas
+import os, sys, pathlib, time, hashlib, streamlit as st
+
+p = pathlib.Path(__file__)
+# Huella del archivo que se está ejecutando
+with open(p, "rb") as f:
+    md5 = hashlib.md5(f.read()).hexdigest()[:12]
+
+st.sidebar.markdown("### 🔎 Diagnóstico")
+st.sidebar.write("**Archivo:**", str(p))
+st.sidebar.write("**Modificado:**", time.ctime(p.stat().st_mtime))
+st.sidebar.write("**MD5 (12):**", md5)
+st.sidebar.write("**CWD:**", os.getcwd())
+st.sidebar.write("**Python:**", sys.executable)
+st.sidebar.write("**PID:**", os.getpid())
 
 
 def menu_principal():
