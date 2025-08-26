@@ -13,7 +13,7 @@ def modulo_compras():
         st.error("⚠️ Debes iniciar sesión para registrar compras.")
         st.stop()
 
-    st.title("🧾 Registro de Compras")
+    st.title("🧾 Registrode Compras")
 
     conn = obtener_conexion()
     cursor = conn.cursor()
