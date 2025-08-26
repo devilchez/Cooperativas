@@ -1,6 +1,20 @@
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'modulos'))
+import os, sys, pathlib, time, hashlib, streamlit as st
+
+p = pathlib.Path(__file__)
+# Huella del archivo que se está ejecutando
+with open(p, "rb") as f:
+    md5 = hashlib.md5(f.read()).hexdigest()[:12]
+
+st.sidebar.markdown("### 🔎 Diagnóstico")
+st.sidebar.write("**Archivo:**", str(p))
+st.sidebar.write("**Modificado:**", time.ctime(p.stat().st_mtime))
+st.sidebar.write("**MD5 (12):**", md5)
+st.sidebar.write("**CWD:**", os.getcwd())
+st.sidebar.write("**Python:**", sys.executable)
+st.sidebar.write("**PID:**", os.getpid())
 
 import streamlit as st
 from login import login, verificar_usuario
