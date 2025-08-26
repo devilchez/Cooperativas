@@ -15,7 +15,7 @@ from modulos.inventario import modulo_inventario
 
 
 def menu_principal():
-    st.title("🏠 Menú Principal-Sistema de tiendas")
+    st.title("🏠 Menú Principal-Sistema de Tiendas")
 
     nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  
     st.subheader(f"Bienvenida {nombre_empleado}, Seleccione un módulo")
