@@ -55,6 +55,8 @@ def modulo_ventas():
             LIMIT 1
         """, (cod_barra,))
         resultado = cursor.fetchone()
+       
+        st.info(f"📦 Existencia actual: **{existencia:.2f}**")
 
         if resultado:
             nombre_producto, precio_minorista, precio_mayorista1, precio_mayorista2 = resultado
@@ -134,7 +136,7 @@ def modulo_ventas():
                 row = cursor.fetchone()
                 existencia = float(row[0]) if row and row[0] is not None else 0.0
 
-                st.info(f"📦 Existencia actual: **{existencia:.2f}**")
+                
 
                 # ====== Agregar producto ======
                 if st.button("🛒 Agregar producto a la venta"):
