@@ -30,7 +30,7 @@ def menu_principal():
         col1, col2 = st.columns(2)
 
         with col1:
-            if st.button("✏️ Registra información"):
+            if st.button("✏️ Ingresar nueva información"):
                 st.session_state["macro_modulo"] = "registro"
                 st.rerun()
             if st.button("📊 Consulta información"):
