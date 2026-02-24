@@ -119,7 +119,7 @@ def cargar_modulo():
             modulo_empleado()
         elif st.session_state.module == "Inventario":
             modulo_inventario()
-        elif st.session_state.module == "ReportesVentas":  # Agregado el manejo del módulo de reportes
+        elif st.session_state.module == "Reportes Ventas":  # Agregado el manejo del módulo de reportes
             reporte_ventas()  # Llamar a la función que genera el reporte de ventas
         else:
             menu_principal()
