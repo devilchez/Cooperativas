@@ -9,20 +9,33 @@ CONVERSIONES_A_LIBRAS = {
 }
 
 def modulo_compras():
-    if "id_empleado" not in st.session_state:
+    # ✅ Validación multi-tienda (siempre al inicio del módulo)
+    if not st.session_state.get("logueado") or "id_empleado" not in st.session_state or "id_tienda" not in st.session_state:
         st.error("⚠️ Debes iniciar sesión para registrar compras.")
         st.stop()
+
+    id_tienda = st.session_state["id_tienda"]
 
     st.title("🧾 Registro de Compras")
 
     conn = obtener_conexion()
+    if not conn:
+        st.error("❌ No se pudo conectar a la base de datos.")
+        st.stop()
+
     cursor = conn.cursor()
 
-    cursor.execute("SELECT Cod_barra, Nombre, Tipo_producto FROM Producto")
+    # ✅ Solo productos de la tienda del usuario
+    cursor.execute(
+        "SELECT Cod_barra, Nombre, Tipo_producto FROM Producto WHERE id_tienda = %s",
+        (id_tienda,)
+    )
     productos = cursor.fetchall()
 
     if not productos:
-        st.warning("⚠️ No hay productos disponibles.")
+        st.warning("⚠️ No hay productos disponibles para esta tienda.")
+        cursor.close()
+        conn.close()
         return
 
     # ---- Estado base ----
@@ -41,6 +54,7 @@ def modulo_compras():
         st.session_state["categoria_selector"] = "Granos básicos"
     if "form_data_codigo_barras" not in st.session_state:
         st.session_state["form_data_codigo_barras"] = ""
+
     # flag para reiniciar en el próximo ciclo
     if st.session_state.get("_reset_form_next_run"):
         st.session_state["_reset_form_next_run"] = False
@@ -116,7 +130,6 @@ def modulo_compras():
             st.warning("⚠️ Producto no encontrado. Verifique el código de barras.")
 
     unidad = st.session_state["form_data"]["unidad"]
-    cantidad = st.session_state["form_data"]["cantidad"]
 
     # ---- Precio de compra ----
     precio_compra = st.number_input(
@@ -182,7 +195,6 @@ def modulo_compras():
     if st.button(boton_texto):
         if producto_encontrado or codigo_barras_disabled:
             if st.session_state["editar_indice"] is not None:
-                # Editar
                 prod_ref = st.session_state["productos_seleccionados"][st.session_state["editar_indice"]]
                 producto = {
                     "cod_barra": st.session_state["form_data_codigo_barras"],
@@ -199,9 +211,7 @@ def modulo_compras():
                 st.success("✅ Producto actualizado correctamente.")
                 st.session_state["editar_indice"] = None
                 st.session_state.pop("edit_loaded", None)
-
             else:
-                # Agregar
                 prod_ref = {"nombre": producto_encontrado[1]}
                 producto = {
                     "cod_barra": st.session_state["form_data_codigo_barras"],
@@ -216,7 +226,6 @@ def modulo_compras():
                 }
                 st.session_state["productos_seleccionados"].append(producto)
                 st.success("✅ Producto agregado a la compra.")
-                # 🔁 Programa el reseteo para el próximo ciclo
                 st.session_state["_reset_form_next_run"] = True
                 st.rerun()
         else:
@@ -254,16 +263,18 @@ def modulo_compras():
             st.error("❌ No hay productos agregados.")
         else:
             try:
-                cursor.execute("SELECT MAX(Id_compra) FROM Compra")
+                # ✅ Si NO es autoincrement, al menos separar por tienda
+                cursor.execute("SELECT MAX(Id_compra) FROM Compra WHERE id_tienda = %s", (id_tienda,))
                 ultimo_id = cursor.fetchone()[0]
                 nuevo_id = 1 if ultimo_id is None else int(ultimo_id) + 1
 
                 fecha = datetime.now().strftime("%Y-%m-%d")
                 id_empleado = st.session_state["id_empleado"]
 
+                # ✅ Guardar compra con id_tienda
                 cursor.execute(
-                    "INSERT INTO Compra (Id_compra, Fecha, Id_empleado) VALUES (%s, %s, %s)",
-                    (nuevo_id, fecha, id_empleado),
+                    "INSERT INTO Compra (Id_compra, Fecha, Id_empleado, id_tienda) VALUES (%s, %s, %s, %s)",
+                    (nuevo_id, fecha, id_empleado, id_tienda),
                 )
 
                 for prod in st.session_state["productos_seleccionados"]:
@@ -273,12 +284,13 @@ def modulo_compras():
                         prod["cantidad"] * factor if unidad_original in CONVERSIONES_A_LIBRAS else prod["cantidad"]
                     )
 
+                    # ✅ Detalle con id_tienda
                     cursor.execute(
                         """
                         INSERT INTO ProductoxCompra
                         (Id_compra, cod_barra, cantidad_comprada, precio_compra, unidad, fecha_vencimiento,
-                         Precio_minorista, Precio_mayorista1, Precio_mayorista2)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                         Precio_minorista, Precio_mayorista1, Precio_mayorista2, id_tienda)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """,
                         (
                             nuevo_id,
@@ -290,17 +302,18 @@ def modulo_compras():
                             prod["precio_venta"],
                             prod["precio_venta2"],
                             prod["precio_venta3"],
+                            id_tienda,
                         ),
                     )
 
                 conn.commit()
                 st.success(f"📦 Compra registrada exitosamente con ID {nuevo_id}.")
-                # limpia todo para nueva compra
                 st.session_state["productos_seleccionados"] = []
                 st.session_state["_reset_form_next_run"] = True
                 st.rerun()
 
             except Exception as e:
+                conn.rollback()
                 st.error(f"⚠️ Error al guardar en la base de datos: {e}")
 
     st.divider()
@@ -309,3 +322,7 @@ def modulo_compras():
         st.session_state["productos_seleccionados"] = []
         st.session_state["_reset_form_next_run"] = True
         st.rerun()
+
+    # Cierre limpio
+    cursor.close()
+    conn.close()
