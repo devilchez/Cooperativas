@@ -10,6 +10,13 @@ def resaltar_stock_bajo(fila):
 def modulo_inventario():
     st.title("📦 Inventario Actual (agrupado por nombre)")
 
+    # ✅ Validación multi-tienda
+    if not st.session_state.get("logueado") or "id_tienda" not in st.session_state:
+        st.error("❌ No has iniciado sesión. Inicia sesión primero.")
+        st.stop()
+
+    id_tienda = st.session_state["id_tienda"]
+
     opcion_orden = st.selectbox(
         "📑 Ordenar inventario por:",
         ("Nombre (A-Z)", "Nombre (Z-A)",
@@ -22,54 +29,63 @@ def modulo_inventario():
     cursor = None
     try:
         conn = obtener_conexion()
+        if not conn:
+            st.error("❌ No se pudo conectar a la base de datos.")
+            st.stop()
+
         cursor = conn.cursor()
 
-        #Obtener todos los productos
+        # ✅ Obtener SOLO productos de la tienda
         cursor.execute("""
-            SELECT cod_barra, nombre, IFNULL(tipo_producto,'N/A')
+            SELECT Cod_barra, Nombre, IFNULL(Tipo_producto,'N/A')
             FROM Producto
-        """)
+            WHERE id_tienda = %s
+        """, (id_tienda,))
         productos = cursor.fetchall()
+
+        if not productos:
+            st.info("ℹ️ No hay productos registrados para esta tienda.")
+            return
 
         inventario_detalle = []
 
         for cod_barra, nombre, tipo_producto in productos:
-            #Compras
+            # ✅ Compras SOLO de la tienda
             cursor.execute("""
                 SELECT IFNULL(SUM(cantidad_comprada),0),
                        IFNULL(AVG(precio_compra),0)
                 FROM ProductoxCompra
-                WHERE cod_barra = %s
-            """, (cod_barra,))
+                WHERE Cod_barra = %s AND id_tienda = %s
+            """, (cod_barra, id_tienda))
             total_comprado, precio_promedio = cursor.fetchone()
 
-            #Unidad
+            # ✅ Unidad SOLO de la tienda
             cursor.execute("""
                 SELECT unidad
                 FROM ProductoxCompra
-                WHERE cod_barra = %s
+                WHERE Cod_barra = %s AND id_tienda = %s
                 ORDER BY Id_compra DESC
                 LIMIT 1
-            """, (cod_barra,))
+            """, (cod_barra, id_tienda))
             fila = cursor.fetchone()
             unidad = fila[0] if fila else "N/A"
 
-            #Ventas
+            # ✅ Ventas SOLO de la tienda
             cursor.execute("""
-                SELECT IFNULL(SUM(cantidad_vendida),0)
+                SELECT IFNULL(SUM(Cantidad_vendida),0)
                 FROM ProductoxVenta
-                WHERE cod_barra = %s
-            """, (cod_barra,))
+                WHERE Cod_barra = %s AND id_tienda = %s
+            """, (cod_barra, id_tienda))
             total_vendido = cursor.fetchone()[0] or 0
 
-            #Precio venta
+            # ✅ Precio venta SOLO de la tienda
             cursor.execute("""
                 SELECT Precio_Venta
                 FROM ProductoxVenta
-                WHERE cod_barra = %s
+                WHERE Cod_barra = %s AND id_tienda = %s
                 ORDER BY Id_venta DESC
                 LIMIT 1
-            """, (cod_barra,))
+            """, (cod_barra, id_tienda))
             fila_pv = cursor.fetchone()
             precio_venta = float(fila_pv[0]) if fila_pv and fila_pv[0] is not None else 0.0
 
@@ -83,10 +99,10 @@ def modulo_inventario():
                 "_Total_vendidos": int(total_vendido or 0)
             })
 
-        # Agrupar por nombre 
+        # Agrupar por nombre
         df = pd.DataFrame(inventario_detalle)
         df_agrupado = df.groupby(df["Nombre"].str.lower(), as_index=False).agg({
-            "Nombre": "first",  
+            "Nombre": "first",
             "Tipo": "first",
             "Stock actual": "sum",
             "Unidad": "first",
@@ -95,7 +111,7 @@ def modulo_inventario():
             "_Total_vendidos": "sum"
         })
 
-        # Ordenacion
+        # Ordenación
         if opcion_orden == "Nombre (A-Z)":
             df_agrupado = df_agrupado.sort_values("Nombre", key=lambda x: x.str.lower(), ascending=True)
         elif opcion_orden == "Nombre (Z-A)":
@@ -109,7 +125,6 @@ def modulo_inventario():
         else:
             df_agrupado = df_agrupado.sort_values("_Total_vendidos", ascending=True)
 
-        # Esto es solo para quitar una columna interna
         df_agrupado = df_agrupado.drop(columns=["_Total_vendidos"])
 
         styled_df = df_agrupado.style.apply(resaltar_stock_bajo, axis=1).format({
@@ -120,16 +135,19 @@ def modulo_inventario():
         st.subheader("📋 Inventario agrupado por nombre")
         st.dataframe(styled_df, use_container_width=True)
 
-        # Productos prioximos a vencer 
+        # ✅ Productos próximos a vencer (solo tienda)
         hoy = datetime.now().date()
         prox_mes = (datetime.now() + timedelta(days=30)).date()
+
         cursor.execute("""
-            SELECT pc.Cod_barra, p.nombre, pc.unidad, pc.fecha_vencimiento
+            SELECT pc.Cod_barra, p.Nombre, pc.unidad, pc.fecha_vencimiento
             FROM ProductoxCompra pc
-            JOIN Producto p ON pc.cod_barra = p.cod_barra
+            JOIN Producto p ON pc.Cod_barra = p.Cod_barra
             WHERE pc.fecha_vencimiento BETWEEN %s AND %s
+              AND pc.id_tienda = %s
+              AND p.id_tienda = %s
             ORDER BY pc.fecha_vencimiento ASC
-        """, (hoy, prox_mes))
+        """, (hoy, prox_mes, id_tienda, id_tienda))
         proximos = cursor.fetchall()
 
         if proximos:
@@ -142,9 +160,12 @@ def modulo_inventario():
 
     except Exception as e:
         st.error(f"❌ Error al cargar inventario: {e}")
+
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
     st.markdown("---")
     if st.button("⬅ Volver al menú principal"):
