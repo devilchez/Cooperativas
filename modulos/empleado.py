@@ -2,7 +2,7 @@ import streamlit as st
 from config.conexion import obtener_conexion
 
 def modulo_empleado():
-    st.title("👥 Registrar empleados")
+    st.title("👥 Registrar Asociada")
 
     # ✅ Validación multi-tienda
     if not st.session_state.get("logueado") or "id_tienda" not in st.session_state:
@@ -13,7 +13,7 @@ def modulo_empleado():
 
     # (Opcional) Restringir por rol
     # if st.session_state.get("nivel_usuario") != "Admin":
-    #     st.error("⛔ No tienes permisos para registrar empleados.")
+    #     st.error("⛔ No tienes permisos para registrar asociada.")
     #     st.stop()
 
     # Limpiar campos si se acaba de guardar
