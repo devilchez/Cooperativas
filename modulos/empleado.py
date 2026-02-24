@@ -30,10 +30,10 @@ def modulo_empleado():
 
     # Campos del formulario
     Usuario = st.text_input("Ingrese un usuario", value=st.session_state.get("usuario_input", ""), key="usuario_input")
+    Contrasena = st.text_input("Ingrese una contraseña", type="password", value=st.session_state.get("contrasena_input", ""), key="contrasena_input")
     Nombre = st.text_input("Nombre del empleado", value=st.session_state.get("nombre_input", ""), key="nombre_input")
     DUI = st.text_input("Ingrese su DUI (sin guión)", value=st.session_state.get("dui_input", ""), key="dui_input")
     Contacto = st.text_input("Número de teléfono", value=st.session_state.get("contacto_input", ""), key="contacto_input")
-    Contrasena = st.text_input("Ingrese una contraseña", type="password", value=st.session_state.get("contrasena_input", ""), key="contrasena_input")
     Nivel_usuario = st.text_input("Nivel de usuario", value="Vendedora", disabled=True, key="nivel_input")
 
     if st.button("Guardar empleado"):
@@ -60,10 +60,10 @@ def modulo_empleado():
                     # ✅ Insertar empleado con la tienda de quien está logueado
                     cursor.execute(
                         """
-                        INSERT INTO Empleado (Usuario, Nombre, Dui, Contacto, Contrasena, Nivel_usuario, id_tienda)
+                        INSERT INTO Empleado (Usuario, Contrasena,Nombre, Dui, Contacto,  Nivel_usuario, id_tienda)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)
                         """,
-                        (Usuario.strip(), Nombre.strip(), DUI.strip(), Contacto.strip(), Contrasena.strip(), Nivel_usuario, id_tienda)
+                        (Usuario.strip(),Contrasena.strip(), Nombre.strip(), DUI.strip(), Contacto.strip(),  Nivel_usuario, id_tienda)
                     )
                     conn.commit()
 
