@@ -31,7 +31,7 @@ def modulo_empleado():
     # Campos del formulario
     Usuario = st.text_input("Ingrese un usuario", value=st.session_state.get("usuario_input", ""), key="usuario_input")
     Contrasena = st.text_input("Ingrese una contraseña", type="password", value=st.session_state.get("contrasena_input", ""), key="contrasena_input")
-    Nombre = st.text_input("Nombre del empleado", value=st.session_state.get("nombre_input", ""), key="nombre_input")
+    Nombre = st.text_input("Nombre de la asociada", value=st.session_state.get("nombre_input", ""), key="nombre_input")
     DUI = st.text_input("Ingrese su DUI (sin guión)", value=st.session_state.get("dui_input", ""), key="dui_input")
     Contacto = st.text_input("Número de teléfono", value=st.session_state.get("contacto_input", ""), key="contacto_input")
     Nivel_usuario = st.text_input("Nivel de usuario", value="Vendedora", disabled=True, key="nivel_input")
