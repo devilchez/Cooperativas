@@ -90,13 +90,13 @@ def modulo_editar_producto():
                                 cursor.close()
                                 conn.close()
             else:
-                st.warning("⚠️ Producto no encontrado en esta tienda con ese código de barras.")
+                st.warning("⚠️ Producto no encontrado (verifique el codigo de barrra).")
 
         except Exception as e:
             st.error(f"❌ Error al buscar el producto: {e}")
 
     st.markdown("---")
-    st.subheader("📋 Lista de productos registrados (solo tu tienda)")
+    st.subheader("📋 Lista de productos registrados")
 
     try:
         conn = obtener_conexion()
