@@ -15,17 +15,17 @@ from modulos.inventario import modulo_inventario
 
 
 def menu_principal():
-    st.title("🏠 Menú Principal-Sistema de Tiendas")
+    st.title("🏠 Menú Principal")
 
     nombre_empleado = st.session_state.get("nombre_empleado", "Usuario")  
-    st.subheader(f"Bienvenida {nombre_empleado}, Seleccione un módulo")
+    st.subheader(f"Bienvenida al sistema {nombre_empleado}")
 
     if "macro_modulo" not in st.session_state:
         st.session_state["macro_modulo"] = None
 
     # Mostrar solo los macro módulos
     if st.session_state["macro_modulo"] is None:
-        st.markdown("### Elige la categoría:")
+        st.markdown("##### Elige la categoría:")
         col1, col2 = st.columns(2)
 
         with col1:
