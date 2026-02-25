@@ -36,7 +36,7 @@ def modulo_empleado():
     Contacto = st.text_input("Número de teléfono", value=st.session_state.get("contacto_input", ""), key="contacto_input")
     Nivel_usuario = st.text_input("Nivel de usuario", value="Vendedora", disabled=True, key="nivel_input")
 
-    if st.button("Guardar empleado"):
+    if st.button("Guardar asociada"):
         if not Usuario.strip() or not Nombre.strip() or not DUI.strip() or not Contacto.strip() or not Contrasena.strip():
             st.warning("⚠️ Por favor, completa todos los campos.")
         else:
