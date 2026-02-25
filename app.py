@@ -25,21 +25,24 @@ def menu_principal():
 
     # Mostrar solo los macro módulos
     if st.session_state["macro_modulo"] is None:
-        st.markdown("##### Elige la categoría:")
-        col1, col2 = st.columns(2)
+        st.markdown("##### Elija una actividad:")
+        col1, col2 , col3, col4 = st.columns(4)
 
         with col1:
             if st.button("✏️ Ingresar nueva información"):
                 st.session_state["macro_modulo"] = "registro"
                 st.rerun()
+        with col2:
             if st.button("📊 Consulta información"):
                 st.session_state["macro_modulo"] = "reportes"
                 st.rerun()
 
-        with col2:
+        with col3:
             if st.button("💸 Compra y Vende productos"):
                 st.session_state["macro_modulo"] = "transacciones"
                 st.rerun()
+
+        with col4:
             if st.button("📋 Consulta Inventario"):
                 st.session_state.module = "Inventario"
                 st.rerun()
