@@ -29,22 +29,24 @@ def menu_principal():
         col1, col2 , col3, col4 = st.columns(4)
 
         with col1:
-            if st.button("✏️ Ingresar nueva información"):
+            if st.button("✏️ Ingresa nueva información"):
                 st.session_state["macro_modulo"] = "registro"
                 st.rerun()
         with col2:
-            if st.button("📊 Consulta información"):
-                st.session_state["macro_modulo"] = "reportes"
-                st.rerun()
-
-        with col3:
-            if st.button("💸 Compra y Vende productos"):
+            if st.button("💸 Compra y vende productos"):
                 st.session_state["macro_modulo"] = "transacciones"
                 st.rerun()
 
-        with col4:
-            if st.button("📋 Consulta Inventario"):
+        with col3:
+            
+            if st.button("📋 Consulta tu inventario"):
                 st.session_state.module = "Inventario"
+                st.rerun()
+
+        with col4:
+            
+            if st.button("📊 Consulta tus reportes"):
+                st.session_state["macro_modulo"] = "reportes"
                 st.rerun()
 
     # Submenús según macro módulo
