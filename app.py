@@ -54,15 +54,15 @@ def menu_principal():
         st.markdown("#### ✏️ Registra información")
         col1, col2, col3 = st.columns(3)
         with col1:
-            if st.button("📦 Registrar producto"):
+            if st.button("📦 Registra un nuevo producto"):
                 st.session_state.module = "Producto"
                 st.rerun()
         with col2:
-            if st.button("✏️ Editar producto"):
+            if st.button("✏️ Edita información de un producto"):
                 st.session_state.module = "Editar"
                 st.rerun()
         with col3:
-            if st.button("👩‍💼 Registrar empleado"):
+            if st.button("👩‍💼 Registra una nueva asociada"):
                 st.session_state.module = "Empleado"
                 st.rerun()
 
