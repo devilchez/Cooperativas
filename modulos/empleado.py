@@ -34,7 +34,7 @@ def modulo_empleado():
     Nombre = st.text_input("Nombre de la asociada", value=st.session_state.get("nombre_input", ""), key="nombre_input")
     DUI = st.text_input("Ingrese su DUI (sin guión)", value=st.session_state.get("dui_input", ""), key="dui_input")
     Contacto = st.text_input("Número de teléfono", value=st.session_state.get("contacto_input", ""), key="contacto_input")
-    Nivel_usuario = st.text_input("Nivel de usuario", value="Vendedora", disabled=True, key="nivel_input")
+    Nivel_usuario = st.text_input("Nivel de usuario", value="Usuaria", disabled=True, key="nivel_input")
 
     if st.button("Guardar asociada"):
         if not Usuario.strip() or not Nombre.strip() or not DUI.strip() or not Contacto.strip() or not Contrasena.strip():
@@ -55,7 +55,7 @@ def modulo_empleado():
                 existe = cursor.fetchone()[0]
 
                 if existe:
-                    st.error("❌ Ya existe un empleado con ese usuario en esta tienda.")
+                    st.error("❌ Ya existe una asociada con ese usuario en esta tienda.")
                 else:
                     # ✅ Insertar empleado con la tienda de quien está logueado
                     cursor.execute(
