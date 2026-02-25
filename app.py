@@ -67,14 +67,14 @@ def menu_principal():
                 st.rerun()
 
     elif st.session_state["macro_modulo"] == "transacciones":
-        st.markdown("#### 💸 Compra y Vende productos")
+        st.markdown("#### 💸 Haz una compra o una venta")
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("🛒 Ventas"):
+            if st.button("🛒 Realizar una nueva venta"):
                 st.session_state.module = "Ventas"
                 st.rerun()
         with col2:
-            if st.button("📥 Compras"):
+            if st.button("📥 Realizar una nueva compra"):
                 st.session_state.module = "Compras"
                 st.rerun()
 
